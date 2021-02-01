@@ -1,12 +1,46 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 import csv
+
+
+def searchdata():
+    if evkerinput.get().isnumeric():
+        with open('DE_Y_r.csv') as csvfile:
+            evker = str(evkerinput.get())
+            csvolv = csv.reader(csvfile, delimiter=';')
+            match = 0
+            for row in csvolv:
+                if evker in row:
+                    evi_csap_ossz.set(row[1])
+                    ebbol_hav.set(row[2])
+                    napi_csap_max.set(row[3] + " (" + row[4] + ")")
+                    adott_0_1.set(row[5])
+                    adott_1.set([6])
+                    adott_5.set([7])
+                    adott_10.set(row[8])
+                    adott_20.set(row[9])
+                    adott_30.set(row[10])
+                    adott_50.set(row[11])
+                    hav_nap.set(row[12])
+                    jeg_nap.set(row[13])
+                    ziv_nap.set(row[14])
+                    on_nap.set(row[15])
+                    match += 1
+            if match == 0:
+                csvfile.close()
+                messagebox.showwarning(None, "A keresett évszám nem található! \n(Próbáld: 1901-2010)")
+            else:
+                csvfile.close()
+                messagebox.showinfo(None, "Sikeres keresés :) \nVizsgált év: " + evker)
+    else:
+        messagebox.showerror(None, "Nem megfelelő input!! \n(Megfelelő: csak numerikus)")
 
 
 # ROOT WINDOW DETAILS
 root = tk.Tk()
 root.title("MeteoLog")
-root.geometry("320x320")
+root.geometry("300x450")
 root.resizable(0, 0)
 root.config(background="beige", cursor="umbrella")
 
@@ -35,34 +69,97 @@ root.config(menu=menubar)
 
 # STYLES for ttk widgets //USE style="stylename"??
 style = ttk.Style()
+style.configure("TMenu")
+style.configure("TFrame", background="beige")
 style.configure("TLabel", background="beige")
 style.configure("TEntry", foreground="blue")
 style.configure("TButton", background="gold")
-style.configure("TFrame", background="beige")
 
+# block control
+toprow = ttk.Frame(root)
+toprow.pack(side="top", expand=1, fill="x")
+bottrow = ttk.Frame(root)
+bottrow.pack(side="bottom", expand=1, fill="x")
+leftcol = ttk.Frame(root)
+leftcol.pack(side="left", expand=1, fill="both")
+rightcol = ttk.Frame(root)
+rightcol.pack(side="right", expand=1, fill="both")
+
+# top row
+ttk.Label(toprow, text="(debreceni adatok, mm-ben)").pack()
+ttk.Label(toprow, text="(1901-2010)").pack()
+
+# bottom row
+# clouds, sun, etc icons here filling top row :)
+ttk.Label(bottrow, text="test").pack()
+
+# left column
+evkerinput = tk.StringVar()
+evkerinput.set("évszám")
+ttk.Entry(leftcol, textvariable=evkerinput, justify="right").pack(pady=2, anchor="e")
+
+ttk.Label(leftcol, text="Évi csapadékösszeg:").pack(anchor="e")
+ttk.Label(leftcol, text="(ebből hó:)").pack(anchor="e")
+ttk.Label(leftcol, text="Napi csapadék maximum:").pack(anchor="e")
+ttk.Label(leftcol, text="(adott csapadékösszegű napok)").pack(anchor="e")
+ttk.Label(leftcol, text="0,1-1 mm:").pack(anchor="e")
+ttk.Label(leftcol, text="1-5 mm:").pack(anchor="e")
+ttk.Label(leftcol, text="5-10 mm:").pack(anchor="e")
+ttk.Label(leftcol, text="10-20 mm:").pack(anchor="e")
+ttk.Label(leftcol, text="20-30 mm:").pack(anchor="e")
+ttk.Label(leftcol, text="30-50 mm:").pack(anchor="e")
+ttk.Label(leftcol, text="50+ mm:").pack(anchor="e")
+ttk.Label(leftcol, text="Havas napok:").pack(anchor="e")
+ttk.Label(leftcol, text="Jeges napok:").pack(anchor="e")
+ttk.Label(leftcol, text="Zivataros napok:").pack(anchor="e")
+ttk.Label(leftcol, text="Ónos napok:").pack(anchor="e")
+
+# right column
+ttk.Button(rightcol, text="Keresés", command=lambda: searchdata()).pack(anchor="e")
+
+evi_csap_ossz = tk.StringVar()
+ttk.Label(rightcol, textvariable=evi_csap_ossz).pack(anchor="e")
+
+ebbol_hav = tk.StringVar()
+ttk.Label(rightcol, textvariable=ebbol_hav).pack(anchor="e")
+
+napi_csap_max = tk.StringVar()
+ttk.Label(rightcol, textvariable=napi_csap_max).pack(anchor="e")
+
+ttk.Label(rightcol, text="").pack(anchor="e")
+
+adott_0_1 = tk.StringVar()
+ttk.Label(rightcol, textvariable=adott_0_1).pack(anchor="e")
+
+adott_1 = tk.StringVar()
+ttk.Label(rightcol, textvariable=adott_1).pack(anchor="e")
+
+adott_5 = tk.StringVar()
+ttk.Label(rightcol, textvariable=adott_5).pack(anchor="e")
+
+adott_10 = tk.StringVar()
+ttk.Label(rightcol, textvariable=adott_10).pack(anchor="e")
+
+adott_20 = tk.StringVar()
+ttk.Label(rightcol, textvariable=adott_20).pack(anchor="e")
+
+adott_30 = tk.StringVar()
+ttk.Label(rightcol, textvariable=adott_30).pack(anchor="e")
+
+adott_50 = tk.StringVar()
+ttk.Label(rightcol, textvariable=adott_50).pack(anchor="e")
+
+hav_nap = tk.StringVar()
+ttk.Label(rightcol, textvariable=hav_nap).pack(anchor="e")
+
+jeg_nap = tk.StringVar()
+ttk.Label(rightcol, textvariable=jeg_nap).pack(anchor="e")
+
+ziv_nap = tk.StringVar()
+ttk.Label(rightcol, textvariable=ziv_nap).pack(anchor="e")
+
+on_nap = tk.StringVar()
+ttk.Label(rightcol, textvariable=on_nap).pack(anchor="e")
+
+# gui handler
 root.mainloop()
-
-
-
-
-def search_data():
-    with open('DE_Y_r.csv') as csvfile:
-        evker = str(input("Keresett év: "))
-        csvolv = csv.reader(csvfile, delimiter=';')
-        match = 0
-        print('(Az adatok Debrecenre vonatkoznak és mm-ben értendők.)')
-        for row in csvolv:
-            if evker in row:
-                print(f'Vizsgált év: {row[0]}')
-                print(f'Évi csapadékösszeg: {row[1]} (ebből havazás: {row[2]})')
-                print(f'Napi csapadék maximum: {row[3]} ({row[4]})')
-                print(f'Adott csapadékösszegű napok száma (0,1-1-5-10-20-30-50mm):'
-                      f'\n\t{row[5]}-{row[6]}-{row[7]}-{row[8]}-{row[9]}-{row[10]}-{row[11]}')
-                print(f'Havas napok száma: {row[12]}')
-                print(f'Jeges napok száma: {row[13]}')
-                print(f'Zivataros napok száma: {row[14]}')
-                print(f'Ónosesős napok száma: {row[15]}')
-                match += 1
-        if match == 0:
-            print('Hiba: keresett év nem található!')
-        csvfile.close()
