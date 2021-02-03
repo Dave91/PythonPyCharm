@@ -8,7 +8,7 @@ class ToolsApp:
         # ROOT WINDOW DETAILS
         root = tk.Tk()
         root.title("Toolkit Application")
-        root.geometry("425x215")
+        root.geometry("425x255")
         root.resizable(0, 0)
         root.config(background="beige", cursor="gobbler")
 
@@ -47,7 +47,7 @@ class ToolsApp:
         style.configure("TEntry", foreground="blue")
         style.configure("TButton", background="gold")
         style.configure("lefttab.TNotebook", tabposition="wn", background="#DAF7A6")
-        style.configure("TNotebook.Tab", width=22, padding=(10, 5, 10, 5), background="lightblue")
+        style.configure("TNotebook.Tab", width=22, padding=(10, 5, 10, 5))
         style.configure("TFrame", background="beige")
 
         # TABS widget control
@@ -59,15 +59,26 @@ class ToolsApp:
         tabgramm = ttk.Frame(tab_ctrl)
         tabnote = ttk.Frame(tab_ctrl)
         tabeff = ttk.Frame(tab_ctrl)
+        tabfuel = ttk.Frame(tab_ctrl)
 
-        # tab details //icons would be great!! :)
-        tab_ctrl.add(tabloan, text="Loan Calculator")
-        tab_ctrl.add(tabtemp, text="Temperature Converter")
-        tab_ctrl.add(tabarea, text="Area Unit Converter")
-        tab_ctrl.add(tabspeed, text="Speed Unit Converter")
-        tab_ctrl.add(tabgramm, text="Grammar Cheatsheet")
-        tab_ctrl.add(tabnote, text="Notes for Self")
-        tab_ctrl.add(tabeff, text="Effective Stack Height")
+        # tab details
+        toolsloan = tk.PhotoImage(file="icons/tools-loan.png")
+        toolstemp = tk.PhotoImage(file="icons/tools-temp.png")
+        toolsarea = tk.PhotoImage(file="icons/tools-area.png")
+        toolsspeed = tk.PhotoImage(file="icons/tools-speed.png")
+        toolsgramm = tk.PhotoImage(file="icons/tools-gramm.png")
+        toolsnote = tk.PhotoImage(file="icons/tools-note.png")
+        toolseff = tk.PhotoImage(file="icons/tools-eff.png")
+        toolsfuel = tk.PhotoImage(file="icons/tools-fuel.png")
+
+        tab_ctrl.add(tabloan, compound="left", image=toolsloan, text="Loan Calculator")
+        tab_ctrl.add(tabtemp, compound="left", image=toolstemp, text="Temperature Converter")
+        tab_ctrl.add(tabarea, compound="left", image=toolsarea, text="Area Unit Converter")
+        tab_ctrl.add(tabspeed, compound="left", image=toolsspeed, text="Speed Unit Converter")
+        tab_ctrl.add(tabgramm, compound="left", image=toolsgramm, text="Grammar Cheatsheet")
+        tab_ctrl.add(tabnote, compound="left", image=toolsnote, text="Notes for Self")
+        tab_ctrl.add(tabeff, compound="left", image=toolseff, text="Effective Stack Height")
+        tab_ctrl.add(tabfuel, compound="left", image=toolsfuel, text="Fuel Expense Account")
         tab_ctrl.pack(expand=1, fill="both")
 
         # ---------- TAB LOAN ------------
@@ -136,9 +147,8 @@ class ToolsApp:
         ttk.Entry(tabarea_left, textvariable=self.area_input, justify="right").pack()
 
         self.area_select = tk.StringVar()
-        self.area_select.set("m2")
-        self.area_select.trace("w", self.ConvertUnits)
-        ttk.OptionMenu(tabarea_right, self.area_select, "m2", "nöl", "hold", "ha", "km2").pack()
+        self.area_select.trace_add("write", self.ConvertArea)
+        ttk.OptionMenu(tabarea_right, self.area_select, "(choose)", "m2", "nöl", "hold", "ha", "km2").pack()
 
         self.area_m2 = tk.StringVar()
         ttk.Label(tabarea_left, textvariable=self.area_m2, justify="right").pack()
@@ -201,6 +211,10 @@ class ToolsApp:
             # labels for bars (y values)
             c.create_text(x0 + 2, y0, anchor=tk.SW, text=str(y))
 
+        # --------------- TAB FUEL -------------------
+
+        ttk.Label(tabfuel)
+
         # ------- END OF TAB ELEMENTS -----------------
 
         # parts of an OPTIONS MENU maybe??
@@ -260,14 +274,14 @@ class ToolsApp:
         return month
 
     # tabarea / converts area units
-    def ConvertUnits(self, a, b, c):
+    def ConvertArea(self, a, b, c):
 
         if self.area_select.get() == "m2":
             m2 = float(self.area_input.get())
         elif self.area_select.get() == "nöl":
-            m2 = float(self.area_input.get()) * 3.59665
+            m2 = float(self.area_input.get()) * 3.597
         elif self.area_select.get() == "hold":
-            m2 = float(self.area_input.get()) * 5754.64153
+            m2 = float(self.area_input.get()) * 5754.642
         elif self.area_select.get() == "ha":
             m2 = float(self.area_input.get()) * 10000
         elif self.area_select.get() == "km2":
@@ -277,13 +291,13 @@ class ToolsApp:
 
         self.area_m2.set(format(m2, '10.3f'))
 
-        nol = float(self.area_m2.get()) / 3.59665
+        nol = float(self.area_m2.get()) / 3.597
         self.area_nol.set(format(nol, '10.3f'))
 
         hold = float(self.area_nol.get()) / 1600
         self.area_hold.set(format(hold, '10.3f'))
 
-        ha = float(self.area_hold.get()) / 1.7377
+        ha = float(self.area_hold.get()) / 1.738
         self.area_ha.set(format(ha, '10.3f'))
 
         km2 = float(self.area_ha.get()) / 100
