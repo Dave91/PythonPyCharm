@@ -1,12 +1,14 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import simpledialog, filedialog
+from os import curdir
 import csv
 
 
 def searchdata():
     if evkerinput.get().isnumeric():
-        with open('DE_Y_r.csv') as csvfile:
+        with open("data/eves_adatok/DE_Y_r.txt") as csvfile:
             evker = str(evkerinput.get())
             csvolv = csv.reader(csvfile, delimiter=';')
             match = 0
@@ -31,31 +33,36 @@ def searchdata():
                     )
                     match += 1
             if match == 0:
-                csvfile.close()
                 messagebox.showwarning(None, "A keresett évszám nem található! \n(Próbáld: 1901-2010)")
             else:
-                csvfile.close()
                 messagebox.showinfo(None, "Sikeres keresés :) \nVizsgált év: " + evker)
     else:
         messagebox.showerror(None, "Nem megfelelő input!! \n(Megfelelő: csak numerikus)")
 
 
 def savedata():
-    if evkerinput.get().isnumeric():
-        with open('DE_Y_r.csv') as csvfile:
+    if evesadatmess is not None:
+        sname = ""
+        while sname == "":
+            sname = simpledialog.askstring(None, "Nevezd el a fájlt:")
+        if sname is None:
+            return
+        defdir = curdir
+        sdir = filedialog.askdirectory(initialdir=defdir)
+        # if sdir is None: //no effect, other than None
+        # return
+        savename = str(sdir) + "/" + str(sname) + ".txt"
+        with open(savename, "a") as savefile:
             evker = str(evkerinput.get())
-            csvolv = csv.reader(csvfile, delimiter=';')
-            match = 0
-            for row in csvolv:
-                if evker in row:
-                    # do sth
-                    match += 1
-            if match == 0:
-                messagebox.showwarning(None, "A keresett évszám nem található! \n(Próbáld: 1901-2010)")
-            else:
-                messagebox.showinfo(None, "Sikeres keresés :) \nVizsgált év: " + evker)
+            savefile.write(
+                "\n\n(debreceni adatok, mm-ben)" +
+                "\nA vizsgált év: " + evker +
+                "\n" + str(evesadatmess) + "\n"
+            )
+            messagebox.showinfo(None, "Keresett rekord sikeresen elmentve:\n" + savename)
+        # any way to check success here??
     else:
-        messagebox.showerror(None, "Nem megfelelő input!! \n(Megfelelő: csak numerikus)")
+        messagebox.showerror(None, "Nincs menthető input!! \n(Előbb végezz keresést!)")
 
 
 # ROOT WINDOW
@@ -74,7 +81,7 @@ menu_file = tk.Menu(menubar, tearoff=0)
 menubar.add_cascade(label='File', menu=menu_file)
 menu_file.add_command(label='New', command=None)
 menu_file.add_command(label='Open', command=None)
-menu_file.add_command(label='Save', command=None)
+menu_file.add_command(label='Save', command=lambda: savedata())
 menu_file.add_separator()
 menu_file.add_command(label='Exit', command=root.destroy)
 
@@ -92,7 +99,6 @@ root.config(menu=menubar)
 style = ttk.Style()
 style.configure("TLabel", background="beige")
 style.configure("TEntry", foreground="blue")
-style.configure("TButton", background="gold")
 style.configure("TNotebook", background="#DAF7A6")
 style.configure("TNotebook.Tab", padding=(10, 2, 10, 2))
 style.configure("TFrame", background="beige")
@@ -126,7 +132,7 @@ ttk.Label(toprow, text="(1901-2010)").pack()
 
 # bottom row
 evesadatoutput = tk.StringVar()
-tk.Message(bottrow, textvariable=evesadatoutput, bg="lightgrey", font=("Arial", 10), relief="groove")\
+evesadatmess = tk.Message(bottrow, textvariable=evesadatoutput, bg="lightgrey", font=("Arial", 10), relief="groove")\
     .pack(expand=1, fill="both")
 
 metim1 = tk.PhotoImage(file="icons/meteo1sunny.png").zoom(25).subsample(32)
@@ -143,7 +149,7 @@ ttk.Label(bottrow, image=metim5).pack(side="left")
 # left column
 evkerinput = tk.StringVar()
 evkerinput.set("év")
-ttk.Entry(leftcol, textvariable=evkerinput, justify="right").pack(pady=2, anchor="e")
+ttk.Entry(leftcol, textvariable=evkerinput, width=12, justify="center").pack(pady=2, anchor="e")
 
 # right column
 ttk.Button(rightcol, text="Keresés", command=lambda: searchdata()).pack(anchor="w")
