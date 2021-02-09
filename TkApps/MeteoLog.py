@@ -30,23 +30,59 @@ def searchdata():
                 csvolv = csv.reader(csvfile, delimiter=';')
                 txtbox.configure(state="normal")
                 txtbox.delete(1.0, tk.END)
-                match = 0
+                ossznap = 0
+                esonap = 0
+                osszcsapm = 0.0
+                sumtn = 0.0
+                sumt = 0.0
+                sumtx = 0.0
+                mintnap = 0
+                abstn = 30.0
+                abstx = -10.0
                 for row in csvolv:
                     if kerinput in str(row[0]):
                         napialapoutput = "\t".join(row) + "\n"
                         txtbox.insert(tk.END, *napialapoutput.splitlines(keepends=True))
-                        match += 1
-
+                        ossznap += 1
+                        if float(row[1]) > 0.0:
+                            esonap += 1
+                        osszcsapm += float(row[1])
+                        sumtn += float(row[2])
+                        sumt += float(row[3])
+                        sumtx += float(row[4])
+                        if float(row[3]) < 0.0:
+                            mintnap += 1
+                        if float(row[2]) < abstn:
+                            abstn = float(row[2])
+                        if float(row[4]) > abstx:
+                            abstx = float(row[4])
                 txtbox.configure(state="disabled")
-                if match == 0:
+                if ossznap == 0:
                     messagebox.showwarning(None, "Hiba: A keresés eredménytelen volt!")
                 else:
                     sumrestxtbox.configure(state="normal")
                     sumrestxtbox.delete(1.0, tk.END)
-
-                    sumrestxtbox.insert(tk.END, "Sorok (napok) száma: " + str(match))
+                    esoosszrat = float(format(esonap / ossznap, "10.1f"))
+                    csapmatl = format(osszcsapm / float(esonap), "10.1f")
+                    tnatl = format(sumtn / float(ossznap), "10.1f")
+                    tatl = format(sumt / float(ossznap), "10.1f")
+                    txatl = format(sumtx / float(ossznap), "10.1f")
+                    # mínuszos napok száma??
+                    sumrestxtbox.insert(
+                        tk.END, "Napok összesen:\t" + str(ossznap)
+                        + "\nEbből csapadékos:\t" + str(esonap)
+                        + "\nArányuk:\t" + str(esoosszrat)
+                        + "\n\nÖsszes csapadékm.:\t" + str(format(osszcsapm, "10.1f"))
+                        + "\nÁtl. (napi) csapadékm.:\t" + str(csapmatl)
+                        + "\n\nNapi min. hőm. átlaga:\t" + str(tnatl)
+                        + "\nNapi átl. hőm. átlaga:\t" + str(tatl)
+                        + "\nNapi max. hőm. átlaga:\t" + str(txatl)
+                        + "\nNegatív középhőm. napok:\t" + str(mintnap)
+                        + "\n\nAbsz. napi min. hőm.:\t" + str(abstn)
+                        + "\nAbsz. napi max. hőm.:\t" + str(abstx)
+                    )
                     sumrestxtbox.configure(state="disabled")
-                #    messagebox.showinfo(None, "Megtalált rekordok száma: " + str(match))
+                #    messagebox.showinfo(None, "Talált rekordok száma: " + str(ossznap))
         else:
             messagebox.showerror(None, "Nem megfelelő input!! \n(Kötelező: Állomáshely kiválasztása!)")
     else:
