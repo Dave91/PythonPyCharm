@@ -36,12 +36,14 @@ def searchdata():
                         napialapoutput = "\t".join(row) + "\n"
                         txtbox.insert(tk.END, *napialapoutput.splitlines(keepends=True))
                         match += 1
+
                 txtbox.configure(state="disabled")
                 if match == 0:
                     messagebox.showwarning(None, "Hiba: A keresés eredménytelen volt!")
                 else:
                     sumrestxtbox.configure(state="normal")
                     sumrestxtbox.delete(1.0, tk.END)
+
                     sumrestxtbox.insert(tk.END, "Sorok (napok) száma: " + str(match))
                     sumrestxtbox.configure(state="disabled")
                 #    messagebox.showinfo(None, "Megtalált rekordok száma: " + str(match))
@@ -52,7 +54,7 @@ def searchdata():
 
 
 def savedata():
-    if txtbox is not "":
+    if txtbox != "":
         defdir = curdir
         savenamedir = ""
         while savenamedir == "":
@@ -80,43 +82,29 @@ def savedata():
 
 def yearentvalid(instr, acttyp):
     if acttyp == '1':
-        if not instr.isdigit():
+        if not instr.isdigit() or len(instr) > 4:
             return False
-        if len(instr) == 1:
-            if int(instr) < 1 or int(instr) > 2:
-                return False
-        if len(instr) == 2:
-            if int(instr) < 19 or int(instr) > 20:
-                return False
-        if len(instr) == 3:
-            if int(instr) < 190 or int(instr) > 201:
-                return False
-        if len(instr) == 4:
-            if int(instr) < 1901 or int(instr) > 2019:
-                return False
-        if len(instr) > 4:
+        elif len(instr) == 1 and int(instr) not in range(1, 3):
+            return False
+        elif len(instr) == 2 and int(instr) not in range(19, 21):
+            return False
+        elif len(instr) == 3 and int(instr) not in range(190, 202):
+            return False
+        elif len(instr) == 4 and int(instr) not in range(1901, 2020):
             return False
     return True
 
 
 def mmentvalid(instr, acttyp):
     if acttyp == '1':
-        if not instr.isdigit():
-            return False
-        if len(instr) > 2:
-            return False
-        if int(instr) < 1 or int(instr) > 12:
+        if not instr.isdigit() or len(instr) > 2 or int(instr) not in range(1, 13):
             return False
     return True
 
 
 def ddentvalid(instr, acttyp):
     if acttyp == '1':
-        if not instr.isdigit():
-            return False
-        if len(instr) > 2:
-            return False
-        if int(instr) < 1 or int(instr) > 31:
+        if not instr.isdigit() or len(instr) > 2 or int(instr) not in range(1, 32):
             return False
     return True
 
@@ -129,14 +117,14 @@ def sumdatares():
         txtbox.configure(state="disabled")
         messagebox.showwarning(None, "Hiányzó vagy nem elegendő adatsorok!!")
     else:
-        if str(sumresonoff.get()) == "off":
+        if sumresonoff.get() == 0:
             sumrestxtbox.pack()
             sumbuttlab.set("Vissza")
-            sumresonoff.set("on")
+            sumresonoff.set(1)
         else:
             sumrestxtbox.forget()
             sumbuttlab.set("Összesít")
-            sumresonoff.set("off")
+            sumresonoff.set(0)
         txtbox.configure(state="disabled")
 
 
@@ -154,19 +142,19 @@ menubar = tk.Menu(root)
 
 menu_file = tk.Menu(menubar, tearoff=0)
 menubar.add_cascade(label='Fájl', menu=menu_file)
-menu_file.add_command(label='New', command=None)
-menu_file.add_command(label='Open', command=None)
-menu_file.add_command(label='Save As', command=lambda: savedata())
+# menu_file.add_command(label='Létrehoz', command=None)
+menu_file.add_command(label='Import', command=None)
+menu_file.add_command(label='Export', command=lambda: savedata())
 menu_file.add_separator()
 menu_file.add_command(label='Kilépés', command=root.destroy)
 
 menu_options = tk.Menu(menubar, tearoff=0)
-menubar.add_cascade(label='Options', menu=menu_options)
-menu_options.add_command(label='Settings', command=None)
+menubar.add_cascade(label='Opciók', menu=menu_options)
+menu_options.add_command(label='Beállítások', command=None)
 
 menu_help = tk.Menu(menubar, tearoff=0)
-menubar.add_cascade(label='Help', menu=menu_help)
-menu_help.add_command(label='About', command=None)
+menubar.add_cascade(label='Súgó', menu=menu_help)
+menu_help.add_command(label='Névjegy', command=None)
 
 root.config(menu=menubar)
 
@@ -214,8 +202,8 @@ sumrestxtbox = tk.Text(
 )
 sumrestxtbox.configure(state="disabled")
 sumrestxtbox.lift(aboveThis=tabnapialap)
-sumresonoff = tk.StringVar()
-sumresonoff.set("off")
+sumresonoff = tk.IntVar()
+sumresonoff.set(0)
 
 # top row
 ttk.Label(toprow, text="(Budapest, Keszthely, Szombathely)").pack()
