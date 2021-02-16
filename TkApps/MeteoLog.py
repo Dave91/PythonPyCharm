@@ -230,33 +230,28 @@ class TabEvesReszl(ttk.Frame):
 
         # block control
         self.toprow = ttk.Frame(self)
-        self.toprow.pack(side="top", expand=1, fill="x")
+        self.toprow.pack(side="top")
         self.bottrow = ttk.Frame(self)
         self.bottrow.pack(side="bottom", expand=1, fill="both")
 
         # top row
-        ttk.Label(self.toprow, text="(Debrecen)").pack()
-        ttk.Label(self.toprow, text="(1901 - 2010)").pack()
-
-        self.optmenu = tk.StringVar()
-        ttk.OptionMenu(
-            self.toprow, self.optmenu, "<keresett tényező>", "csap.össz.", "naps. órák", "átlaghőm."
-        ).pack(side="left", padx=2)
+        ttk.Label(self.toprow, text="(Debrecen: 1901 - 2010)").pack()
+        ttk.Label(self.toprow, text="(csap.össz., naps. órák, átlaghőm.)").pack()
 
         self.evkerinput = tk.StringVar()
         self.evkerinput.set("ÉÉÉÉ")
         self.yearent = ttk.Entry(self.toprow, textvariable=self.evkerinput, validate="key",
-                                 width=5, justify="center")
+                                 width=7, justify="center")
         self.yearent["validatecommand"] = (self.yearent.register(self.yearentvalid), "%P", "%d")
-        self.yearent.pack(side="left", padx=2)
+        self.yearent.pack(side="left", padx=15)
 
-        ttk.Button(self.toprow, text="Keresés", command=lambda: self.searchdata()).pack(side="left", padx=2)
+        ttk.Button(self.toprow, text="Keresés", command=lambda: self.searchdata()).pack(padx=2)
 
         # bottom row
         self.tree = ttk.Treeview(self.bottrow, columns=('Évszám', 'Érték'), height=15)
-        self.tree.column('#0', width=110, stretch=tk.YES)
-        self.tree.column('#1', width=85, stretch=tk.YES)
-        self.tree.column('#2', width=95, stretch=tk.YES)
+        self.tree.column('#0', width=110, minwidth=110, stretch=tk.NO)
+        self.tree.column('#1', width=85, minwidth=85, stretch=tk.NO)
+        self.tree.column('#2', width=95, minwidth=95, stretch=tk.NO)
         self.tree.heading('#0', text='Tényező')
         self.tree.heading('#1', text='Évszám')
         self.tree.heading('#2', text='Érték')
@@ -276,53 +271,49 @@ class TabEvesReszl(ttk.Frame):
             }
             stip = {0: "#ev", 1: "y_ss", 2: "y_sx", 3: "y_sxd", 4: "y_dsf20", 5: "y_dsf80"}
             tatip = {0: "#ev", 1: "y_ta", 2: "y_tax", 3: "y_taxd", 4: "y_tan", 5: "y_tand"}
-            tenyezo = str(self.optmenu.get())
             evker = str(self.evkerinput.get())
             idotal = 0
-            if tenyezo == "csap.össz.":
-                rfold = self.tree.insert("", 1, 1, text=tenyezo)
-                with open("data/evesreszl/DE_Y_r.txt") as csvfile:
-                    csvolv = csv.reader(csvfile, delimiter=';')
-                    for row in csvolv:
-                        if evker in str(row[0]):
-                            for i, v in enumerate(row):
-                                self.tree.insert(
-                                    rfold, self.id, self.iid, text="",
-                                    values=(rtip[i], v)
-                                )
-                                self.iid += 1
-                                self.id += 1
-                            idotal += 1
-            elif tenyezo == "naps. órák":
-                sfold = self.tree.insert("", 1, 1, text=tenyezo)
-                with open("data/evesreszl/DE_Y_s.txt") as csvfile:
-                    csvolv = csv.reader(csvfile, delimiter=';')
-                    for row in csvolv:
-                        if evker in str(row[0]):
-                            for i, v in enumerate(row):
-                                self.tree.insert(
-                                    sfold, self.id, self.iid, text="",
-                                    values=(stip[i], v)
-                                )
-                                self.iid += 1
-                                self.id += 1
-                            idotal += 1
-            elif tenyezo == "átlaghőm.":
-                tafold = self.tree.insert("", 1, 1, text=tenyezo)
-                with open("data/evesreszl/DE_Y_ta.txt") as csvfile:
-                    csvolv = csv.reader(csvfile, delimiter=';')
-                    for row in csvolv:
-                        if evker in str(row[0]):
-                            for i, v in enumerate(row):
-                                self.tree.insert(
-                                    tafold, self.id, self.iid, text="",
-                                    values=(tatip[i], v)
-                                )
-                                self.iid += 1
-                                self.id += 1
-                            idotal += 1
-            else:
-                messagebox.showerror(None, "Hiányzó vagy nem megfelelő input!!")
+            rfold = self.tree.insert("", 1, 1, text="csap.össz.")
+            with open("data/evesreszl/DE_Y_r.txt") as csvfile:
+                csvolv = csv.reader(csvfile, delimiter=';')
+                for row in csvolv:
+                    if evker in str(row[0]):
+                        for i, v in enumerate(row):
+                            self.tree.insert(
+                                rfold, self.id, self.iid, text="",
+                                values=(rtip[i], v)
+                            )
+                            self.iid += 1
+                            self.id += 1
+                        idotal += 1
+            sfold = self.tree.insert("", 2, self.iid, text="naps. órák")
+            self.iid += 1
+            with open("data/evesreszl/DE_Y_s.txt") as csvfile:
+                csvolv = csv.reader(csvfile, delimiter=';')
+                for row in csvolv:
+                    if evker in str(row[0]):
+                        for i, v in enumerate(row):
+                            self.tree.insert(
+                                sfold, self.id, self.iid, text="",
+                                values=(stip[i], v)
+                            )
+                            self.iid += 1
+                            self.id += 1
+                        idotal += 1
+            tafold = self.tree.insert("", 3, self.iid, text="átlaghőm.")
+            self.iid += 1
+            with open("data/evesreszl/DE_Y_ta.txt") as csvfile:
+                csvolv = csv.reader(csvfile, delimiter=';')
+                for row in csvolv:
+                    if evker in str(row[0]):
+                        for i, v in enumerate(row):
+                            self.tree.insert(
+                                tafold, self.id, self.iid, text="",
+                                values=(tatip[i], v)
+                            )
+                            self.iid += 1
+                            self.id += 1
+                        idotal += 1
             if idotal == 0:
                 messagebox.showwarning(None, "Hiba: A keresés eredménytelen volt!")
         else:
