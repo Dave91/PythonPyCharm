@@ -4,6 +4,10 @@ from tkinter import messagebox
 # from tkinter import filedialog  # , simpledialog
 # from os import curdir
 import csv
+import matplotlib
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+# numpy random számokat generálni
 
 
 class TabMenu(ttk.Notebook):
@@ -15,7 +19,7 @@ class TabMenu(ttk.Notebook):
 
         TabNapiAlap(self)
         TabEvesReszl(self)
-        TabTeszt(self)
+        TabDiagram(self)
 
         # sumrestxtbox
         self.sumrestxtbox = tk.Text(
@@ -121,7 +125,7 @@ class TabNapiAlap(ttk.Frame):
                 kerinput = evker + honapker + napker
                 helyker = "data/napialap/" + str(self.optmenu.get()) + "_19012019.csv"
                 with open(helyker) as csvfile:
-                    csvolv = csv.reader(csvfile, delimiter=';')
+                    csvolv = csv.reader(csvfile, delimiter=";")
                     self.txtbox.configure(state="normal")
                     self.txtbox.delete(1.0, tk.END)
                     ossznap, esonap, mintnap = 0, 0, 0
@@ -177,7 +181,7 @@ class TabNapiAlap(ttk.Frame):
 
     @staticmethod
     def yearentvalid(instr, acttyp):
-        if acttyp == '1':
+        if acttyp == "1":
             if not instr.isdigit() or len(instr) > 4:
                 return False
             elif len(instr) == 1 and int(instr) not in range(1, 3):
@@ -192,14 +196,14 @@ class TabNapiAlap(ttk.Frame):
 
     @staticmethod
     def mmentvalid(instr, acttyp):
-        if acttyp == '1':
+        if acttyp == "1":
             if not instr.isdigit() or len(instr) > 2 or int(instr) not in range(1, 13):
                 return False
         return True
 
     @staticmethod
     def ddentvalid(instr, acttyp):
-        if acttyp == '1':
+        if acttyp == "1":
             if not instr.isdigit() or len(instr) > 2 or int(instr) not in range(1, 32):
                 return False
         return True
@@ -240,27 +244,26 @@ class TabEvesReszl(ttk.Frame):
 
         self.evkerinput = tk.StringVar()
         self.evkerinput.set("ÉÉÉÉ")
-        self.yearent = ttk.Entry(self.toprow, textvariable=self.evkerinput, validate="key",
-                                 width=7, justify="center")
+        self.yearent = ttk.Entry(self.toprow, textvariable=self.evkerinput, validate="key", width=7, justify="center")
         self.yearent["validatecommand"] = (self.yearent.register(self.yearentvalid), "%P", "%d")
         self.yearent.pack(side="left", padx=15)
 
         ttk.Button(self.toprow, text="Keresés", command=lambda: self.searchdata()).pack(padx=2)
 
         # bottom row
-        self.tree = ttk.Treeview(self.bottrow, columns=('Évszám', 'Érték'), height=15)
-        self.tree.column('#0', width=110, minwidth=110, stretch=tk.NO)
-        self.tree.column('#1', width=85, minwidth=85, stretch=tk.NO)
-        self.tree.column('#2', width=95, minwidth=95, stretch=tk.NO)
-        self.tree.heading('#0', text='Tényező')
-        self.tree.heading('#1', text='Évszám')
-        self.tree.heading('#2', text='Érték')
+        self.tree = ttk.Treeview(self.bottrow, columns=("Évszám", "Érték"), height=15)
+        self.tree.column("#0", width=110, minwidth=110, stretch=0)
+        self.tree.column("#1", width=85, minwidth=85, stretch=0)
+        self.tree.column("#2", width=95, minwidth=95, stretch=0)
+        self.tree.heading("#0", text="Tényező")
+        self.tree.heading("#1", text="Évszám")
+        self.tree.heading("#2", text="Érték")
         self.tree.pack(side="bottom")
 
         self.id, self.iid = 0, 2
 
     def searchdata(self):
-        if self.evkerinput.get().isnumeric():
+        if self.evkerinput.get().isnumeric() and len(self.evkerinput.get()) == 4:
             for item in self.tree.get_children():
                 self.tree.delete(item)
             # vagy egy sorban.. self.tree.delete(*self.tree.get_children())
@@ -275,42 +278,33 @@ class TabEvesReszl(ttk.Frame):
             idotal = 0
             rfold = self.tree.insert("", 1, 1, text="csap.össz.")
             with open("data/evesreszl/DE_Y_r.txt") as csvfile:
-                csvolv = csv.reader(csvfile, delimiter=';')
+                csvolv = csv.reader(csvfile, delimiter=";")
                 for row in csvolv:
                     if evker in str(row[0]):
                         for i, v in enumerate(row):
-                            self.tree.insert(
-                                rfold, self.id, self.iid, text="",
-                                values=(rtip[i], v)
-                            )
+                            self.tree.insert(rfold, self.id, self.iid, text="", values=(rtip[i], v))
                             self.iid += 1
                             self.id += 1
                         idotal += 1
             sfold = self.tree.insert("", 2, self.iid, text="naps. órák")
             self.iid += 1
             with open("data/evesreszl/DE_Y_s.txt") as csvfile:
-                csvolv = csv.reader(csvfile, delimiter=';')
+                csvolv = csv.reader(csvfile, delimiter=";")
                 for row in csvolv:
                     if evker in str(row[0]):
                         for i, v in enumerate(row):
-                            self.tree.insert(
-                                sfold, self.id, self.iid, text="",
-                                values=(stip[i], v)
-                            )
+                            self.tree.insert(sfold, self.id, self.iid, text="", values=(stip[i], v))
                             self.iid += 1
                             self.id += 1
                         idotal += 1
             tafold = self.tree.insert("", 3, self.iid, text="átlaghőm.")
             self.iid += 1
             with open("data/evesreszl/DE_Y_ta.txt") as csvfile:
-                csvolv = csv.reader(csvfile, delimiter=';')
+                csvolv = csv.reader(csvfile, delimiter=";")
                 for row in csvolv:
                     if evker in str(row[0]):
                         for i, v in enumerate(row):
-                            self.tree.insert(
-                                tafold, self.id, self.iid, text="",
-                                values=(tatip[i], v)
-                            )
+                            self.tree.insert(tafold, self.id, self.iid, text="", values=(tatip[i], v))
                             self.iid += 1
                             self.id += 1
                         idotal += 1
@@ -321,7 +315,7 @@ class TabEvesReszl(ttk.Frame):
 
     @staticmethod
     def yearentvalid(instr, acttyp):
-        if acttyp == '1':
+        if acttyp == "1":
             if not instr.isdigit() or len(instr) > 4:
                 return False
             elif len(instr) == 1 and int(instr) not in range(1, 3):
@@ -334,118 +328,82 @@ class TabEvesReszl(ttk.Frame):
                 return False
         return True
 
-    @staticmethod
-    def mmentvalid(instr, acttyp):
-        if acttyp == '1':
-            if not instr.isdigit() or len(instr) > 2 or int(instr) not in range(1, 13):
-                return False
-        return True
 
-
-class TabTeszt(ttk.Frame):
+class TabDiagram(ttk.Frame):
     def __init__(self, parent):
         ttk.Frame.__init__(self, parent)
-        parent.add(self, text="tesztfül")
+        parent.add(self, text="Diagram")
 
         # block control
         self.toprow = ttk.Frame(self)
-        self.toprow.pack(side="top", expand=1, fill="x")
+        self.toprow.pack(side="top")
         self.bottrow = ttk.Frame(self)
         self.bottrow.pack(side="bottom", expand=1, fill="both")
 
         # top row
-        ttk.Label(self.toprow, text="(Debrecen)").pack()
-        ttk.Label(self.toprow, text="(1901.01 - 2010.12)").pack()
+        ttk.Label(self.toprow, text="(1901 - 2010)").pack()
+        ttk.Label(self.toprow, text="(id.tény. izébizé").pack()
 
         self.optmenu = tk.StringVar()
         ttk.OptionMenu(
-            self.toprow, self.optmenu, "<keresett tényező>", "csapadékösszeg", "napsütéses órák", "átl. hőmérséklet"
-        ).pack(side="left", padx=2)
+            self.toprow, self.optmenu, "<tényező>", "csapadékösszeg", "napsütéses órák", "átlaghőmérséklet"
+        ).pack(side="left", padx=4)
 
         self.evkerinput = tk.StringVar()
         self.evkerinput.set("ÉÉÉÉ")
-        self.yearent = ttk.Entry(self.toprow, textvariable=self.evkerinput, validate="key",
-                                 width=5, justify="center")
+        self.yearent = ttk.Entry(self.toprow, textvariable=self.evkerinput, validate="key", width=7, justify="center")
         self.yearent["validatecommand"] = (self.yearent.register(self.yearentvalid), "%P", "%d")
         self.yearent.pack(side="left", padx=2)
-
-        self.honapkerinput = tk.StringVar()
-        self.honapkerinput.set("HH")
-        self.monthent = ttk.Entry(self.toprow, textvariable=self.honapkerinput, validate="key",
-                                  width=3, justify="center")
-        self.monthent["validatecommand"] = (self.monthent.register(self.mmentvalid), "%P", "%d")
-        self.monthent.pack(side="left")
 
         ttk.Button(self.toprow, text="Keresés", command=lambda: self.searchdata()).pack(side="left", padx=2)
 
         # bottom row
-        self.tree = ttk.Treeview(self.bottrow, columns=('Érték', 'Magyarázat'), height=15)
-        self.tree.column('#0', width=100, stretch=tk.YES)
-        self.tree.column('#1', width=90, stretch=tk.YES)
-        self.tree.column('#2', width=100, stretch=tk.YES)
-        self.tree.heading('#0', text='Adattípus')
-        self.tree.heading('#1', text='Érték.')
-        self.tree.heading('#2', text='Magyarázat')
-        self.tree.pack(side="bottom")
+        matplotlib.use('TkAgg')
+        self.fig = Figure(figsize=(2, 2), dpi=90)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.bottrow)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(side="bottom", expand=1, fill="both")
 
-        self.rfold = self.tree.insert("", 1, 1, text="csap.össz.")
-        self.tree.insert("", 2, 2, text="naps. órák")
-        self.tree.insert("", 3, 3, text="átl. hőm.")
+        self.datarow = 0
+        self.data = tuple()
+        # self.drawdata()
 
-        self.id, self.iid = 0, 4
+    def drawdata(self):
+        # self.searchdata()
+        # data = self.searchdata().get(dataker) ??? vagy get nélkül?? dataker hova megy??
+        self.fig.clf()
+        adds = self.fig.add_subplot(111)
+        adds.bar(range(self.datarow), self.data, align='center')
+        adds.set_title('teszt')
+        self.canvas.draw()
 
     def searchdata(self):
-        if self.evkerinput.get().isnumeric() or (
-                self.evkerinput.get().isnumeric() and self.honapkerinput.get().isnumeric()
-        ):
-            if str(self.optmenu.get()) != "<keresett tényező>":
-                evker = str(self.evkerinput.get())
-                honapker, idoszak = "", "Y_"
-                if self.honapkerinput.get().isnumeric() and len(self.honapkerinput.get()) == 1:
-                    honapker = "-0" + str(self.honapkerinput.get())
-                    idoszak = "M_"
-                elif self.honapkerinput.get().isnumeric() and len(self.honapkerinput.get()) == 2:
-                    honapker = "-" + str(self.honapkerinput.get())
-                    idoszak = "M_"
-                idoker = evker + honapker
-                tenyezo = {"csapadékösszeg": "r", "napsütéses órák": "s", "átl. hőmérséklet": "ta"}
-                helyker = "data/reszletes/DE_" + idoszak + tenyezo[str(self.optmenu.get())] + ".txt"
-                # rtip = {"felső sorból az adatmezők": 0, ...}
-                # rjelm = {ua. csak a magyarázattal}
-
-                # rfold, sfold, tafold, stb részek majd lehet 1ből még method előtt
-                # self.id, self.iid értékeket fold-onként meg kell adni insertek előtt
-                # self.iid = self.id + 1 ?? de akk vhogy mindig előtte id-t is meg kell adni/léptetni
-
-                with open(helyker) as csvfile:
-                    csvolv = csv.reader(csvfile, delimiter=';')
-                    # rid = int(self.tree.focus())
-                    # self.tree.delete(rid)
-                    self.tree.selection()
-                    idotal = 0
-                    for row in csvolv:
-                        if idoker in str(row[0]):
-
-                            for i, v in enumerate(row):
-                                self.tree.insert(
-                                    self.rfold, self.id, self.iid, text=evker,
-                                    values=(v, v)
-                                )
-                                # text=rtip(i), values=(v, rjelm(i))
-                                self.iid += 1
-                                self.id += 1
-                            idotal += 1
-                    # self.tree.configure(state="disabled")
-                    if idotal == 0:
-                        messagebox.showwarning(None, "Hiba: A keresés eredménytelen volt!")
-            else:
-                messagebox.showerror(None, "Hiányzó vagy nem megfelelő input!!\n(Keresett tényező!)")
+        if self.evkerinput.get().isnumeric() and len(self.evkerinput.get()) == 4\
+                and str(self.optmenu.get()) != "<tényező>":
+            tenyezo = {"csapadékösszeg": "r", "napsütéses órák": "s", "átlaghőmérséklet": "ta"}
+            evker = str(self.evkerinput.get())
+            idotal = 0
+            datal = list()
+            with open("data/evesreszl/DE_Y_" + tenyezo[str(self.optmenu.get())] + ".txt") as csvfile:
+                csvolv = csv.reader(csvfile, delimiter=";")
+                for row in csvolv:
+                    if "y" not in row[1]:
+                        for i, v in enumerate(row):
+                            if i == 1:
+                                datal.extend(v)
+                                idotal += 1
+            if idotal == 0:
+                messagebox.showwarning(None, "Hiba: A keresés eredménytelen volt!")
+            self.datarow = idotal
+            datal = map(int, datal)
+            self.data = tuple(datal)
+            self.drawdata()
         else:
             messagebox.showerror(None, "Hiányzó vagy nem megfelelő input!!")
 
     @staticmethod
     def yearentvalid(instr, acttyp):
-        if acttyp == '1':
+        if acttyp == "1":
             if not instr.isdigit() or len(instr) > 4:
                 return False
             elif len(instr) == 1 and int(instr) not in range(1, 3):
@@ -455,13 +413,6 @@ class TabTeszt(ttk.Frame):
             elif len(instr) == 3 and int(instr) not in range(190, 202):
                 return False
             elif len(instr) == 4 and int(instr) not in range(1901, 2011):
-                return False
-        return True
-
-    @staticmethod
-    def mmentvalid(instr, acttyp):
-        if acttyp == '1':
-            if not instr.isdigit() or len(instr) > 2 or int(instr) not in range(1, 13):
                 return False
         return True
 
@@ -472,20 +423,20 @@ class MenuBar(tk.Menu):
         self.parent = parent
 
         menu_file = tk.Menu(self, tearoff=0)
-        self.add_cascade(label='Fájl', menu=menu_file)
+        self.add_cascade(label="Fájl", menu=menu_file)
         # menu_file.add_command(label='Létrehoz', command=None)
-        menu_file.add_command(label='Import', command=None)
-        menu_file.add_command(label='Export', command=None)
+        menu_file.add_command(label="Import", command=None)
+        menu_file.add_command(label="Export", command=None)
         menu_file.add_separator()
-        menu_file.add_command(label='Kilépés', command=parent.destroy)
+        menu_file.add_command(label="Kilépés", command=parent.destroy)
 
         menu_options = tk.Menu(self, tearoff=0)
-        self.add_cascade(label='Opciók', menu=menu_options)
-        menu_options.add_command(label='Beállítások', command=None)
+        self.add_cascade(label="Opciók", menu=menu_options)
+        menu_options.add_command(label="Beállítások", command=None)
 
         menu_help = tk.Menu(self, tearoff=0)
-        self.add_cascade(label='Súgó', menu=menu_help)
-        menu_help.add_command(label='Névjegy', command=None)
+        self.add_cascade(label="Súgó", menu=menu_help)
+        menu_help.add_command(label="Névjegy", command=None)
 
         parent.config(menu=self)
 
@@ -510,7 +461,7 @@ class StyleConfig(ttk.Style):
     def __init__(self):
         ttk.Style.__init__(self)
 
-        # style.theme_use("winnative")
+        # self.theme_use("winnative")
         self.configure("TLabel", background="beige")
         self.configure("TEntry", foreground="blue")
         self.configure("TButton", foreground="maroon")
@@ -519,7 +470,6 @@ class StyleConfig(ttk.Style):
         self.configure("TFrame", background="beige")
         self.configure("TMenubutton", background="#D7DDDC", foreground="blue")
         self.configure("TScrollbar", background="beige")
-        # self.configure("TTreeview")
 
 
 def main():
@@ -528,7 +478,7 @@ def main():
     root.title("MeteoLog")
     appicon = tk.PhotoImage(file="icons/umbrella-icon-small.png")
     root.iconphoto(False, appicon)
-    root.geometry("300x500")
+    root.geometry("300x520")
     root.resizable(0, 0)
     root.config(background="beige", cursor="cross")
     StyleConfig()
