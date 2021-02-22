@@ -15,11 +15,12 @@ class MainFrame(ttk.Frame):
         self.top.pack(fill="x")
 
         self.bimg = tk.PhotoImage(file="icons/key-icon.png")
-        ttk.Button(self.top, text="Generate", command=lambda: self.newpwgen(), compound="right", image=self.bimg).pack()
+        ttk.Button(self.top, text="Generate", command=lambda: self.newpwgen(),
+                   compound="right", image=self.bimg).pack()
 
         self.pwgenres = tk.StringVar()
         self.pwgenres.set("##PASSWORD##")
-        ttk.Label(self.top, textvariable=self.pwgenres, foreground="blue").pack(pady=5)
+        ttk.Entry(self.top, textvariable=self.pwgenres, width=20, justify="center", state="readonly").pack(pady=5)
 
         # MID
         self.mid = ttk.Frame(self, borderwidth=30)
@@ -95,7 +96,8 @@ class MainFrame(ttk.Frame):
             pwgen = pwgen + ranchar
             i += 1
         self.pwgenres.set(pwgen)
-        # vágólapra másolás??
+        # menubarba kerüljön a másolás?
+        # copytoclipboard(cbval=pwgen)
         # messagebox.showinfo(None, "A generált jelszó vágólapra másolva!\nGenerated password copied to clipboard!")
 
 
@@ -113,7 +115,6 @@ class StyleConfig(ttk.Style):
 
 
 def main():
-    # GUI ROOT WINDOW
     root = tk.Tk()
     root.title("PassGen")
     appicon = tk.PhotoImage(file="icons/key-icon.png")
@@ -125,6 +126,14 @@ def main():
     MainFrame(root)
     # gui handler
     root.mainloop()
+
+
+def copytoclipboard(cbval):
+    r = tk.Tk()
+    # r.withdraw()
+    r.clipboard_clear()
+    r.clipboard_append(cbval)
+    r.update()  # now stays on clipboard after window closed
 
 
 if __name__ == "__main__":
