@@ -9,47 +9,51 @@ class MainFrame(ttk.Frame):
         ttk.Frame.__init__(self, parent)
         self.parent = parent
         self.pack(side="top", expand=1, fill="both")
-        self.topf = ttk.Frame(self, borderwidth=20)
+        self.topf = ttk.Frame(self, borderwidth=10)
         self.topf.pack(side="top", expand=1, fill="both")
         self.midf = ttk.Frame(self)
         self.midf.pack(side="bottom", expand=1, fill="both")
         # MIDF
         self.scrbar = ttk.Scrollbar(self.midf, orient="vertical", command=self.onscrbar)
-        self.txtang = tk.Text(self.midf, background="lightgrey", font=("Arial", 8), width=40, height=20,
+        self.txtang = tk.Text(self.midf, background="lightgrey", font=("Arial", 8), width=80, height=10,
                               relief="groove", borderwidth=1.5, yscrollcommand=self.scrbar.set)
-        self.txthun = tk.Text(self.midf, background="lightgrey", font=("Arial", 8), width=40, height=20,
+        self.txthun = tk.Text(self.midf, background="lightgrey", font=("Arial", 8), width=80, height=10,
                               relief="groove", borderwidth=1.5, yscrollcommand=self.scrbar.set)
         self.txtang.configure(state="disabled")
         self.txthun.configure(state="disabled")
         self.scrbar.pack(side="right", expand=1, fill="both")
-        self.txtang.pack(side="left", expand=1, fill="both")
-        self.txthun.pack(side="left", expand=1, fill="both")
+        self.txtang.pack(side="top", expand=1, fill="both")
+        self.txthun.pack(side="bottom", expand=1, fill="both")
         self.txtang.bind("<MouseWheel>", self.onmousewheel)
         self.txthun.bind("<MouseWheel>", self.onmousewheel)
         # TOPF
+        self.topf.grid_columnconfigure(4, weight=1)
         ttk.Label(self.topf, text="Keresés nyelve:").grid(row=1, column=1)
         self.kerlang = tk.StringVar()
         self.kerlang.set("ang")
-        ttk.Radiobutton(self.topf, text="Angol", variable=self.kerlang, value="ang").grid(row=1, column=2)
-        ttk.Radiobutton(self.topf, text="Magyar", variable=self.kerlang, value="hun").grid(row=1, column=3)
+        ttk.Radiobutton(self.topf, text="Angol", variable=self.kerlang, value="ang").grid(row=1, column=2, sticky="w")
+        ttk.Radiobutton(self.topf, text="Magyar", variable=self.kerlang, value="hun").grid(row=1, column=2, sticky="e")
 
         ttk.Separator(self.topf, orient="horizontal").grid(row=2, columnspan=5, sticky="ew", pady=5)
         ttk.Label(self.topf, text="Keresés módja:").grid(row=3, column=1)
         self.kermod = tk.StringVar()
         self.kermod.set("a")
-        ttk.Radiobutton(self.topf, text="Csak teljes egyezés", variable=self.kermod, value="a").grid(row=3, column=2)
-        ttk.Radiobutton(self.topf, text="Ezzel kezdődik", variable=self.kermod, value="b").grid(row=3, column=3)
-        ttk.Radiobutton(self.topf, text="Bárhol szerepel", variable=self.kermod, value="c").grid(row=3, column=4)
+        ttk.Radiobutton(self.topf, text="Csak teljes egyezés", variable=self.kermod, value="a").grid(row=3, column=2,
+                                                                                                     sticky="w")
+        ttk.Radiobutton(self.topf, text="Ezzel kezdődjön", variable=self.kermod, value="b").grid(row=3, column=3,
+                                                                                                 sticky="w")
+        ttk.Radiobutton(self.topf, text="Bárhol szerepelhet", variable=self.kermod, value="c").grid(row=3, column=4,
+                                                                                                    sticky="w")
         ttk.Separator(self.topf, orient="horizontal").grid(row=4, columnspan=5, sticky="ew", pady=5)
 
-        ttk.Label(self.topf, text="Keresett szó:").grid(row=5, column=1)
+        ttk.Label(self.topf, text="Keresett szó:").grid(row=5, column=1, sticky="w")
         self.kerinput = tk.StringVar()
         self.kerinput.set("")
         self.kerent = ttk.Entry(self.topf, textvariable=self.kerinput, validate="key", width=20, justify="left")
         self.kerent["validatecommand"] = (self.kerent.register(self.inputvalid), "%P", "%d")
-        self.kerent.grid(row=5, column=2)
+        self.kerent.grid(row=5, column=2, sticky="w")
         self.taln = tk.StringVar()
-        ttk.Label(self.topf, textvariable=self.taln).grid(row=5, column=3)
+        ttk.Label(self.topf, textvariable=self.taln).grid(row=5, column=3, sticky="w")
 
     def inputvalid(self, instr, acttyp):
         if acttyp == "1":
@@ -120,7 +124,7 @@ def main():
     root.title("Dictionary")
     appicon = tk.PhotoImage(file="icons/tools-gramm.png")
     root.iconphoto(False, appicon)
-    root.geometry("500x350")
+    root.geometry("500x420")
     root.resizable(0, 0)
     root.config(background="beige")
     StyleConfig()
