@@ -9,44 +9,97 @@ class MainFrame(ttk.Frame):
         ttk.Frame.__init__(self, parent)
         self.parent = parent
         self.pack(side="top", expand=1, fill="both")
-        self.topf = ttk.Frame(self, borderwidth=25)
+        self.topf = ttk.Frame(self, borderwidth=20)
         self.topf.pack(side="top", expand=1, fill="both")
         self.midf = ttk.Frame(self)
         self.midf.pack(side="bottom", expand=1, fill="both")
-        self.scrollbar = ttk.Scrollbar(self.midf)
-        self.scrollbar.pack(side="right", expand=1, fill="both")
-        self.txtbox = tk.Text(self.midf, background="lightgrey", font=("Arial", 8), width=45, height=20,
-                              relief="groove", borderwidth=1.5, yscrollcommand=self.scrollbar.set)
-        self.txtbox.configure(state="disabled")
-        self.txtbox.pack(side="left", expand=1, fill="both")
-        self.scrollbar.config(command=self.txtbox.yview)
+        # MIDF
+        self.scrbar = ttk.Scrollbar(self.midf, orient="vertical", command=self.onscrbar)
+        self.txtang = tk.Text(self.midf, background="lightgrey", font=("Arial", 8), width=40, height=20,
+                              relief="groove", borderwidth=1.5, yscrollcommand=self.scrbar.set)
+        self.txthun = tk.Text(self.midf, background="lightgrey", font=("Arial", 8), width=40, height=20,
+                              relief="groove", borderwidth=1.5, yscrollcommand=self.scrbar.set)
+        self.txtang.configure(state="disabled")
+        self.txthun.configure(state="disabled")
+        self.scrbar.pack(side="right", expand=1, fill="both")
+        self.txtang.pack(side="left", expand=1, fill="both")
+        self.txthun.pack(side="left", expand=1, fill="both")
+        self.txtang.bind("<MouseWheel>", self.onmousewheel)
+        self.txthun.bind("<MouseWheel>", self.onmousewheel)
+        # TOPF
+        ttk.Label(self.topf, text="Keresés nyelve:").grid(row=1, column=1)
+        self.kerlang = tk.StringVar()
+        self.kerlang.set("ang")
+        ttk.Radiobutton(self.topf, text="Angol", variable=self.kerlang, value="ang").grid(row=1, column=2)
+        ttk.Radiobutton(self.topf, text="Magyar", variable=self.kerlang, value="hun").grid(row=1, column=3)
 
+        ttk.Separator(self.topf, orient="horizontal").grid(row=2, columnspan=5, sticky="ew", pady=5)
+        ttk.Label(self.topf, text="Keresés módja:").grid(row=3, column=1)
+        self.kermod = tk.StringVar()
+        self.kermod.set("a")
+        ttk.Radiobutton(self.topf, text="Csak teljes egyezés", variable=self.kermod, value="a").grid(row=3, column=2)
+        ttk.Radiobutton(self.topf, text="Ezzel kezdődik", variable=self.kermod, value="b").grid(row=3, column=3)
+        ttk.Radiobutton(self.topf, text="Bárhol szerepel", variable=self.kermod, value="c").grid(row=3, column=4)
+        ttk.Separator(self.topf, orient="horizontal").grid(row=4, columnspan=5, sticky="ew", pady=5)
+
+        ttk.Label(self.topf, text="Keresett szó:").grid(row=5, column=1)
         self.kerinput = tk.StringVar()
         self.kerinput.set("")
-        self.kerent = ttk.Entry(self.topf, textvariable=self.kerinput, validate="key", width=15, justify="left")
+        self.kerent = ttk.Entry(self.topf, textvariable=self.kerinput, validate="key", width=20, justify="left")
         self.kerent["validatecommand"] = (self.kerent.register(self.inputvalid), "%P", "%d")
-        self.kerent.pack(side="top")
-
+        self.kerent.grid(row=5, column=2)
         self.taln = tk.StringVar()
-        ttk.Label(self.topf, textvariable=self.taln).pack()
+        ttk.Label(self.topf, textvariable=self.taln).grid(row=5, column=3)
 
     def inputvalid(self, instr, acttyp):
         if acttyp == "1":
+            lang = {"ang": 0, "hun": 1}
             with open("data/szotarak/enhu.csv", encoding="ansi") as csvfile:
                 csvolv = csv.reader(csvfile, delimiter=";")
                 ossztal = 0
-                self.txtbox.configure(state="normal")
-                self.txtbox.delete(1.0, tk.END)
-                for row in csvolv:
-                    if str(row[0]).find(instr) == 0:
-                        taloutput = "\t".join(row) + "\n"
-                        self.txtbox.insert(tk.END, *taloutput.splitlines(keepends=True))
-                        ossztal += 1
-                        self.taln.set(str(ossztal) + " találat")
-                self.txtbox.configure(state="disabled")
-                if ossztal == 0:
-                    return False
+                self.txtang.configure(state="normal")
+                self.txthun.configure(state="normal")
+                self.txtang.delete(1.0, tk.END)
+                self.txthun.delete(1.0, tk.END)
+                if self.kermod.get() == "a":
+                    for row in csvolv:
+                        if str(row[lang[self.kerlang.get()]]) == instr:
+                            self.taloutput(row)
+                            ossztal += 1
+                if self.kermod.get() == "b":
+                    for row in csvolv:
+                        if str(row[lang[self.kerlang.get()]]).find(instr) == 0:
+                            self.taloutput(row)
+                            ossztal += 1
+                if self.kermod.get() == "c":
+                    for row in csvolv:
+                        if str(row[lang[self.kerlang.get()]]).find(instr) >= 0:
+                            self.taloutput(row)
+                            ossztal += 1
+                self.txtang.configure(state="disabled")
+                self.txthun.configure(state="disabled")
+            if ossztal != 0:
+                self.taln.set(str(ossztal) + " találat")
+            else:
+                self.taln.set("Nincs találat!")
+                # return False
         return True
+
+    def taloutput(self, row):
+        taloutputang = row[0] + "\n"
+        taloutputhun = row[1] + "\n"
+        self.txtang.insert(tk.END, *taloutputang.splitlines(keepends=True))
+        self.txthun.insert(tk.END, *taloutputhun.splitlines(keepends=True))
+
+    def onscrbar(self):
+        self.txtang.yview()
+        self.txthun.yview()
+
+    def onmousewheel(self, event):
+        self.txtang.yview("scroll", event.delta, "units")
+        self.txthun.yview("scroll", event.delta, "units")
+        # dupla görgetés ellen, default bindings
+        return "break"
 
 
 class StyleConfig(ttk.Style):
@@ -56,8 +109,9 @@ class StyleConfig(ttk.Style):
         # self.theme_use("classic")
         self.configure("TLabel", background="beige")
         self.configure("TEntry", foreground="blue", background="beige")
-        self.configure("TButton", foreground="maroon", background="beige")
         self.configure("TFrame", background="beige", relief="groove")
+        self.configure("TRadiobutton", background="beige")
+        self.configure("TMenubutton", background="beige")
 
 
 def main():
@@ -66,7 +120,7 @@ def main():
     root.title("Dictionary")
     appicon = tk.PhotoImage(file="icons/tools-gramm.png")
     root.iconphoto(False, appicon)
-    root.geometry("300x350")
+    root.geometry("500x350")
     root.resizable(0, 0)
     root.config(background="beige")
     StyleConfig()
