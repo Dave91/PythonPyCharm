@@ -14,18 +14,9 @@ class MainFrame(ttk.Frame):
         self.midf = ttk.Frame(self)
         self.midf.pack(side="bottom", expand=1, fill="both")
         # MIDF
-        self.scrbar = ttk.Scrollbar(self.midf, orient="vertical", command=self.onscrbar)
-        self.txtang = tk.Text(self.midf, background="lightgrey", font=("Arial", 8), width=80, height=10,
-                              relief="groove", borderwidth=1.5, yscrollcommand=self.scrbar.set)
-        self.txthun = tk.Text(self.midf, background="lightgrey", font=("Arial", 8), width=80, height=10,
-                              relief="groove", borderwidth=1.5, yscrollcommand=self.scrbar.set)
-        self.txtang.configure(state="disabled")
-        self.txthun.configure(state="disabled")
-        self.scrbar.pack(side="right", expand=1, fill="both")
-        self.txtang.pack(side="top", expand=1, fill="both")
-        self.txthun.pack(side="bottom", expand=1, fill="both")
-        self.txtang.bind("<MouseWheel>", self.onmousewheel)
-        self.txthun.bind("<MouseWheel>", self.onmousewheel)
+        self.lbtal = tk.Listbox(self.midf, height=20)
+        self.lbtal.pack(side="left", expand=1, fill="both")
+        # scrollbar??
         # TOPF
         self.topf.grid_columnconfigure(4, weight=1)
         ttk.Label(self.topf, text="Keresés nyelve:").grid(row=1, column=1)
@@ -37,13 +28,13 @@ class MainFrame(ttk.Frame):
         ttk.Separator(self.topf, orient="horizontal").grid(row=2, columnspan=5, sticky="ew", pady=5)
         ttk.Label(self.topf, text="Keresés módja:").grid(row=3, column=1)
         self.kermod = tk.StringVar()
-        self.kermod.set("a")
-        ttk.Radiobutton(self.topf, text="Csak teljes egyezés", variable=self.kermod, value="a").grid(row=3, column=2,
-                                                                                                     sticky="w")
-        ttk.Radiobutton(self.topf, text="Ezzel kezdődjön", variable=self.kermod, value="b").grid(row=3, column=3,
-                                                                                                 sticky="w")
-        ttk.Radiobutton(self.topf, text="Bárhol szerepelhet", variable=self.kermod, value="c").grid(row=3, column=4,
-                                                                                                    sticky="w")
+        self.kermod.set("teljes")
+        ttk.Radiobutton(self.topf, text="Csak teljes egyezés", variable=self.kermod, value="teljes").grid(
+            row=3, column=2, sticky="w")
+        ttk.Radiobutton(self.topf, text="Szó eleji egyezés", variable=self.kermod, value="eleje").grid(
+            row=3, column=3, sticky="w")
+        ttk.Radiobutton(self.topf, text="Bárhol szerepelhet", variable=self.kermod, value="mindegy").grid(
+            row=3, column=4, sticky="w")
         ttk.Separator(self.topf, orient="horizontal").grid(row=4, columnspan=5, sticky="ew", pady=5)
 
         ttk.Label(self.topf, text="Keresett szó:").grid(row=5, column=1, sticky="w")
@@ -55,55 +46,54 @@ class MainFrame(ttk.Frame):
         self.taln = tk.StringVar()
         ttk.Label(self.topf, textvariable=self.taln).grid(row=5, column=3, sticky="w")
 
-    def inputvalid(self, instr, acttyp):
-        if acttyp == "1":
-            lang = {"ang": 0, "hun": 1}
+        # self.opendict()
+
+    def opendict(self):
+        if self.kerlang.get() == "ang":  # majd attól függően melyik nyelv kerül kiválasztásra, azt tölti be!!
+            # self.tree.delete(*self.tree.get_children())
+            # dict = angol: enhu... német: dehu --> (open(data/szotarak/ + dict[német] +.csv)
+            ossztal = 0
             with open("data/szotarak/enhu.csv", encoding="ansi") as csvfile:
                 csvolv = csv.reader(csvfile, delimiter=";")
-                ossztal = 0
-                self.txtang.configure(state="normal")
-                self.txthun.configure(state="normal")
-                self.txtang.delete(1.0, tk.END)
-                self.txthun.delete(1.0, tk.END)
-                if self.kermod.get() == "a":
+                for row in csvolv:
+                    self.lbtal.insert(ossztal + 1, row)
+                    ossztal += 1
+            if ossztal == 0:
+                messagebox.showwarning(None, "Hiba: import sikertelen és/vagy üres állomány!")
+        # else:
+        #    messagebox.showerror(None, "Hiba: import sikertelen és/vagy üres állomány!")
+
+    def inputvalid(self, instr, acttyp):
+        if acttyp == "1":
+            # if német akkor lang = {"ger": 0, ...}
+            lang = {"ang": 0, "hun": 1}
+            mod = {"teljes": "row[lang[self.kerlang.get()]] == instr",
+                   "eleje": "row[lang[self.kerlang.get()]].find(instr) == 0",
+                   "mindegy": "instr in row[lang[self.kerlang.get()]]"}
+            szotal = 0
+            with open("data/szotarak/enhu.csv", encoding="ansi") as csvfile:
+                csvolv = csv.reader(csvfile, delimiter=";")
+                self.lbtal.delete(1, "end")
+                if self.kermod.get() == "teljes":
                     for row in csvolv:
-                        if str(row[lang[self.kerlang.get()]]) == instr:
-                            self.taloutput(row)
-                            ossztal += 1
-                if self.kermod.get() == "b":
+                        if row[lang[self.kerlang.get()]] == instr:
+                            self.lbtal.insert(szotal + 1, row[0] + "   -   " + row[1])
+                            szotal += 1
+                    return True
+                if self.kermod.get() == "eleje":
                     for row in csvolv:
-                        if str(row[lang[self.kerlang.get()]]).find(instr) == 0:
-                            self.taloutput(row)
-                            ossztal += 1
-                if self.kermod.get() == "c":
+                        if row[lang[self.kerlang.get()]].find(instr) == 0:
+                            self.lbtal.insert(szotal + 1, row[0] + "   -   " + row[1])
+                            szotal += 1
+                    return True
+                if self.kermod.get() == "mindegy":
                     for row in csvolv:
-                        if str(row[lang[self.kerlang.get()]]).find(instr) >= 0:
-                            self.taloutput(row)
-                            ossztal += 1
-                self.txtang.configure(state="disabled")
-                self.txthun.configure(state="disabled")
-            if ossztal != 0:
-                self.taln.set(str(ossztal) + " találat")
-            else:
-                self.taln.set("Nincs találat!")
-                # return False
+                        if instr in row[lang[self.kerlang.get()]]:
+                            self.lbtal.insert(szotal + 1, row[0] + "   -   " + row[1])
+                            szotal += 1
+                    return True
+            # if szotal != 0:
         return True
-
-    def taloutput(self, row):
-        taloutputang = row[0] + "\n"
-        taloutputhun = row[1] + "\n"
-        self.txtang.insert(tk.END, *taloutputang.splitlines(keepends=True))
-        self.txthun.insert(tk.END, *taloutputhun.splitlines(keepends=True))
-
-    def onscrbar(self):
-        self.txtang.yview()
-        self.txthun.yview()
-
-    def onmousewheel(self, event):
-        self.txtang.yview("scroll", event.delta, "units")
-        self.txthun.yview("scroll", event.delta, "units")
-        # dupla görgetés ellen, default bindings
-        return "break"
 
 
 class StyleConfig(ttk.Style):
@@ -121,10 +111,10 @@ class StyleConfig(ttk.Style):
 def main():
     # GUI ROOT WINDOW
     root = tk.Tk()
-    root.title("Dictionary")
+    root.title("Dictionary - Szótár")
     appicon = tk.PhotoImage(file="icons/tools-gramm.png")
     root.iconphoto(False, appicon)
-    root.geometry("500x420")
+    root.geometry("540x420")
     root.resizable(0, 0)
     root.config(background="beige")
     StyleConfig()
