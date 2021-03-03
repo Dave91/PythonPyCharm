@@ -67,32 +67,36 @@ class MainFrame(ttk.Frame):
         if acttyp == "1":
             # if német akkor lang = {"ger": 0, ...}
             lang = {"ang": 0, "hun": 1}
-            mod = {"teljes": "row[lang[self.kerlang.get()]] == instr",
-                   "eleje": "row[lang[self.kerlang.get()]].find(instr) == 0",
-                   "mindegy": "instr in row[lang[self.kerlang.get()]]"}
             szotal = 0
             with open("data/szotarak/enhu.csv", encoding="ansi") as csvfile:
-                csvolv = csv.reader(csvfile, delimiter=";")
+                csvolv = csv.DictReader(csvfile, delimiter=";", fieldnames=("angol", "magyar"))
                 self.lbtal.delete(1, "end")
                 if self.kermod.get() == "teljes":
                     for row in csvolv:
-                        if row[lang[self.kerlang.get()]] == instr:
-                            self.lbtal.insert(szotal + 1, row[0] + "   -   " + row[1])
+                        if row["angol"] == instr:
+                            self.lbtal.insert(szotal + 1, row["angol"] + "   -   " + row["magyar"])
                             szotal += 1
+                            if szotal > 0:
+                                break
                     return True
                 if self.kermod.get() == "eleje":
                     for row in csvolv:
-                        if row[lang[self.kerlang.get()]].find(instr) == 0:
-                            self.lbtal.insert(szotal + 1, row[0] + "   -   " + row[1])
+                        if row["angol"].find(instr) == 0:
+                            self.lbtal.insert(szotal + 1, row["angol"] + "   -   " + row["magyar"])
                             szotal += 1
+                            if szotal > 0:
+                                break
                     return True
                 if self.kermod.get() == "mindegy":
                     for row in csvolv:
-                        if instr in row[lang[self.kerlang.get()]]:
-                            self.lbtal.insert(szotal + 1, row[0] + "   -   " + row[1])
+                        if instr in row["angol"]:
+                            self.lbtal.insert(szotal + 1, row["angol"] + "   -   " + row["magyar"])
                             szotal += 1
+                            if szotal > 0:
+                                break
                     return True
-            # if szotal != 0:
+            if szotal != 0:
+                pass  # még kellhet
         return True
 
 
