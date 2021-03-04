@@ -5,7 +5,7 @@ import os
 
 
 main_application = tk.Tk()
-main_application.geometry('1200x800')
+main_application.geometry('800x600')
 main_application.title('Notepad')
 main_application.wm_iconbitmap('mainicon.ico')
 
@@ -42,7 +42,7 @@ main_menu.add_cascade(label='View', menu=view)
 light_default_icon = tk.PhotoImage(file='icons2/light_default.png')
 light_plus_icon = tk.PhotoImage(file='icons2/light_plus.png')
 dark_icon = tk.PhotoImage(file='icons2/dark.png')
-red_icon = tk.PhotoImage(file='icons2/red.png')
+beige_icon = tk.PhotoImage(file='icons2/red.png')
 monokai_icon = tk.PhotoImage(file='icons2/monokai.png')
 night_blue_icon = tk.PhotoImage(file='icons2/night_blue.png')
 
@@ -51,10 +51,10 @@ main_menu.add_cascade(label='Color Theme', menu=color_theme)
 
 theme_choice = tk.StringVar()
 # themes: label (foreground, background)
-color_dict = {'Light Default': ('#000000', 'fffffff'),
+color_dict = {'Light Default': ('black', 'white'),
               'Light Plus': ('#474747', '#e0e0e0'),
               'Dark': ('#c4c4c4', '#2d2d2d'),
-              'Red': ('#2d2d2d', '#ffe8e8'),
+              'Beige': ('#2d2d2d', 'beige'),
               'Monokai': ('#d3b774', '#474747'),
               'Night Blue': ('#ededed', '#6b9dc2')}
 # ------------------ END MAIN MENU ----------#
@@ -437,7 +437,7 @@ color_theme.add_radiobutton(label='Light Plus', image=light_plus_icon, variable=
                             compound=tk.LEFT, command=change_theme)
 color_theme.add_radiobutton(label='Dark', image=dark_icon, variable=theme_choice,
                             compound=tk.LEFT, command=change_theme)
-color_theme.add_radiobutton(label='Red', image=red_icon, variable=theme_choice,
+color_theme.add_radiobutton(label='Beige', image=beige_icon, variable=theme_choice,
                             compound=tk.LEFT, command=change_theme)
 color_theme.add_radiobutton(label='Monokai', image=monokai_icon, variable=theme_choice,
                             compound=tk.LEFT, command=change_theme)

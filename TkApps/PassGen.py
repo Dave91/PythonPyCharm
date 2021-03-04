@@ -97,7 +97,7 @@ class MainFrame(ttk.Frame):
             i += 1
         self.pwgenres.set(pwgen)
         # menubarba kerüljön a másolás?
-        # copytoclipboard(cbval=pwgen)
+        # copytoclipboard(pwgen)
         # messagebox.showinfo(None, "A generált jelszó vágólapra másolva!\nGenerated password copied to clipboard!")
 
 
@@ -128,13 +128,13 @@ def main():
     root.mainloop()
 
 
-def copytoclipboard(cbval):
-    r = tk.Tk()
+'''
+def copytoclipboard(pwgen):
     # r.withdraw()
-    r.clipboard_clear()
-    r.clipboard_append(cbval)
-    r.update()  # now stays on clipboard after window closed
-
+    root.clipboard_clear()
+    root.clipboard_append(pwgen)
+    root.update()  # now stays on clipboard after window closed
+'''
 
 if __name__ == "__main__":
     main()
