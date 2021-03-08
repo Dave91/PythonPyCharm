@@ -1,7 +1,7 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
-import csv
+import sqlite3
 
 
 class MainFrame(ttk.Frame):
@@ -14,15 +14,17 @@ class MainFrame(ttk.Frame):
         self.midf = ttk.Frame(self)
         self.midf.pack(side="bottom", expand=1, fill="both")
         # MIDF
-        self.lbtal = tk.Listbox(self.midf, height=20)
-        self.lbtal.pack(side="left", expand=1, fill="both")
+        self.tree = ttk.Treeview(self.midf, column=("column1", "column2"), show='headings', height=20)
+        self.tree.heading("#1", text="eng")
+        self.tree.heading("#2", text="hun")
+        self.tree.pack(side="left", expand=1, fill="both")
         # scrollbar??
         # TOPF
         self.topf.grid_columnconfigure(4, weight=1)
         ttk.Label(self.topf, text="Keresés nyelve:").grid(row=1, column=1)
         self.kerlang = tk.StringVar()
-        self.kerlang.set("ang")
-        ttk.Radiobutton(self.topf, text="Angol", variable=self.kerlang, value="ang").grid(row=1, column=2, sticky="w")
+        self.kerlang.set("eng")
+        ttk.Radiobutton(self.topf, text="Angol", variable=self.kerlang, value="eng").grid(row=1, column=2, sticky="w")
         ttk.Radiobutton(self.topf, text="Magyar", variable=self.kerlang, value="hun").grid(row=1, column=2, sticky="e")
 
         ttk.Separator(self.topf, orient="horizontal").grid(row=2, columnspan=5, sticky="ew", pady=5)
@@ -38,66 +40,47 @@ class MainFrame(ttk.Frame):
         ttk.Separator(self.topf, orient="horizontal").grid(row=4, columnspan=5, sticky="ew", pady=5)
 
         ttk.Label(self.topf, text="Keresett szó:").grid(row=5, column=1, sticky="w")
-        self.kerinput = tk.StringVar()
-        self.kerinput.set("")
-        self.kerent = ttk.Entry(self.topf, textvariable=self.kerinput, validate="key", width=20, justify="left")
-        self.kerent["validatecommand"] = (self.kerent.register(self.inputvalid), "%P", "%d")
-        self.kerent.grid(row=5, column=2, sticky="w")
-        self.taln = tk.StringVar()
-        ttk.Label(self.topf, textvariable=self.taln).grid(row=5, column=3, sticky="w")
+        self.kerent = tk.StringVar()
+        self.kerent.set("")
+        ent = ttk.Entry(self.topf, textvariable=self.kerent, width=20)
+        ent.bind("<Return>", self.kerinput)
+        ent.grid(row=5, column=2, sticky="w")
+        ttk.Button(self.topf, text="Keresés", command=self.kerinput).grid(row=5, column=3, sticky="w")
 
         # self.opendict()
 
     def opendict(self):
-        if self.kerlang.get() == "ang":  # majd attól függően melyik nyelv kerül kiválasztásra, azt tölti be!!
-            # self.tree.delete(*self.tree.get_children())
-            # dict = angol: enhu... német: dehu --> (open(data/szotarak/ + dict[német] +.csv)
-            ossztal = 0
-            with open("data/szotarak/enhu.csv", encoding="ansi") as csvfile:
-                csvolv = csv.reader(csvfile, delimiter=";")
-                for row in csvolv:
-                    self.lbtal.insert(ossztal + 1, row)
-                    ossztal += 1
-            if ossztal == 0:
-                messagebox.showwarning(None, "Hiba: import sikertelen és/vagy üres állomány!")
-        # else:
-        #    messagebox.showerror(None, "Hiba: import sikertelen és/vagy üres állomány!")
+        con = sqlite3.connect("dict.db")
+        with con:
+            cur = con.cursor()
+            for row in cur.execute("SELECT * FROM dict"):
+                self.tree.insert("", tk.END, values=row)
 
-    def inputvalid(self, instr, acttyp):
-        if acttyp == "1":
-            # if német akkor lang = {"ger": 0, ...}
-            lang = {"ang": 0, "hun": 1}
-            szotal = 0
-            with open("data/szotarak/enhu.csv", encoding="ansi") as csvfile:
-                csvolv = csv.DictReader(csvfile, delimiter=";", fieldnames=("angol", "magyar"))
-                self.lbtal.delete(1, "end")
-                if self.kermod.get() == "teljes":
-                    for row in csvolv:
-                        if row["angol"] == instr:
-                            self.lbtal.insert(szotal + 1, row["angol"] + "   -   " + row["magyar"])
-                            szotal += 1
-                            if szotal > 0:
-                                break
-                    return True
-                if self.kermod.get() == "eleje":
-                    for row in csvolv:
-                        if row["angol"].find(instr) == 0:
-                            self.lbtal.insert(szotal + 1, row["angol"] + "   -   " + row["magyar"])
-                            szotal += 1
-                            if szotal > 0:
-                                break
-                    return True
-                if self.kermod.get() == "mindegy":
-                    for row in csvolv:
-                        if instr in row["angol"]:
-                            self.lbtal.insert(szotal + 1, row["angol"] + "   -   " + row["magyar"])
-                            szotal += 1
-                            if szotal > 0:
-                                break
-                    return True
-            if szotal != 0:
-                pass  # még kellhet
-        return True
+    def kerinput(self, event=None):
+        lang = self.kerlang.get()
+        ker = self.kerent.get()
+        mod = self.kerent.get()
+        # lp = (lang,)
+        # kp = ker + "%"
+        self.tree.delete(*self.tree.get_children())
+        con = sqlite3.connect("dict.db")
+        # con.set_progress_handler()
+        cur = con.cursor()
+        if mod == "teljes":  # ez az egész if-rész külön query fájlban lefuthatna
+            # query = "SELECT * FROM dict WHERE eng LIKE '"+ker+"%'"
+            if lang == "eng":
+                cur.execute('SELECT * FROM dict WHERE eng LIKE ?', (ker,))
+            else:
+                cur.execute('SELECT * FROM dict WHERE hun LIKE ?', (ker,))
+            rows = cur.fetchall()
+            print(rows)  # teszt
+            for row in rows:
+                self.tree.insert("", tk.END, values=row)
+        if mod == "eleje":
+            pass
+        if mod == "mindegy":
+            pass
+        con.close()
 
 
 class StyleConfig(ttk.Style):

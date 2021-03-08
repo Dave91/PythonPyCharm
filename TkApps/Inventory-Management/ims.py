@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkinter import messagebox
+from tkinter import messagebox, simpledialog
 
 
 class MainFrame(ttk.Frame):
@@ -12,11 +12,36 @@ class MainFrame(ttk.Frame):
         self.outp = ttk.Frame(self, borderwidth=5)
         self.menu.pack(side="left", fill="y")
         self.outp.pack(side="right", expand=1, fill="both")
-        # MENU
+
+        # OUTP ELEMENTS, VARS
+        self.tree = ttk.Treeview(self.outp, columns=("Unit_price", "Description", "Stock"), height=14)
+        self.tree.column("#0", width=40, minwidth=40, stretch=0)
+        self.tree.column("#1", width=120, minwidth=120, stretch=0)
+        self.tree.column("#2", width=120, minwidth=120, stretch=0)
+        self.tree.column("#3", width=120, minwidth=120, stretch=0)
+        self.tree.heading("#0", text="#")
+        self.tree.heading("#1", text="Unit_price")
+        self.tree.heading("#2", text="Description")
+        self.tree.heading("#3", text="Stock")
+        self.tree.pack(side="left", expand=1, fill="both")
+        # scrollbar??
+
+        # Dictionaries from stock file
+        self.unit_price = {}
+        self.description = {}
+        self.stock = {}
+        self.openfilestockimp()
+
+        # List to store the items purchased, variables for checkout
+        self.cart = []
+        self.total_cost = 0
+        self.flag = 0  # To check if they have been checked out
+
+        # MENU ELEMENTS, FUNCS
         ttk.Button(self.menu, text="Add item").pack(fill="x", pady=5)
         ttk.Button(self.menu, text="Remove item").pack(fill="x", pady=5)
         ttk.Button(self.menu, text="Edit item").pack(fill="x", pady=5)
-        ttk.Button(self.menu, text="List all items").pack(fill="x", pady=5)
+        ttk.Button(self.menu, text="List all items", command=self.listallitems).pack(fill="x", pady=5)
         ttk.Button(self.menu, text="Inquire item").pack(fill="x", pady=5)
         ttk.Separator(self.menu, orient="horizontal").pack(fill="x", pady=15)
         ttk.Button(self.menu, text="Add to cart").pack(fill="x", pady=5)
@@ -24,52 +49,38 @@ class MainFrame(ttk.Frame):
         ttk.Button(self.menu, text="Show cart").pack(fill="x", pady=5)
         ttk.Button(self.menu, text="Checkout").pack(fill="x", pady=5)
         ttk.Separator(self.menu, orient="horizontal").pack(fill="x", pady=15)
-        ttk.Button(self.menu, text="Exit program").pack(fill="x", pady=5)
+        ttk.Button(self.menu, text="Exit program", command=self.exitprog).pack(fill="x", pady=5)
+        # amíg nincs fájlba kiírva változás, addig az utolsó stock művelet openfile-al visszaállítható
+        # save & exit és exit külön??
+        # save changes és discard changes gombok??
 
-        # OUTP
-        self.lboutp = tk.Listbox(self.outp, foreground="blue", background="beige")
-        self.lboutp.pack(side="left", expand=1, fill="both")
-        # scrollbar??
+    def openfilestockimp(self):
+        # Open file with stock
+        with open("stock.txt", "r") as details:
+            # First line of the file is the number of items
+            no_items = int((details.readline()).rstrip("\n"))
 
-        # Dictionaries from stock file
-        self.unit_price = {}
-        self.description = {}
-        self.stock = {}
+            # Add items to dictionaries
+            for i in range(0, no_items):
+                line = (details.readline()).rstrip("\n")
+                x1, x2 = line.split("#")
+                x1, x2 = int(x1), float(x2)
+                self.unit_price.update({x1: x2})
 
-        # List to store the items purchased, variables for checkout
-        self.cart = []
-        self.total_cost = 0
-        self.flag = 0  # To check if they have been checked out
+            for i in range(0, no_items):
+                line = (details.readline()).rstrip("\n")
+                x1, x2 = line.split("#")
+                x1 = int(x1)
+                self.description.update({x1: x2})
 
-    def openfile(self):
-        try:
-            # Open file with stock
-            with open("stock.txt", "r") as details:
-                # First line of the file is the number of items
-                no_items = int((details.readline()).rstrip("\n"))
-
-                # Add items to dictionaries
-                for i in range(0, no_items):
-                    line = (details.readline()).rstrip("\n")
-                    x1, x2 = line.split("#")
-                    x1, x2 = int(x1), float(x2)
-                    self.unit_price.update({x1: x2})
-
-                for i in range(0, no_items):
-                    line = (details.readline()).rstrip("\n")
-                    x1, x2 = line.split("#")
-                    x1 = int(x1)
-                    self.description.update({x1: x2})
-
-                for i in range(0, no_items):
-                    line = (details.readline()).rstrip("\n")
-                    x1, x2 = line.split("#")
-                    x1, x2 = int(x1), int(x2)
-                    self.stock.update({x1: x2})
-        except:
-            messagebox.showerror(None, "ERROR")
+            for i in range(0, no_items):
+                line = (details.readline()).rstrip("\n")
+                x1, x2 = line.split("#")
+                x1, x2 = int(x1), int(x2)
+                self.stock.update({x1: x2})
 
     def additem(self):
+        # input --> simpledialog.adattípusnak megfelelő változata
         p_no = int(input("Enter part number: "))
         p_pr = float(input("Enter part price: "))
         p_desc = input("Enter part description: ")
@@ -92,7 +103,8 @@ class MainFrame(ttk.Frame):
             p_stock = 0
             self.stock.update({p_no: p_stock})
             print("The stock of an item cannot be negative, the stock has been set to 0.")
-        print("Part number: ", p_no, " Description: ", self.description.get(p_no), " Price: ", self.unit_price.get(p_no), " Stock: ", self.stock.get(p_no))
+        print("Part number: ", p_no, " Description: ", self.description.get(p_no), " Price: ",
+              self.unit_price.get(p_no), " Stock: ", self.stock.get(p_no))
         print("Part was added successfully!")
 
     def removeitem(self):
@@ -122,15 +134,17 @@ class MainFrame(ttk.Frame):
             print("That item does not exist, to add an item use a")
 
     def listallitems(self):
-        print("Parts and their prices: ", self.unit_price)
-        print("Descriptions: ", self.description)
-        print("Stock left of Item: ", self.stock)
+        self.tree.delete(*self.tree.get_children())
+        for i in self.unit_price:
+            self.tree.insert("", "end", None, text=i, values=(self.unit_price[i], self.description[i], self.stock[i]))
+            i += 1
 
     def inquireitem(self):
         p_no = int(input("Enter Part Number: "))
         if p_no in self.unit_price:
             print()
-            print("Part number: ", p_no, " Description: ", self.description.get(p_no), " Price: ", self.unit_price.get(p_no), " Stock: ", self.stock.get(p_no))
+            print("Part number: ", p_no, " Description: ", self.description.get(p_no), " Price: ",
+                  self.unit_price.get(p_no), " Stock: ", self.stock.get(p_no))
             if self.stock.get(p_no) < 3 and self.stock.get(p_no) != 0:
                 print("Only ", self.stock.get(p_no), " remaining! Hurry!")
         else:
@@ -201,18 +215,16 @@ class MainFrame(ttk.Frame):
             for i in range(0, no_items):
                 details.write(str(i + 1) + "#" + str(self.stock[i + 1]) + "\n")
 
-
-'''
-        #Outputs total if the user quits without checking out
-        if(total_cost>0 and flag==0):
-            print()
-            print("You bought: ",cart)
-            print("Total: ","$",round(total_cost,2))
-            tax= round(0.13*total_cost,2)  # áfa !!!!
-            print("Tax is 13%: ","$",tax)
-            total = round(total_cost+tax,2)
-            print("After Tax: ","$",total)
-'''
+    def exitprog(self):
+        # if the user quits without checking out
+        if self.total_cost > 0 and self.flag == 0:
+            askyn = messagebox.askyesno(None, "You have items in cart!\n"
+                                              "Checkout needed: are you sure you want to quit?")
+            if askyn is not True:
+                return
+        else:
+            self.savefilestockupd()
+            # self.master.destroy()
 
 
 class StyleConfig(ttk.Style):
@@ -224,6 +236,7 @@ class StyleConfig(ttk.Style):
         self.configure("TLabel", background="silver")
         self.configure("TEntry", foreground="blue", background="silver")
         self.configure("TMenubutton", background="silver")
+        self.configure("TTreeview", foreground="blue", background="beige")
 
 
 def main():
