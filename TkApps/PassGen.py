@@ -96,9 +96,14 @@ class MainFrame(ttk.Frame):
             pwgen = pwgen + ranchar
             i += 1
         self.pwgenres.set(pwgen)
-        # menubarba kerüljön a másolás?
-        # copytoclipboard(pwgen)
-        # messagebox.showinfo(None, "A generált jelszó vágólapra másolva!\nGenerated password copied to clipboard!")
+        self.copytoclipboard(pwgen)
+        messagebox.showinfo(None, "A generált jelszó vágólapra került!\nGenerated password copied to clipboard!")
+
+    def copytoclipboard(self, pwgen):
+        # r.withdraw()
+        self.top.clipboard_clear()
+        self.top.clipboard_append(pwgen)
+        self.top.update()  # now stays on clipboard after window closed
 
 
 class StyleConfig(ttk.Style):
@@ -127,14 +132,6 @@ def main():
     # gui handler
     root.mainloop()
 
-
-'''
-def copytoclipboard(pwgen):
-    # r.withdraw()
-    root.clipboard_clear()
-    root.clipboard_append(pwgen)
-    root.update()  # now stays on clipboard after window closed
-'''
 
 if __name__ == "__main__":
     main()
