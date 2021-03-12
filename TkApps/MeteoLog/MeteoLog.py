@@ -4,10 +4,8 @@ from tkinter import messagebox
 # from tkinter import filedialog  # , simpledialog
 # from os import curdir
 import csv
-import matplotlib
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-# numpy random számokat generálni
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 class TabMenu(ttk.Notebook):
@@ -67,7 +65,7 @@ class TabNapiAlap(ttk.Frame):
         self.dayent["validatecommand"] = (self.dayent.register(self.ddentvalid), "%P", "%d")
         self.dayent.pack(side="left")
 
-        ttk.Button(self.toprow, text="Keresés", command=self.searchdata).pack(side="left", padx=2)
+        ttk.Button(self.toprow, text="Keresés", command=self.searchfilterdata).pack(side="left", padx=2)
 
         # left & right cols
         ttk.Label(self.leftcol, text="idő\tr\ttn\tt\ttx").pack(side="top")
@@ -84,26 +82,24 @@ class TabNapiAlap(ttk.Frame):
         # bottom row
         self.sumresbutt = ttk.Button(self.bottrow, text="Összegez", command=self.sumresdataopen, state="disabled")
         self.sumresbutt.pack(side="left", padx=25)
-        self.filtbutt = ttk.Button(self.bottrow, text="Szűrési opciók", command=self.filtdataopen)
+        self.filtbutt = ttk.Button(self.bottrow, text="Szűrési opciók", command=self.filtdataopen, state="disabled")
         self.filtbutt.pack(side="right", padx=25)
 
         # filtkerbox PLACED OVER tabnapi
         self.filtkerbox = ttk.Frame(self, relief="groove", borderwidth=1.5)
         self.filtkerbox.lift()
-        # self.filtkerbox.grid_columnconfigure(4, weight=1)
+        self.filtkerbox.grid_columnconfigure(4, weight=1)
 
-        ttk.Button(self.filtkerbox, text="Alkalmaz (bezár)", command=self.filtdataclose
+        ttk.Button(self.filtkerbox, text="Bezár", command=self.filtdataclose
                    ).grid(row=1, column=2, pady=10, columnspan=3)
 
         self.optmenucol = tk.StringVar()
-        ttk.OptionMenu(
-            self.filtkerbox, self.optmenucol, "<adat>", "csap.össz.", "min. hőm.", "középhőm.", "max. hőm."
-        ).grid(row=2, column=1)
+        ttk.OptionMenu(self.filtkerbox, self.optmenucol, "<adat>", "csap.össz.", "min. hőm.", "középhőm.", "max. hőm."
+                       ).grid(row=2, column=1)
 
         self.optmenuop = tk.StringVar()
-        ttk.OptionMenu(
-            self.filtkerbox, self.optmenuop, "<jel>", " == ", " != ", " > ", " < "
-        ).grid(row=2, column=2)
+        ttk.OptionMenu(self.filtkerbox, self.optmenuop, "<jel>", " == ", " != ", " > ", " < "
+                       ).grid(row=2, column=2)
 
         self.filtvalinput = tk.StringVar()
         self.filtvalinput.set("")
@@ -132,57 +128,64 @@ class TabNapiAlap(ttk.Frame):
         self.filtract4.set(0)
 
         ttk.Label(self.filtkerbox, textvariable=self.filtr1).grid(row=3, column=1, pady=2, columnspan=2)
+        ttk.Label(self.filtkerbox, textvariable=self.filtr2).grid(row=4, column=1, pady=2, columnspan=2)
+        ttk.Label(self.filtkerbox, textvariable=self.filtr3).grid(row=5, column=1, pady=2, columnspan=2)
+        ttk.Label(self.filtkerbox, textvariable=self.filtr4).grid(row=6, column=1, pady=2, columnspan=2)
+
         self.filtrcb1 = ttk.Checkbutton(self.filtkerbox, offvalue=0, onvalue=1,
                                         variable=self.filtract1, state="disabled")
         self.filtrcb1.grid(row=3, column=3, pady=2)
 
-        ttk.Label(self.filtkerbox, textvariable=self.filtr2).grid(row=4, column=1, pady=2, columnspan=2)
         self.filtrcb2 = ttk.Checkbutton(self.filtkerbox, offvalue=0, onvalue=1,
                                         variable=self.filtract2, state="disabled")
         self.filtrcb2.grid(row=4, column=3, pady=2)
 
-        ttk.Label(self.filtkerbox, textvariable=self.filtr3).grid(row=5, column=1, pady=2, columnspan=2)
         self.filtrcb3 = ttk.Checkbutton(self.filtkerbox, offvalue=0, onvalue=1,
                                         variable=self.filtract3, state="disabled")
         self.filtrcb3.grid(row=5, column=3, pady=2)
 
-        ttk.Label(self.filtkerbox, textvariable=self.filtr4).grid(row=6, column=1, pady=2, columnspan=2)
         self.filtrcb4 = ttk.Checkbutton(self.filtkerbox, offvalue=0, onvalue=1,
                                         variable=self.filtract4, state="disabled")
         self.filtrcb4.grid(row=6, column=3, pady=2)
 
         ttk.Label(self.filtkerbox, text="Kapcsolat köztük:").grid(row=7, column=1, pady=4, columnspan=2)
         self.rbvar = tk.StringVar()
-        self.rbvar.set("és")
-        ttk.Radiobutton(self.filtkerbox, text="és", value=self.rbvar).grid(row=7, column=3, pady=4)
-        ttk.Radiobutton(self.filtkerbox, text="vagy", value=self.rbvar).grid(row=7, column=4, pady=4)
+        self.rbvar.set(" and ")
+        ttk.Radiobutton(self.filtkerbox, text="és", variable=self.rbvar, value=" and ").grid(row=7, column=3, pady=4)
+        ttk.Radiobutton(self.filtkerbox, text="vagy", variable=self.rbvar, value=" or ").grid(row=7, column=4, pady=4)
 
         # sumresbox PLACED OVER tabnapi
         self.sumresbox = ttk.Frame(self, relief="groove", borderwidth=1.5)
         self.sumresbox.lift()
 
         ttk.Button(self.sumresbox, text="Bezár", command=self.sumresdataclose).pack(pady=10)
+
         self.sumrestxtbox = tk.Text(self.sumresbox, font=("Arial", 8), width=50, height=22, state="disabled",
                                     relief="groove", borderwidth=1.5)
         self.sumrestxtbox.pack()
 
     def filtraddbutt(self):
-        cold = {"csap.össz.": "row[1]", "min. hőm.": "row[2]", "középhőm.": "row[3]", "max. hőm.": "row[4]"}
         fcol = self.optmenucol.get()
         fop = self.optmenuop.get()
-        fval = self.filtvalinput.get()
-        self.filtr1.set(cold[fcol] + fop + str(fval))
-        self.filtrcb1.configure(state="normal")
-        self.filtract1.set(1)
-        chld = self.filtkerbox.children  # listát ad róluk
-        i = 0
-        for item in chld:
-            if item.find("!checkbutton") == 0:
-                print(item)
-                i += 1
-        print(i)
+        fval = format(float(self.filtvalinput.get()), "10.1f")
 
-    def searchdata(self):
+        if fcol == "<adat>" or fop == "<jel>" or fval == "":
+            messagebox.showerror(None, "Hiba: hiányos input!\nKitöltetlen mezők!")
+
+        freefiltr = [1, 2, 3, 4]
+        for n in range(1, 5):
+            if eval("self.filtract" + str(n) + ".get()") == 1:
+                freefiltr.remove(n)
+
+        try:
+            usefiltr = str(freefiltr[0])
+            eval("self.filtr" + usefiltr + ".set(fcol + fop + str(fval))")
+            eval("self.filtrcb" + usefiltr + ".configure(state='normal')")
+            eval("self.filtract" + usefiltr + ".set(1)")
+        except IndexError:
+            messagebox.showwarning(None, "A feltétel-lista megtelt!")
+
+    def searchfilterdata(self):
         if self.evkerinput.get().isnumeric() or (
                 self.evkerinput.get().isnumeric() and self.honapkerinput.get().isnumeric()
         ) or (
@@ -204,6 +207,11 @@ class TabNapiAlap(ttk.Frame):
                     napker = ""
                 kerinput = evker + honapker + napker
                 helyker = "data/napialap/" + str(self.optmenu.get()) + "_19012019.csv"
+                self.filtbutt.configure(state="disabled")
+                self.sumresbutt.configure(state="disabled")
+                filterfuncval = "str(row[0]).find(kerinput) == 0"
+                if (self.filtract1.get() or self.filtract2.get() or self.filtract3.get() or self.filtract4.get()) == 1:
+                    filterfuncval = self.filterfunconoff()
                 with open(helyker) as csvfile:
                     csvolv = csv.reader(csvfile, delimiter=";")
                     self.txtbox.configure(state="normal")
@@ -212,7 +220,7 @@ class TabNapiAlap(ttk.Frame):
                     osszcsapm, sumtn, sumt, sumtx = 0.0, 0.0, 0.0, 0.0
                     abstn, abstx = 30.0, -10.0
                     for row in csvolv:
-                        if str(row[0]).find(kerinput) == 0:
+                        if eval(filterfuncval) is True:
                             napialapoutput = "\t".join(row) + "\n"
                             self.txtbox.insert(tk.END, *napialapoutput.splitlines(keepends=True))
                             ossznap += 1
@@ -232,12 +240,55 @@ class TabNapiAlap(ttk.Frame):
                     if ossznap == 0:
                         messagebox.showwarning(None, "Hiba: A keresés eredménytelen volt!")
                     if ossznap > 1:
+                        self.filtbutt.configure(state="normal")
                         self.sumresdatafunc(esonap, ossznap, mintnap, osszcsapm, sumtn, sumt, sumtx, abstn, abstx)
                     # else:
             else:
                 messagebox.showerror(None, "Nem megfelelő input!! \n(Kötelező: Állomáshely kiválasztása!)")
         else:
             messagebox.showerror(None, "Nem megfelelő input!! \n(Megfelelő: Év, Év + Hónap, Év + Hónap + Nap)")
+
+    def filterfunconoff(self):
+        colold = ["csap.össz.", "min. hőm.", "középhőm.", "max. hőm."]
+        colnew = ["float(row[1])", "float(row[2])", "float(row[3])", "float(row[4])"]
+        filt1 = self.filtr1.get()
+        filt2 = self.filtr2.get()
+        filt3 = self.filtr3.get()
+        filt4 = self.filtr4.get()
+        rb = self.rbvar.get()
+        for e in range(4):
+            filt1 = filt1.replace(colold[e], colnew[e])
+            filt2 = filt2.replace(colold[e], colnew[e])
+            filt3 = filt3.replace(colold[e], colnew[e])
+            filt4 = filt4.replace(colold[e], colnew[e])
+        withfiltprep = "str(row[0]).find(kerinput) == 0 and ("
+        fpoz = 0
+        if self.filtract1.get() == 1:
+            fpoz += 1
+            withfiltprep = withfiltprep + filt1
+        if self.filtract2.get() == 1:
+            if fpoz == 0:
+                fpoz += 1
+                withfiltprep = withfiltprep + filt2
+            else:
+                fpoz += 1
+                withfiltprep = withfiltprep + rb + filt2
+        if self.filtract3.get() == 1:
+            if fpoz == 0:
+                fpoz += 1
+                withfiltprep = withfiltprep + filt3
+            else:
+                fpoz += 1
+                withfiltprep = withfiltprep + rb + filt3
+        if self.filtract4.get() == 1:
+            if fpoz == 0:
+                fpoz += 1
+                withfiltprep = withfiltprep + filt4
+            else:
+                fpoz += 1
+                withfiltprep = withfiltprep + rb + filt4
+        withfiltprep = withfiltprep + ")"
+        return withfiltprep
 
     def sumresdatafunc(self, esonap, ossznap, mintnap, osszcsapm, sumtn, sumt, sumtx, abstn, abstx):
         self.sumresbutt.configure(state="normal")
@@ -297,7 +348,9 @@ class TabNapiAlap(ttk.Frame):
     @staticmethod
     def filtentvalid(instr, acttyp):
         if acttyp == "1":
-            if not instr.isdigit() or len(instr) > 5:
+            if len(instr) > 5:
+                return False
+            elif not instr.isdigit() and "." not in instr and "-" not in instr:
                 return False
         return True
 
@@ -335,7 +388,7 @@ class TabEvesReszl(ttk.Frame):
         self.yearent["validatecommand"] = (self.yearent.register(self.yearentvalid), "%P", "%d")
         self.yearent.pack(side="left", padx=15)
 
-        ttk.Button(self.toprow, text="Keresés", command=lambda: self.searchdata()).pack(padx=2)
+        ttk.Button(self.toprow, text="Keresés", command=self.searchdata).pack(padx=2)
 
         # bottom row
         self.tree = ttk.Treeview(self.bottrow, columns=("Évszám", "Érték"), height=17)
@@ -436,72 +489,38 @@ class TabDiagram(ttk.Frame):
             self.toprow, self.optmenu, "<tényező>", "csapadékösszeg", "napsütéses órák", "átlaghőmérséklet"
         ).pack(side="left", padx=4)
 
-        self.evkerinput = tk.StringVar()
-        self.evkerinput.set("ÉÉÉÉ")
-        self.yearent = ttk.Entry(self.toprow, textvariable=self.evkerinput, validate="key", width=7, justify="center")
-        self.yearent["validatecommand"] = (self.yearent.register(self.yearentvalid), "%P", "%d")
-        self.yearent.pack(side="left", padx=2)
-
-        ttk.Button(self.toprow, text="Keresés", command=lambda: self.searchdata()).pack(side="left", padx=2)
+        ttk.Button(self.toprow, text="Keresés", command=self.searchdrawdata).pack(side="left", padx=4)
 
         # bottom row
+
+        '''
         matplotlib.use('TkAgg')
         self.fig = Figure(figsize=(2, 2), dpi=90)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.bottrow)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(side="bottom", expand=1, fill="both")
+        '''
 
-        self.datarow = 0
-        self.data = tuple()
-        # self.drawdata()
-
-    def drawdata(self):
-        # self.searchdata()
-        # data = self.searchdata().get(dataker) ??? vagy get nélkül?? dataker hova megy??
-        self.fig.clf()
-        adds = self.fig.add_subplot(111)
-        adds.bar(range(self.datarow), self.data, align='center')
-        adds.set_title('teszt')
-        self.canvas.draw()
-
-    def searchdata(self):
-        if self.evkerinput.get().isnumeric() and len(self.evkerinput.get()) == 4\
-                and str(self.optmenu.get()) != "<tényező>":
+    def searchdrawdata(self):
+        import pandas as pd
+        if str(self.optmenu.get()) != "<tényező>":
             tenyezo = {"csapadékösszeg": "r", "napsütéses órák": "s", "átlaghőmérséklet": "ta"}
-            evker = str(self.evkerinput.get())
-            idotal = 0
-            datal = list()
-            with open("data/evesreszl/DE_Y_" + tenyezo[str(self.optmenu.get())] + ".txt") as csvfile:
-                csvolv = csv.reader(csvfile, delimiter=";")
-                for row in csvolv:
-                    if "y" not in row[1]:
-                        for i, v in enumerate(row):
-                            if i == 1:
-                                datal.extend(v)
-                                idotal += 1
-            if idotal == 0:
-                messagebox.showwarning(None, "Hiba: A keresés eredménytelen volt!")
-            self.datarow = idotal
-            datal = map(int, datal)
-            self.data = tuple(datal)
-            self.drawdata()
+            pdread = pd.read_csv("data/evesreszl/DE_Y_" + tenyezo[str(self.optmenu.get())] + ".txt", delimiter=";")
+            yval = pdread["y_rs"]
+            ev = pdread["#ev"]
+            x = np.arange(len(pdread))
+            fig = plt.figure(figsize=(12, 5))
+            canv = plt.FigureCanvasBase(fig)
+            canv.draw()
+            plt.bar(x, yval)  # leht ink horiz kéne, mivel ablak ink magas
+            plt.xticks(x, [], rotation=90)
+            plt.xlabel("idő (évek)")
+            plt.ylabel("érték")  # vart áthozni tényezőtől függő mértékegys.
+            plt.title("éves vmi adatok százéves alakulása")  # itt is ua.
+            # plt.autoscale(True, "y")
+            plt.show()
         else:
             messagebox.showerror(None, "Hiányzó vagy nem megfelelő input!!")
-
-    @staticmethod
-    def yearentvalid(instr, acttyp):
-        if acttyp == "1":
-            if not instr.isdigit() or len(instr) > 4:
-                return False
-            elif len(instr) == 1 and int(instr) not in range(1, 3):
-                return False
-            elif len(instr) == 2 and int(instr) not in range(19, 21):
-                return False
-            elif len(instr) == 3 and int(instr) not in range(190, 202):
-                return False
-            elif len(instr) == 4 and int(instr) not in range(1901, 2011):
-                return False
-        return True
 
 
 class MenuBar(tk.Menu):
@@ -553,6 +572,7 @@ class StyleConfig(ttk.Style):
         self.configure("TEntry", foreground="blue")
         self.configure("TButton", foreground="maroon")
         self.configure("TCheckbutton", background="beige")
+        self.configure("TRadiobutton", background="beige")
         self.configure("TNotebook", background="#DAF7A6")
         self.configure("TNotebook.Tab", foreground="blue", padding=(10, 2, 10, 2))
         self.configure("TFrame", background="beige")
