@@ -15,19 +15,17 @@ class MainFrame(ttk.Frame):
         self.top.pack(fill="x")
 
         self.bimg = tk.PhotoImage(file="icons/key-icon.png")
-        ttk.Button(self.top, text="Generate", command=lambda: self.newpwgen(),
-                   compound="right", image=self.bimg).pack()
-
+        ttk.Button(self.top, text="Generálj", command=self.newpwgen, compound="right", image=self.bimg).pack()
         self.pwgenres = tk.StringVar()
         self.pwgenres.set("##PASSWORD##")
         ttk.Entry(self.top, textvariable=self.pwgenres, width=20, justify="center", state="readonly").pack(pady=5)
 
         # MID
-        self.mid = ttk.Frame(self, borderwidth=30)
+        self.mid = ttk.Frame(self, borderwidth=15)
         self.mid.pack(expand=1, fill="both")
 
         self.cnum = tk.IntVar()
-        self.cnum.set(0)
+        self.cnum.set(1)
         self.ckisb = tk.IntVar()
         self.ckisb.set(0)
         self.cnagyb = tk.IntVar()
@@ -40,7 +38,7 @@ class MainFrame(ttk.Frame):
         ttk.Checkbutton(self.mid, variable=self.ckisb, text="Kisbetűk (aábc)").pack(side="bottom", pady=1)
         ttk.Checkbutton(self.mid, variable=self.cnum, text="Számok (123)").pack(side="bottom", pady=1)
         ttk.Label(self.mid, text="Karakterhossz:").pack(side="left", pady=3)
-        self.spinb = ttk.Spinbox(self.mid, from_=3.0, to=12.0, increment=1.0, format="%3.0f", width=3, state="readonly")
+        self.spinb = ttk.Spinbox(self.mid, from_=3, to=12, increment=1, width=4, justify="center", state="readonly")
         self.spinb.pack(side="right", pady=3)
         self.spinb.set(3)
 
@@ -48,7 +46,7 @@ class MainFrame(ttk.Frame):
         self.bott = ttk.Frame(self, borderwidth=5)
         self.bott.pack(side="bottom", fill="x")
 
-        ttk.Label(self.bott, text="http://www.fatcow.com/free-icons", font=("Corbel", 7)).pack(side="bottom")
+        # ttk.Label(self.bott, text="http://www.fatcow.com/free-icons", font=("Corbel", 7)).pack(side="bottom")
         self.metim1 = tk.PhotoImage(file="icons/key-p-icon.png").zoom(32).subsample(32)
         ttk.Label(self.bott, image=self.metim1).pack(side="left")
         self.metim2 = tk.PhotoImage(file="icons/key-a-icon.png").zoom(32).subsample(32)
@@ -69,26 +67,28 @@ class MainFrame(ttk.Frame):
     def newpwgen(self):
         if self.cnum.get() == 0 and self.ckisb.get() == 0 and self.cnagyb.get() == 0 and self.cspec.get() == 0:
             messagebox.showwarning(None, "Legalább egy opció kiválasztandó!")
+
         lnum = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
         lkisb = ["a", "á", "b", "c", "d", "e", "é", "f", "g", "h", "i", "í", "j", "k", "l", "m", "n", "o", "ó",
                  "ö", "ő", "p", "q", "r", "s", "t", "u", "ú", "ü", "ű", "v", "w", "x", "y", "z"]
         lnagyb = ["A", "Á", "B", "C", "D", "E", "É", "F", "G", "H", "I", "Í", "J", "K", "L", "M", "N", "O", "Ó",
                   "Ö", "Ő", "P", "Q", "R", "S", "T", "U", "Ú", "Ü", "Ű", "V", "W", "X", "Y", "Z"]
         lspec = ["-", ".", "_"]
+
         ranl = []
         rani = 0
         if self.cnum.get() == 1:
             ranl.extend(lnum)
-            rani += 10
+            rani += len(lnum)
         if self.ckisb.get() == 1:
             ranl.extend(lkisb)
-            rani += 35
+            rani += len(lkisb)
         if self.cnagyb.get() == 1:
             ranl.extend(lnagyb)
-            rani += 35
+            rani += len(lnagyb)
         if self.cspec.get() == 1:
             ranl.extend(lspec)
-            rani += 3
+            rani += len(lspec)
 
         pwgen = ""
         for i in range(int(self.spinb.get())):
@@ -97,13 +97,12 @@ class MainFrame(ttk.Frame):
             i += 1
         self.pwgenres.set(pwgen)
         self.copytoclipboard(pwgen)
-        messagebox.showinfo(None, "A generált jelszó vágólapra került!\nGenerated password copied to clipboard!")
+        messagebox.showinfo(None, "Vágólapra másolva!")
 
     def copytoclipboard(self, pwgen):
-        # r.withdraw()
         self.top.clipboard_clear()
         self.top.clipboard_append(pwgen)
-        self.top.update()  # now stays on clipboard after window closed
+        self.top.update()  # elvileg ettől vágólapon marad az ablak bezárása után is
 
 
 class StyleConfig(ttk.Style):
@@ -124,12 +123,11 @@ def main():
     root.title("PassGen")
     appicon = tk.PhotoImage(file="icons/key-icon.png")
     root.iconphoto(False, appicon)
-    root.geometry("200x300")
+    root.geometry("170x260")
     root.resizable(0, 0)
     root.config(background="beige")
     StyleConfig()
     MainFrame(root)
-    # gui handler
     root.mainloop()
 
 

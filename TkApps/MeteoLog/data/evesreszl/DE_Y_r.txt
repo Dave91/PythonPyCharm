@@ -1,4 +1,4 @@
-#ev;y_rs;y_rsh;y_rx;y_rxd;y_dr01;y_dr1;y_dr5;y_dr10;y_dr20;y_dr30;y_dr50;y_drho;y_drjeg;y_drziv;y_dron
+#datum;y_rs;y_rsh;y_rx;y_rxd;y_dr01;y_dr1;y_dr5;y_dr10;y_dr20;y_dr30;y_dr50;y_drho;y_drjeg;y_drziv;y_dron
 1901;606.0;77.0;29.0;1901-05-18;116;106;38;17;4;0;0;27;1;4;0
 1902;683.6;100.3;28.6;1902-05-08;120;105;45;21;8;0;0;28;5;6;0
 1903;605.2;36.6;32.7;1903-07-07;116;101;40;17;4;1;0;23;3;7;0

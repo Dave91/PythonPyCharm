@@ -43,14 +43,13 @@ class MainFrame(ttk.Frame):
         self.kerent = tk.StringVar()
         self.kerent.set("")
         ent = ttk.Entry(self.topf, textvariable=self.kerent, width=20)
-        ent.bind("<Return>", self.kerinput)
         ent.grid(row=5, column=2, sticky="w")
+        ent.bind("<Return>", self.kerinput)
+        ent.focus()
         ttk.Button(self.topf, text="Keresés", command=self.kerinput).grid(row=5, column=3, sticky="w")
 
-        # self.opendict()
-
     def opendict(self):
-        con = sqlite3.connect("dict_data/dict.db")
+        con = sqlite3.connect("data/dict.db")
         with con:
             cur = con.cursor()
             for row in cur.execute("SELECT * FROM dict"):
@@ -59,35 +58,37 @@ class MainFrame(ttk.Frame):
     def kerinput(self, event=None):
         lang = self.kerlang.get()
         ker = self.kerent.get()
-        mod = self.kerent.get()
-        # lp = (lang,)
-        # kp = ker + "%"
+        mod = self.kermod.get()
         self.tree.delete(*self.tree.get_children())
-        con = sqlite3.connect("dict_data/dict.db")
-        # con.set_progress_handler()
-        cur = con.cursor()
-        if mod == "teljes":  # ez az egész if-rész külön query fájlban lefuthatna
-            # query = "SELECT * FROM dict WHERE eng LIKE '"+ker+"%'"
-            if lang == "eng":
-                cur.execute('SELECT * FROM dict WHERE eng LIKE ?', (ker,))
+        con = sqlite3.connect("data/dict.db")
+        with con:
+            cur = con.cursor()
+            if mod == "teljes":
+                if lang == "eng":
+                    cur.execute("SELECT * FROM dict WHERE eng LIKE ?", (ker, ))
+                if lang == "hun":
+                    cur.execute("SELECT * FROM dict WHERE hun LIKE ?", (ker, ))
+            elif mod == "eleje":
+                if lang == "eng":
+                    cur.execute("SELECT * FROM dict WHERE eng LIKE ?", (ker + "%", ))
+                if lang == "hun":
+                    cur.execute("SELECT * FROM dict WHERE hun LIKE ?", (ker + "%", ))
+            elif mod == "mindegy":
+                if lang == "eng":
+                    cur.execute("SELECT * FROM dict WHERE eng LIKE ?", ("%" + ker + "%", ))
+                if lang == "hun":
+                    cur.execute("SELECT * FROM dict WHERE hun LIKE ?", ("%" + ker + "%", ))
             else:
-                cur.execute('SELECT * FROM dict WHERE hun LIKE ?', (ker,))
+                messagebox.showerror(None, "Hiba!")
             rows = cur.fetchall()
-            print(rows)  # teszt
             for row in rows:
                 self.tree.insert("", tk.END, values=row)
-        if mod == "eleje":
-            pass
-        if mod == "mindegy":
-            pass
-        con.close()
 
 
 class StyleConfig(ttk.Style):
     def __init__(self):
         ttk.Style.__init__(self)
 
-        # self.theme_use("classic")
         self.configure("TLabel", background="beige")
         self.configure("TEntry", foreground="blue", background="beige")
         self.configure("TFrame", background="beige", relief="groove")
@@ -98,15 +99,14 @@ class StyleConfig(ttk.Style):
 def main():
     # GUI ROOT WINDOW
     root = tk.Tk()
-    root.title("Dictionary - Szótár")
-    appicon = tk.PhotoImage(file="../icons/tools-gramm.png")
+    root.title("Dictionary - Szótár (angol-magyar nagyszótár)")
+    appicon = tk.PhotoImage(file="icons/dicticon.png")
     root.iconphoto(False, appicon)
     root.geometry("540x420")
     root.resizable(0, 0)
     root.config(background="beige")
     StyleConfig()
     MainFrame(root)
-    # gui handler
     root.mainloop()
 
 

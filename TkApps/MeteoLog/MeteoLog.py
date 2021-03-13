@@ -4,6 +4,7 @@ from tkinter import messagebox
 # from tkinter import filedialog  # , simpledialog
 # from os import curdir
 import csv
+import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -372,7 +373,6 @@ class TabEvesReszl(ttk.Frame):
         ttk.Frame.__init__(self, parent)
         parent.add(self, text="Éves részletes")
 
-        # block control
         self.toprow = ttk.Frame(self)
         self.toprow.pack(side="top")
         self.bottrow = ttk.Frame(self)
@@ -474,15 +474,14 @@ class TabDiagram(ttk.Frame):
         ttk.Frame.__init__(self, parent)
         parent.add(self, text="Diagram")
 
-        # block control
         self.toprow = ttk.Frame(self)
         self.toprow.pack(side="top")
         self.bottrow = ttk.Frame(self, borderwidth=2, relief="groove")
         self.bottrow.pack(side="bottom", expand=1, fill="both")
 
         # top row
-        ttk.Label(self.toprow, text="(1901 - 2010)").pack()
-        ttk.Label(self.toprow, text="(id.tény. izébizé").pack()
+        ttk.Label(self.toprow, text="(Debrecen: 1901 - 2010)").pack()
+        ttk.Label(self.toprow, text="(csap.össz., naps. órák és átl.hőm.)").pack()
 
         self.optmenu = tk.StringVar()
         ttk.OptionMenu(
@@ -502,22 +501,26 @@ class TabDiagram(ttk.Frame):
         '''
 
     def searchdrawdata(self):
-        import pandas as pd
-        if str(self.optmenu.get()) != "<tényező>":
+        if self.optmenu.get() != "<tényező>":
+            tenyget = self.optmenu.get()
             tenyezo = {"csapadékösszeg": "r", "napsütéses órák": "s", "átlaghőmérséklet": "ta"}
-            pdread = pd.read_csv("data/evesreszl/DE_Y_" + tenyezo[str(self.optmenu.get())] + ".txt", delimiter=";")
-            yval = pdread["y_rs"]
-            ev = pdread["#ev"]
-            x = np.arange(len(pdread))
-            fig = plt.figure(figsize=(12, 5))
+            megys = {"csapadékösszeg": "(mm)", "napsütéses órák": "(h)", "átlaghőmérséklet": "(°C)"}
+            oszlyn = {"csapadékösszeg": "y_rs", "napsütéses órák": "y_ss", "átlaghőmérséklet": "y_ta"}
+            pdread = pd.read_csv("data/evesreszl/DE_Y_" + tenyezo[tenyget] + ".txt", delimiter=";")
+            yval = pdread[oszlyn[tenyget]]
+            # xlab = pdread["#datum"]  # xticks [] helyére dátum címkékhez!
+            xn = np.arange(len(pdread))
+            fig = plt.figure(figsize=(12, 4))
             canv = plt.FigureCanvasBase(fig)
             canv.draw()
-            plt.bar(x, yval)  # leht ink horiz kéne, mivel ablak ink magas
-            plt.xticks(x, [], rotation=90)
-            plt.xlabel("idő (évek)")
-            plt.ylabel("érték")  # vart áthozni tényezőtől függő mértékegys.
-            plt.title("éves vmi adatok százéves alakulása")  # itt is ua.
-            # plt.autoscale(True, "y")
+            plt.bar(xn, yval, color="lightblue", edgecolor="grey")
+            plt.plot(xn, yval, color="orange")
+            plt.xticks(xn, [], rotation=90)
+            plt.xlabel("Idő (1901 - 2010)", fontsize=8)
+            plt.ylabel("Érték " + megys[tenyget], fontsize=8)
+            plt.title("Évi " + tenyget + " százéves alakulása (Debrecen)", fontsize=8)
+            plt.ylim(min(yval) - min(yval) * 0.2, max(yval) + max(yval) * 0.2)  # vagy pedig enélkül autoscale van
+            plt.grid(which="major", axis="y")
             plt.show()
         else:
             messagebox.showerror(None, "Hiányzó vagy nem megfelelő input!!")
@@ -588,7 +591,7 @@ def main():
     root.iconphoto(False, appicon)
     root.geometry("300x520")
     root.resizable(0, 0)
-    root.config(background="beige", cursor="cross")
+    root.config(background="beige")
     StyleConfig()
     MenuBar(root)
     TabMenu(root)
