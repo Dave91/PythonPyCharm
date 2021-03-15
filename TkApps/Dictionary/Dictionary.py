@@ -9,16 +9,14 @@ class MainFrame(ttk.Frame):
         ttk.Frame.__init__(self, parent)
         self.parent = parent
         self.pack(side="top", expand=1, fill="both")
+
+        self.botf = ttk.Frame(self, relief="flat")
+        self.botf.pack(side="bottom", expand=0, fill="x")
         self.topf = ttk.Frame(self, borderwidth=10)
         self.topf.pack(side="top", expand=1, fill="both")
         self.midf = ttk.Frame(self)
         self.midf.pack(side="bottom", expand=1, fill="both")
-        # MIDF
-        self.tree = ttk.Treeview(self.midf, column=("column1", "column2"), show='headings', height=20)
-        self.tree.heading("#1", text="eng")
-        self.tree.heading("#2", text="hun")
-        self.tree.pack(side="left", expand=1, fill="both")
-        # scrollbar??
+
         # TOPF
         self.topf.grid_columnconfigure(4, weight=1)
         ttk.Label(self.topf, text="Keresés nyelve:").grid(row=1, column=1)
@@ -46,7 +44,22 @@ class MainFrame(ttk.Frame):
         ent.grid(row=5, column=2, sticky="w")
         ent.bind("<Return>", self.kerinput)
         ent.focus()
-        ttk.Button(self.topf, text="Keresés", command=self.kerinput).grid(row=5, column=3, sticky="w")
+        ttk.Button(self.topf, text="Keresés", command=self.kerinput).grid(row=5, column=3)
+
+        # MIDF
+        self.scrbar = ttk.Scrollbar(self.midf)
+        self.scrbar.pack(side="right", fill="y")
+        self.tree = ttk.Treeview(self.midf, column=("column1", "column2"), show='headings', height=20,
+                                 yscrollcommand=self.scrbar.set)
+        self.tree.heading("#1", text="English")
+        self.tree.heading("#2", text="Magyar")
+        self.tree.pack(side="left", expand=1, fill="both")
+        self.scrbar.config(command=self.tree.yview)
+
+        # BOTF
+        self.statlab = tk.StringVar()
+        self.statlab.set("")
+        ttk.Label(self.botf, textvariable=self.statlab).pack(side="left")
 
     def opendict(self):
         con = sqlite3.connect("data/dict.db")
@@ -56,6 +69,8 @@ class MainFrame(ttk.Frame):
                 self.tree.insert("", tk.END, values=row)
 
     def kerinput(self, event=None):
+        self.statlab.set("Keresés...")
+        self.botf.update_idletasks()  # sima update helyett!!
         lang = self.kerlang.get()
         ker = self.kerent.get()
         mod = self.kermod.get()
@@ -83,6 +98,10 @@ class MainFrame(ttk.Frame):
             rows = cur.fetchall()
             for row in rows:
                 self.tree.insert("", tk.END, values=row)
+            if len(rows) == 0:
+                self.statlab.set("Nincs találat!")
+            else:
+                self.statlab.set(str(len(rows)) + " találat")
 
 
 class StyleConfig(ttk.Style):
@@ -102,7 +121,7 @@ def main():
     root.title("Dictionary - Szótár (angol-magyar nagyszótár)")
     appicon = tk.PhotoImage(file="icons/dicticon.png")
     root.iconphoto(False, appicon)
-    root.geometry("540x420")
+    root.geometry("560x480")
     root.resizable(0, 0)
     root.config(background="beige")
     StyleConfig()
