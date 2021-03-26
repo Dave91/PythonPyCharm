@@ -1,9 +1,31 @@
-import tkinter as tk
-import tkinter.ttk as ttk
-from tkinter import messagebox, simpledialog
-import sqlite3
 import datetime
-import pages
+import sqlite3
+import tkinter as tk
+from tkinter import messagebox, simpledialog
+
+
+class FuncVars:
+    # StatBar
+    # statvardict = {"statleft": "Not logged in (guest).", "statright": ""}
+
+    # List to store the items purchased, variables for checkout
+    cart = []
+    total_cost = 0
+    flag = 0  # To check if they have been checked out
+    # Logs
+    wtolog = []
+    wtoerrorlog = []
+    # Current User
+    curuser = ""
+
+
+'''def getstatvar(getval):
+    getvalres = FuncVars.statvardict[getval]
+    return getvalres
+
+
+def setstatvar(setval, newval):
+    FuncVars.statvardict.update({setval: newval})'''
 
 
 def searchitem(self):
@@ -32,7 +54,7 @@ def searchitem(self):
         con.close()
 
 
-def listallitems(statself, tabself):
+def listallitems(tabself):
     tabself.tree.delete(*tabself.tree.get_children())
     try:
         con = sqlite3.connect("data/stock.db")
@@ -44,14 +66,13 @@ def listallitems(statself, tabself):
                 tabself.tree.insert("", "end", values=row)
             if len(rows) == 0:
                 messagebox.showwarning(None, "Nincs találat!")
-            else:
-                statself.statright.set("All items listed: " + str(len(rows)))
-                statself.update_idletasks()
+            # setstatvar(setval="statright", newval="All items listed: " + str(len(rows)))
+            # tabself.master.update_idletasks()
     except sqlite3.Error as dberror:
-        statself.errorlog(error="dberror: " + str(dberror), funcname="listallitems")
+        errorlog(error="dberror: " + str(dberror), funcname="listallitems")
         messagebox.showerror(None, "Adatbázis hiba:\n" + str(dberror))
     except tk.TclError as error:
-        statself.errorlog(error="tclerror: " + str(error), funcname="listallitems")
+        errorlog(error="tclerror: " + str(error), funcname="listallitems")
         messagebox.showerror(None, "Egyéb hiba:\n" + str(error))
     finally:
         con.close()
@@ -226,38 +247,30 @@ def exitprog(self):
         # self.master.destroy()
 
 
-def errorlog(self, error, funcname):
+def errorlog(error, funcname):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    tolog = str(timestamp) + " - " + self.curuser + " - " + str(funcname) + " - " + str(error)
-    self.wtoerrorlog.append(tolog)
-    self.statright.set("Error logs updated!")
-    self.update_idletasks()
+    tolog = str(timestamp) + " - " + str(FuncVars.curuser) + " - " + str(funcname) + " - " + str(error)
+    FuncVars.wtoerrorlog.append(tolog)
+    # setstatvar(setval="statright", newval="Error logs updated!")
+    # statself.update_idletasks()
 
 
-def accountinterior(self, usern):
-    self.curuser = str(usern)
-    self.statleft.set("Logged in as: " + str(usern))
-    self.statright.set("Logged in.")
-    # self.loginoutbtn.configure(command=self.logout, text="Logout")
-    if str(usern) == "admin":
-        pass  # tabmenu tabok to normal ? configure(state="normal")
-    else:
-        pass  # tabstock state disabled
-    self.update_idletasks()
+def accountinterior(usern):
+    pass
 
 
-def logout(self):
-    self.curuser = ""
-    self.statleft.set("Not logged in (guest).")
-    self.statright.set("Logged out.")
-    self.loginoutbtn.configure(command=None, text="Login")
+def logout():
+    FuncVars.curuser = ""
+    # setstatvar(setval="statleft", newval="Not logged in (guest).")
+    # setstatvar(setval="statright", newval="Logged out.")
+    # self.loginoutbtn.configure(command=None, text="Login")
     # tabok to disabled
-    self.update_idletasks()
+    # statself.update_idletasks()
 
 
-def login(self):
-    usern = str(tablogin.TabLogin(None).entusern.get())
-    passw = str(tablogin.TabLogin(None).entpassw.get())
+def login(tabself):
+    usern = str(tabself.entusern.get())
+    passw = str(tabself.entpassw.get())
     if str(usern) != "" and str(passw) != "":
         try:
             con = sqlite3.connect("data/stock.db")
@@ -266,20 +279,31 @@ def login(self):
                 cur.execute("SELECT * FROM users WHERE username = ? and password = ?", (usern, passw,))
                 usermatch = cur.fetchall()
                 if len(usermatch) > 0:
-                    self.accountinterior(usern)
+                    # accountinterior
+                    FuncVars.curuser = str(usern)
+                    # setstatvar("statleft", "Logged in as: " + str(usern))
+                    # setstatvar("statright", "Logged in.")
+                    # self.loginoutbtn.configure(command=self.logout, text="Logout")
+                    if str(usern) == "admin":
+                        ims.MainAppWind(tabself.master).tabmenu.tab(1, state="normal")  # tabmenu tabok to normal ? configure(state="normal")
+                        ims.MainAppWind(tabself.master).tabmenu.tab(2, state="normal")
+                    else:
+                        pass  # tabstock state disabled
+                    # tabself.update_idletasks()
                 else:
-                    self.regnewuser(usern, passw)
+                    # regnewuser
+                    regnewuser(usern, passw)
         except sqlite3.Error as dberror:
-            self.master.errorlog(error="dberror: " + str(dberror), funcname="addtocart")
+            errorlog(error="dberror: " + str(dberror), funcname="addtocart")
             messagebox.showerror(None, "Adatbázis hiba:\n" + str(dberror))
         except tk.TclError as error:
-            self.master.errorlog(error="tclerror: " + str(error), funcname="addtocart")
+            errorlog(error="tclerror: " + str(error), funcname="addtocart")
             messagebox.showerror(None, "Egyéb hiba:\n" + str(error))
         finally:
             con.close()
 
 
-def regnewuser(self, usern, passw):
+def regnewuser(usern, passw):
     messagebox.showwarning(None, "To register a new account, please contact admin.")
     asknewreg = messagebox.askyesno(None, "Login error: account does not exist!"
                                           "\nAdmin login needed to register a new account."
