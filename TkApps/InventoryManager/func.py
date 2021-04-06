@@ -21,6 +21,7 @@ def viewasusern(tabself):
         usern = tabself.tree.item(selinput, "values")[0]
         FuncVars.curuser = str(usern)
         if str(usern) != "admin":
+            tabself.master.statbar.statleft.set("Logged in as: " + str(usern) + " (admin)")
             tabself.master.tabmenu.tab(5, state="disabled")
             tabself.btnlistallusers.configure(state="disabled")
             tabself.btnadduser.configure(state="disabled")
