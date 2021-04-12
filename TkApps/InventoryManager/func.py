@@ -28,11 +28,13 @@ def viewasusern(tabself):
             tabself.btnedituser.configure(state="disabled")
             tabself.btnremoveuser.configure(state="disabled")
         else:
+            tabself.master.statbar.statleft.set("Logged in as: " + str(usern))
             tabself.master.tabmenu.tab(5, state="normal")
             tabself.btnlistallusers.configure(state="normal")
             tabself.btnadduser.configure(state="normal")
             tabself.btnedituser.configure(state="normal")
             tabself.btnremoveuser.configure(state="normal")
+        tabself.master.statbar.statright.set("View as: " + str(usern))
 
 
 def connectdb(tabself):
@@ -45,8 +47,8 @@ def connectdb(tabself):
 
 
 def searchitem(tabself):
-    kerinput = simpledialog.askstring(None, "Enter item ID:")
-    tabself.delete(*tabself.tree.get_children())
+    kerinput = simpledialog.askstring(None, "Enter item ID\n(1234-ABC):")
+    tabself.tree.delete(*tabself.tree.get_children())
     con = connectdb(tabself)
     try:
         cur = con.cursor()
@@ -58,7 +60,7 @@ def searchitem(tabself):
         if len(rows) == 0:
             messagebox.showwarning(None, "No item found!")
         else:
-            tabself.master.statbar.statright.set("Item(s) found!")
+            tabself.master.statbar.statright.set("Item(s) found: " + str(len(rows)))
     except (sqlite3.Error, tk.TclError) as errn:
         errorlog(error=str(errn), funcname=str(tabself) + " - searchitem")
         tabself.master.statbar.statright.set("An error occurred! Details logged.")
@@ -89,7 +91,7 @@ def additem(tabself):
     con = connectdb(tabself)
     try:
         cur = con.cursor()
-        newitemid = simpledialog.askstring(None, "Enter ID number for new item\n(ABCD-123)", initialvalue="ABCD-123")
+        newitemid = simpledialog.askstring(None, "Enter ID number for new item\n(1234-ABC)")
         cur.execute("SELECT item_number FROM items WHERE item_number = ?",
                     (newitemid,))
         rows = cur.fetchall()
@@ -169,6 +171,8 @@ def addtocart(tabself):
             cur = con.cursor()
             selitemid = tabself.tree.item(selinput, "values")[0]
             stockmaxval = int(tabself.tree.item(selinput, "values")[3])
+            if stockmaxval == 0:
+                messagebox.showwarning(None, "Selected item is out of stock!")
             cur.execute("SELECT amount FROM carts WHERE cart_username = ? AND cart_item_number = ?",
                         (usern, selitemid,))
             rows = cur.fetchall()
@@ -199,7 +203,7 @@ def addtocart(tabself):
 
 
 def showcart(tabself):
-    tabself.treecart.delete(*tabself.tree.get_children())
+    tabself.treecart.delete(*tabself.treecart.get_children())
     usern = FuncVars.curuser
     con = connectdb(tabself)
     try:
@@ -222,14 +226,53 @@ def showcart(tabself):
 
 
 def checkoutitems(tabself):
-    print("You bought the following parts: ", tabself.cart)
-    print("Total: ", "$", round(tabself.total_cost, 2))
-    tax = round(0.13 * tabself.total_cost, 2)  # áfa 27%???
-    print("Tax is 13%: ", "$", tax)
-    total = round(tabself.total_cost + tax, 2)
-    print("After Tax: ", "$", total)
-    # fentieket labelbe kiíratni?? item-ök szövegbe fűzve? \n.join(item...)
-    # kosár törlése (clearcart)
+    usern = FuncVars.curuser
+    con = connectdb(tabself)
+    try:
+        cur = con.cursor()
+        cur.execute("SELECT item_number, item_price, item_desc, amount FROM items " +
+                    "INNER JOIN carts ON item_number = cart_item_number WHERE cart_username = ?", (usern,))
+        rows = cur.fetchall()
+        if len(rows) != 0:
+            totalprice = 0.0
+            checkoutrow = ""
+            for row in rows:
+                cartitemid = str(row[0])
+                cartprice = float(row[1])
+                cartamount = int(row[3])
+                cartpricesum = cartprice * cartamount
+                cur.execute("UPDATE items SET item_stock = item_stock - ? WHERE item_number = ?",
+                            (cartamount, cartitemid))
+                checkoutrow = checkoutrow + ("\n" + str(cartitemid) + ": " + str(cartprice) +
+                                             " x " + str(cartamount) + " = " + str(cartpricesum))
+                totalprice += cartpricesum
+            con.commit()
+            clearcart(tabself)
+            listallitems(tabself)
+            tabself.master.statbar.statright.set("Cart items checked out!")
+            toplevcheck(usern, checkoutrow, totalprice)
+        else:
+            messagebox.showwarning(None, "Empty cart: no items to checkout!")
+    except (sqlite3.Error, tk.TclError) as errn:
+        errorlog(error=str(errn), funcname=str(tabself) + " - checkoutitems")
+        tabself.master.statbar.statright.set("An error occurred! Details logged.")
+    finally:
+        con.close()
+
+
+def toplevcheck(usern, checkoutrow, totalprice):
+    toplev = tk.Toplevel()
+    toplev.title(usern)
+    toplev.focus()
+    totalpricestr = ("Total Price: " + str(totalprice) +
+                     "\nTax/Áfa (27%): " + str(round(totalprice * 0.27)) +
+                     "\nTotal Price: " + str(totalprice + round(totalprice * 0.27)))
+    # ink egy tree kéne ide is???
+    ttk.Label(toplev, text="CHECKOUT WINDOW").pack(pady=2)
+    ttk.Label(toplev, text="User data...\nemail\naddress").pack(pady=2)
+    ttk.Label(toplev, text=checkoutrow).pack()
+    ttk.Label(toplev, text=totalpricestr).pack(anchor="e")
+    toplev.mainloop()
 
 
 def removefromcart(tabself):
@@ -265,6 +308,7 @@ def clearcart(tabself):
                         (usern,))
             con.commit()
             tabself.master.statbar.statright.set("All items cleared from cart!")
+            showcart(tabself)
         except (sqlite3.Error, tk.TclError) as errn:
             errorlog(error=str(errn), funcname=str(tabself) + " - clearcart")
             tabself.master.statbar.statright.set("An error occurred! Details logged.")
