@@ -1,0 +1,9 @@
+Hasznos információk a témáról (Gayle-Shapley), az algoritmus logikájának áttekintése:
+For more details on the Gayle-Shapley Algorithm and to learn the basics of "stable matching":
+
+https://www.geeksforgeeks.org/stable-marriage-problem/
+https://www.youtube.com/watch?v=FhRf0j068ZA
+
+A folyamat lépései:
+A GIF for visualization of the whole process:
+https://en.wikipedia.org/wiki/Stable_marriage_problem#/media/File:Gale-Shapley.gif
