@@ -15,6 +15,7 @@ Group1 és Group2: a két csoport, tagjait szóközök nélkül, vesszővel elv�
 Pref1 és Pref2: preferencia-listák, szóköz nélkül, vesszővel, csoport elemenként új sort kezdeni!
 További elemek megadása ennek alapján...
 
+//Help gomb/button//
 Instructions:
 Group1 / Group2 --> Comma-separated, no spaces!
 Prefs1 / Prefs2 --> Comma-separated, no spaces, line breaks (new rows per Group members)

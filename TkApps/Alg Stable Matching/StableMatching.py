@@ -89,6 +89,12 @@ class GUI(tk.Frame):
                    "PLAYER1,PLAYER3,PLAYER4,PLAYER2\n" \
                    "PLAYER4,PLAYER2,PLAYER1,PLAYER3\n" \
                    "PLAYER1,PLAYER2,PLAYER4,PLAYER3"
+
+        self.gp1_txt.delete("1.0", "end")
+        self.gp2_txt.delete("1.0", "end")
+        self.pref1_txt.delete("1.0", "end")
+        self.pref2_txt.delete("1.0", "end")
+
         self.gp1_txt.insert("end", gp1val)
         self.gp2_txt.insert("end", gp2val)
         self.pref1_txt.insert("end", pref1val)
