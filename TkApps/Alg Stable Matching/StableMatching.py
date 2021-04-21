@@ -45,6 +45,7 @@ class FuncVarsAlg:
 class GUI(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
+        self.configure(bg="lightblue", relief="groove", bd=4)
         self.pack(expand=1, fill="both")
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, pad=10)
@@ -53,30 +54,29 @@ class GUI(tk.Frame):
         self.grid_rowconfigure(3, pad=10)
         self.grid_rowconfigure(4, pad=10)
 
-        tk.Label(self, text="Group 1\nmembers").grid(row=0, column=0)
-        self.gp1_txt = tk.Text(self, height=2, width=90)
+        tk.Label(self, text="Group 1\nmembers", font="bold", bg="lightblue").grid(padx=4, row=0, column=0)
+        self.gp1_txt = tk.Text(self, height=2, width=85, bg="azure", bd=2)
         self.gp1_txt.grid(row=0, column=1)
         self.gp1_txt.focus()
 
-        tk.Label(self, text="Group 2\nmembers").grid(row=1, column=0)
-        self.gp2_txt = tk.Text(self, height=2, width=90)
+        tk.Label(self, text="Group 2\nmembers", font="bold", bg="lightblue").grid(row=1, column=0)
+        self.gp2_txt = tk.Text(self, height=2, width=85, bg="azure", bd=2)
         self.gp2_txt.grid(row=1, column=1)
 
-        tk.Label(self, text="Prefs for\nGroup 1\nmembers").grid(row=2, column=0)
-        self.pref1_txt = tk.Text(self, height=12, width=90)
+        tk.Label(self, text="Prefs for\nGroup 1\nmembers", font="bold", bg="lightblue").grid(row=2, column=0)
+        self.pref1_txt = tk.Text(self, height=12, width=85, bg="azure", bd=2)
         self.pref1_txt.grid(row=2, column=1)
 
-        tk.Label(self, text="Prefs for\nGroup 2\nmembers").grid(row=3, column=0)
-        self.pref2_txt = tk.Text(self, height=12, width=90)
+        tk.Label(self, text="Pref-lists\nfor\nGroup 2\nmembers", font="bold", bg="lightblue").grid(row=3, column=0)
+        self.pref2_txt = tk.Text(self, height=12, width=85, bg="azure", bd=2)
         self.pref2_txt.grid(row=3, column=1)
 
-        tk.Button(self, text="Help", command=self.example_help).grid(row=4, column=0, pady=5)
+        tk.Button(self, text="HELP", bg="khaki", bd=2, command=self.example_help).grid(row=4, column=0, pady=5)
 
-        tk.Button(self, text="Start Matching", command=lambda: self.get_inputs(self.gp1_txt.get("1.0", "end-1c"),
-                                                                               self.gp2_txt.get("1.0", "end-1c"),
-                                                                               self.pref1_txt.get("1.0", 'end-1c'),
-                                                                               self.pref2_txt.get("1.0", 'end-1c'))
-                  ).grid(row=4, column=1, columnspan=1, pady=5)
+        tk.Button(self, text="START MATCHING", bg="lightgreen", bd=2, command=lambda: self.get_inputs(
+            self.gp1_txt.get("1.0", "end-1c"), self.gp2_txt.get("1.0", "end-1c"),
+            self.pref1_txt.get("1.0", 'end-1c'), self.pref2_txt.get("1.0", 'end-1c'))
+        ).grid(row=4, column=1, columnspan=1, pady=5)
 
     def example_help(self):
         gp1val = "PLAYER1,PLAYER2,PLAYER3,PLAYER4"
@@ -99,15 +99,6 @@ class GUI(tk.Frame):
         self.gp2_txt.insert("end", gp2val)
         self.pref1_txt.insert("end", pref1val)
         self.pref2_txt.insert("end", pref2val)
-        self.help_msg()
-
-    @staticmethod
-    def help_msg():
-        messagebox.showinfo(None, "Instructions:\n\n"
-                                  "Group1 / Group2 --> Comma-separated, no spaces!\n"
-                                  "Prefs1 / Prefs2 --> Comma-separated, no spaces, line breaks!\n"
-                                  "                                 (new rows per Group members)\n\n"
-                                  "Add more inputs as needed, according to the given examples!")
 
     def get_inputs(self, gp1, gp2, p1, p2):
         group1 = gp1.split(',')
