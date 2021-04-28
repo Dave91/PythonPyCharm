@@ -1,0 +1,25 @@
+============================================================
+                       CONTROLS
+============================================================
+
+-----------------------MAIN MENU----------------------------
+CLOSE WINDOW (upper corner X) to exit program
+CLICK to begin the game
+
+------------------------IN-GAME-----------------------------
+CLOSE WINDOW (upper corner X) to exit program
+ESC - quit to main menu
+
+PLAYER_1 (yellow / left side):
+W - move up
+A - move left
+S - move down
+D - move right
+SPACE - fire
+
+PLAYER_2 (red / right side):
+UP_ARROW - move up
+LEFT_ARROW - move left
+DOWN_ARROW - move down
+RIGHT_ARROW - move right
+RIGHT_CTRL - fire

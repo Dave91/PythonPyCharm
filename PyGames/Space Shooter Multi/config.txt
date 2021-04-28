@@ -1,0 +1,6 @@
+PLAY_MUSIC=True
+FPS=60
+VEL=5
+BULLET_VEL=10
+MAX_BULLETS=5
+players_health=10
