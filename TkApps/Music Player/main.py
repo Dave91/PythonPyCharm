@@ -3,304 +3,341 @@ import threading
 import time
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkinter import messagebox, filedialog
+from tkinter import messagebox, filedialog, simpledialog, colorchooser
 
 import vlc
 from mutagen.mp3 import MP3
 from pygame import mixer
 
 
-'''
-            "name": "TechnoBase"
-            "high": "https://mp3.stream.tb-group.fm/tb.mp3"
-            "style": "Dance / Hands Up"
-
-            "name": "HouseTime"
-            "high": "https://mp3.stream.tb-group.fm/ht.mp3"
-            "style": "House"
-
-            "name": "HardBase"
-            "high": "https://mp3.stream.tb-group.fm/hb.mp3"
-            "style": "Hardstyle"
-
-            "name": "TranceBase"
-            "high": "https://mp3.stream.tb-group.fm/trb.mp3"
-            "style": "Vocal & Uplifting Trance"
-
-            "name": "CoreTime"
-            "high": "https://mp3.stream.tb-group.fm/ct.mp3"
-            "style": "Hardcore"
-
-            "name": "ClubTime"
-            "high": "https://mp3.stream.tb-group.fm/clt.mp3"
-            "style": "Techno / Minimal"
-
-            "name": "TeaTime"
-            "high": "https://mp3.stream.tb-group.fm/tt.mp3"
-            "style": "Happy Hardcore / DnB"
-
-            "name": "Replay"
-            "high": "https://mp3.stream.tb-group.fm/rp.mp3"
-            "style": "90s / 00s"
-
-            "name SynthWave
-            "https://ecast.myautodj.com/public1channel"
-'''
-
-
-# TODO: classokba rendezni!
-mixer.init()
-
-root = tk.Tk()
-root.title("Music Player")
-root.iconbitmap(r'images/melody.ico')
-
-statusbar = ttk.Label(root, text=" Ready", relief="sunken", anchor="w", font="Arial 10 italic")
-statusbar.pack(side="bottom", fill="x")
-
-menubar = tk.Menu(root)
-root.config(menu=menubar)
-
-# TODO: notebook tabok menu helyett!
-
-
-def choose_theme_color():
-    pass
-    # TODO: theme color??
-    # theme_color = color picker
-    # leftframe, rightframe, topframe .configure(background=theme_color)
-
-
-subMenuTheme = tk.Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Theme", menu=subMenuTheme)
-subMenuTheme.add_command(label="Color", command=choose_theme_color)
-
-
-def play_radio_url():
-    stop_music()
-    p = vlc.MediaPlayer("https://ecast.myautodj.com/public1channel")
-    p.play()
-
-
-subMenuRadio = tk.Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Radio", menu=subMenuRadio)
-subMenuRadio.add_command(label="Synthwave", command=play_radio_url)
-
-leftframe = ttk.Frame(root)
-leftframe.pack(side="left", padx=30, pady=30)
-
-
-def prev_song():
-    selected_song = int(playlistbox.curselection()[0])
-    playlistbox.selection_set(selected_song - 1, selected_song - 1)
-
-
-def next_song():
-    selected_song = int(playlistbox.curselection()[0])
-    playlistbox.selection_set(selected_song + 1, selected_song + 1)
-
-
-prevBtn = ttk.Button(leftframe, text="<<", command=prev_song)
-prevBtn.pack(side="left")
-nextBtn = ttk.Button(leftframe, text=">>", command=next_song)
-nextBtn.pack(side="right")
-
-
-playlistbox = tk.Listbox(leftframe, selectmode="browse")
-playlistbox.pack()
-
-playlist = []
-# playlist contains the full path + filename
-# playlistbox - contains just the filenames
-# Fullpath + filename is required to play the music inside play_music load function
-
-
-def browse_file():
-    '''filename_path = filedialog.askopenfilename()
-    add_to_playlist(filename_path)
-    mixer.music.queue(filename_path)'''
-    filename_path = filedialog.askopenfilename(multiple=True)
-    add_to_playlist(filename_path)
-
-
-def add_to_playlist(filename_path):
-    '''filename = os.path.basename(filename_path)
-    index = 0
-    playlistbox.insert(index, filename)
-    playlist.insert(index, filename_path)
-    index += 1'''
-    for fn in filename_path:
-        filename = os.path.basename(fn)
-        index = 0
-        playlistbox.insert(index, filename)
-        playlist.insert(index, fn)
-        index += 1
-        mixer.music.queue(fn)
-    playlistbox.selection_set("end", "end")
-    # TODO: reversed order? select 0# only if it is the first in real?
-
-
-addBtn = ttk.Button(leftframe, text="+ Add", command=browse_file)
-addBtn.pack(side="left")
-
-
-def del_song():
-    selected_song = int((playlistbox.curselection())[0])
-    playlistbox.delete(selected_song)
-    playlist.pop(selected_song)
-
-
-delBtn = ttk.Button(leftframe, text="Remove", command=del_song)
-delBtn.pack(side="left")
-
-rightframe = ttk.Frame(root)
-rightframe.pack(pady=30)
-
-topframe = ttk.Frame(rightframe)
-topframe.pack()
-
-lengthlabel = ttk.Label(topframe, text="Total Length : --:--")
-lengthlabel.pack(pady=5)
-
-currenttimelabel = ttk.Label(topframe, text="Current Time : --:--")
-currenttimelabel.pack()
-
-
-def show_details(play_song):
-    file_data = os.path.splitext(play_song)
-
-    if file_data[1] == '.mp3':
-        audio = MP3(play_song)
-        total_length = audio.info.length
-    else:
-        a = mixer.Sound(play_song)
-        total_length = a.get_length()
-
-    mins, secs = divmod(total_length, 60)  # div - total_length/60, mod - total_length % 60
-    mins = round(mins)
-    secs = round(secs)
-    timeformat = '{:02d}:{:02d}'.format(mins, secs)
-    lengthlabel['text'] = "Total Length - " + timeformat
-
-    t1 = threading.Thread(target=start_count, args=(total_length,))
-    t1.start()
-
-
-def start_count(t):
-    global paused
-
-    current_time = 0
-    while current_time <= t and mixer.music.get_busy():  # returns false when stopped
-        if paused:
-            continue
-        else:
-            mins, secs = divmod(current_time, 60)
-            mins = round(mins)
-            secs = round(secs)
-            timeformat = '{:02d}:{:02d}'.format(mins, secs)
-            currenttimelabel['text'] = "Current Time - " + timeformat
-            time.sleep(1)
-            current_time += 1
-
-
-def play_music():
-    global paused
-
-    selected_song = int(playlistbox.curselection()[0])
-    play_it = playlist[selected_song]
-
-    if paused:
-        mixer.music.unpause()
-        statusbar['text'] = " Playing - " + os.path.basename(play_it)
-        paused = False
-    else:
-        try:
-            stop_music()
-            time.sleep(1)
-            mixer.music.load(play_it)
-            mixer.music.play()
-            statusbar['text'] = " Playing - " + os.path.basename(play_it)
-            show_details(play_it)
-        except os.error:
-            messagebox.showerror(None, 'File could not be found or opened.\nPlease check and try again.')
-
-
-def stop_music():
-    mixer.music.stop()
-    lengthlabel['text'] = "Total Length : --:--"
-    currenttimelabel['text'] = "Current Time : --:--"
-    statusbar['text'] = " Stopped"
-
-
-paused = False
-
-
-def pause_music():
-    global paused
-    paused = True
-    mixer.music.pause()
-    statusbar['text'] = " Paused"
-
-
-def set_vol(val):
-    volume = float(val) / 100
-    mixer.music.set_volume(volume)
-    # set_volume of mixer takes value from 0.0 to 1.0
-
-
-muted = False
-
-
-def mute_music():
-    global muted
-
-    if muted:
+class MainGUI(ttk.Notebook):
+    def __init__(self, master):
+        ttk.Notebook.__init__(self, master)
+        self.pack(side="top", expand=1, fill="both")
+
+        mixer.init()
+
+        self.statusbar = ttk.Label(self.master, text=" Ready", relief="sunken", anchor="w", font="Arial 10 italic")
+        self.statusbar.pack(side="bottom", fill="x")
+
+        TabLocal(self)
+        TabRadio(self)
+        TabTheme(self)
+
+
+class TabLocal(ttk.Frame):
+    def __init__(self, master):
+        ttk.Frame.__init__(self, master)
+        master.add(self, text="Local")
+
+        self.playlist = []
+        self.paused = False
+        self.muted = False
+
+        self.leftframe = ttk.Frame(self)
+        self.leftframe.pack(side="left", padx=30, pady=30)
+        self.rightframe = ttk.Frame(self)
+        self.rightframe.pack(pady=30)
+
+        # LEFT FRAME
+        self.playlistbox = tk.Listbox(self.leftframe, selectmode="browse")
+        self.playlistbox.pack(fill="x")
+
+        self.prevBtn = ttk.Button(self.leftframe, text="<<", command=self.prev_song)
+        self.prevBtn.pack(side="left")
+        self.nextBtn = ttk.Button(self.leftframe, text=">>", command=self.next_song)
+        self.nextBtn.pack(side="right")
+        self.addBtn = ttk.Button(self.leftframe, text="+ Add", command=self.browse_file)
+        self.addBtn.pack(side="left")
+        self.delBtn = ttk.Button(self.leftframe, text="Remove", command=self.del_song)
+        self.delBtn.pack(side="left")
+
+        # RIGHT FRAME
+        self.topframe = ttk.Frame(self.rightframe)
+        self.topframe.pack()
+        self.middleframe = ttk.Frame(self.rightframe)
+        self.middleframe.pack(pady=30, padx=30)
+        self.bottomframe = ttk.Frame(self.rightframe)
+        self.bottomframe.pack()
+
+        # RIGHT TOP FRAME
+        self.lengthlabel = ttk.Label(self.topframe, text="Total Length : --:--")
+        self.lengthlabel.pack(pady=2)
+
+        self.currenttimelabel = ttk.Label(self.topframe, text="Current Time : --:--")
+        self.currenttimelabel.pack(pady=2)
+
+        self.searchbar = tk.Scale(self.topframe, from_=0, to=100, resolution=5, showvalue=True, orient="horizontal",
+                                  command=self.search_dur)
+        self.searchbar.set(0)
+        self.searchbar.pack()
+
+        # RIGHT MIDDLE FRAME
+        self.playPhoto = tk.PhotoImage(file='images/play.png')
+        self.playBtn = tk.Button(self.middleframe, image=self.playPhoto, command=self.play_music)
+        self.playBtn.grid(row=0, column=0, padx=10)
+
+        self.stopPhoto = tk.PhotoImage(file='images/stop.png')
+        self.stopBtn = tk.Button(self.middleframe, image=self.stopPhoto, command=self.stop_music)
+        self.stopBtn.grid(row=0, column=1, padx=10)
+
+        self.pausePhoto = tk.PhotoImage(file='images/pause.png')
+        self.pauseBtn = tk.Button(self.middleframe, image=self.pausePhoto, command=self.pause_music)
+        self.pauseBtn.grid(row=0, column=2, padx=10)
+
+        # RIGHT BOTTOM FRAME
+        self.mutePhoto = tk.PhotoImage(file='images/mute.png')
+        self.volumePhoto = tk.PhotoImage(file='images/volume.png')
+        self.volumeBtn = ttk.Button(self.bottomframe, image=self.volumePhoto, command=self.mute_music)
+        self.volumeBtn.grid(row=0, column=1)
+
+        self.scale = tk.Scale(self.bottomframe, from_=0, to=100, resolution=5, showvalue=True, orient="horizontal",
+                              command=self.set_vol)
+        self.scale.set(70)  # default volume
         mixer.music.set_volume(0.7)
-        volumeBtn.configure(image=volumePhoto)
-        scale.set(70)
-        muted = False
-    else:
-        mixer.music.set_volume(0)
-        volumeBtn.configure(image=mutePhoto)
-        scale.set(0)
-        muted = True
+        self.scale.grid(row=0, column=2, pady=15, padx=30)
+
+    def search_dur(self):
+        pass
+
+    def prev_song(self):
+        selected_song = int(self.playlistbox.curselection()[0])
+        self.playlistbox.selection_clear(selected_song)
+        self.playlistbox.selection_set(selected_song - 1)
+
+    def next_song(self):
+        selected_song = int(self.playlistbox.curselection()[0])
+        self.playlistbox.selection_clear(selected_song)
+        self.playlistbox.selection_set(selected_song + 1)
+
+    def browse_file(self):
+        filename_path = filedialog.askopenfilename(multiple=True)
+        self.add_to_playlist(filename_path)
+
+    def add_to_playlist(self, filename_path):
+        for fn in filename_path:
+            filename = os.path.basename(fn)
+            index = 0
+            self.playlistbox.insert(index, filename)
+            self.playlist.insert(index, fn)
+            index += 1
+            mixer.music.queue(fn)
+        self.playlistbox.selection_set("end", "end")
+
+    def del_song(self):
+        selected_song = int((self.playlistbox.curselection())[0])
+        self.playlistbox.delete(selected_song)
+        self.playlist.pop(selected_song)
+        self.playlistbox.selection_set("end")
+
+    def show_details(self, play_song):
+        file_data = os.path.splitext(play_song)
+
+        if file_data[1] == '.mp3':
+            audio = MP3(play_song)
+            total_length = audio.info.length
+        else:
+            a = mixer.Sound(play_song)
+            total_length = a.get_length()
+
+        mins, secs = divmod(total_length, 60)  # div - total_length/60, mod - total_length % 60
+        mins = round(mins)
+        secs = round(secs)
+        timeformat = '{:02d}:{:02d}'.format(mins, secs)
+        self.lengthlabel['text'] = "Total Length - " + timeformat
+
+        t1 = threading.Thread(target=self.start_count, args=(total_length,))
+        t1.start()
+
+    def start_count(self, t):
+        current_time = 0
+        while current_time <= t and mixer.music.get_busy():  # returns false when stopped
+            if self.paused:
+                continue
+            else:
+                mins, secs = divmod(current_time, 60)
+                mins = round(mins)
+                secs = round(secs)
+                timeformat = '{:02d}:{:02d}'.format(mins, secs)
+                self.currenttimelabel['text'] = "Current Time - " + timeformat
+                time.sleep(1)
+                current_time += 1
+
+    def play_music(self):
+        selected_song = int(self.playlistbox.curselection()[0])
+        play_it = self.playlist[selected_song]
+
+        if self.paused:
+            mixer.music.unpause()
+            self.master.statusbar['text'] = " Playing - " + os.path.basename(play_it)
+            self.paused = False
+        else:
+            try:
+                self.stop_music()
+                time.sleep(1)
+                mixer.music.load(play_it)
+                mixer.music.play()
+                self.master.statusbar['text'] = " Playing - " + os.path.basename(play_it)
+                self.show_details(play_it)
+            except os.error:
+                messagebox.showerror(None, 'File could not be opened.\nPlease check and try again.')
+
+    def stop_music(self):
+        mixer.music.stop()
+        self.lengthlabel['text'] = "Total Length : --:--"
+        self.currenttimelabel['text'] = "Current Time : --:--"
+        self.master.statusbar['text'] = " Stopped"
+
+    def pause_music(self):
+        self.paused = True
+        mixer.music.pause()
+        self.master.statusbar['text'] = " Paused"
+
+    @ staticmethod
+    def set_vol(val):
+        volume = float(val) / 100
+        mixer.music.set_volume(volume)
+        # set_volume of mixer takes value from 0.0 to 1.0
+
+    def mute_music(self):
+        if self.muted:
+            mixer.music.set_volume(0.7)
+            self.volumeBtn.configure(image=self.volumePhoto)
+            self.scale.set(70)
+            self.muted = False
+        else:
+            mixer.music.set_volume(0)
+            self.volumeBtn.configure(image=self.mutePhoto)
+            self.scale.set(0)
+            self.muted = True
 
 
-# Middle Frame
-middleframe = ttk.Frame(rightframe)
-middleframe.pack(pady=30, padx=30)
+class TabRadio(ttk.Frame):
+    def __init__(self, master):
+        ttk.Frame.__init__(self, master)
+        master.add(self, text="Radio")
 
-playPhoto = tk.PhotoImage(file='images/play.png')
-playBtn = tk.Button(middleframe, image=playPhoto, command=play_music)
-playBtn.grid(row=0, column=0, padx=10)
+        self.playlist = {"NewWave: Synthwave": "https://ecast.myautodj.com/public1channel",
+                         "RePlay: 90s / 00s": "https://mp3.stream.tb-group.fm/rp.mp3",
+                         "TeaTime: Happy Hardcore / DnB": "https://mp3.stream.tb-group.fm/tt.mp3",
+                         "ClubTime: Techno / Minimal": "https://mp3.stream.tb-group.fm/clt.mp3",
+                         "CoreTime: Hardcore": "https://mp3.stream.tb-group.fm/ct.mp3",
+                         "TranceBase: Vocal & Uplifting Trance": "https://mp3.stream.tb-group.fm/trb.mp3",
+                         "HardBase: Hardstyle": "https://mp3.stream.tb-group.fm/hb.mp3",
+                         "HouseTime: House": "https://mp3.stream.tb-group.fm/ht.mp3",
+                         "TechnoBase: Dance / Hands Up": "https://mp3.stream.tb-group.fm/tb.mp3"}
 
-stopPhoto = tk.PhotoImage(file='images/stop.png')
-stopBtn = tk.Button(middleframe, image=stopPhoto, command=stop_music)
-stopBtn.grid(row=0, column=1, padx=10)
+        self.curradiourl = ""
+        self.muted = False
 
-pausePhoto = tk.PhotoImage(file='images/pause.png')
-pauseBtn = tk.Button(middleframe, image=pausePhoto, command=pause_music)
-pauseBtn.grid(row=0, column=2, padx=10)
+        self.leftframe = ttk.Frame(self)
+        self.leftframe.pack(side="left", padx=30, pady=30)
+        self.rightframe = ttk.Frame(self)
+        self.rightframe.pack(pady=30)
 
-# Bottom Frame volume, mute
-bottomframe = ttk.Frame(rightframe)
-bottomframe.pack()
+        # LEFT FRAME
+        self.playlistbox = tk.Listbox(self.leftframe, selectmode="browse", width=50)
+        self.playlistbox.pack(fill="x")
+        for i, radioitem in enumerate(self.playlist.keys()):
+            self.playlistbox.insert(i, radioitem)
 
-mutePhoto = tk.PhotoImage(file='images/mute.png')
-volumePhoto = tk.PhotoImage(file='images/volume.png')
-volumeBtn = ttk.Button(bottomframe, image=volumePhoto, command=mute_music)
-volumeBtn.grid(row=0, column=1)
+        self.addBtn = ttk.Button(self.leftframe, text="Open URL", command=self.browse_file)
+        self.addBtn.pack(side="left")
 
-scale = tk.Scale(bottomframe, from_=0, to=100, resolution=5, showvalue=True, orient="horizontal", command=set_vol)
-scale.set(70)  # default volume
-mixer.music.set_volume(0.7)
-scale.grid(row=0, column=2, pady=15, padx=30)
+        # RIGHT FRAME
+        self.middleframe = ttk.Frame(self.rightframe)
+        self.middleframe.pack(pady=30, padx=30)
+        self.bottomframe = ttk.Frame(self.rightframe)
+        self.bottomframe.pack()
+
+        # RIGHT MIDDLE FRAME
+        self.playPhoto = tk.PhotoImage(file='images/play.png')
+        self.playBtn = tk.Button(self.middleframe, image=self.playPhoto, command=self.play_music)
+        self.playBtn.grid(row=0, column=0, padx=10)
+
+        self.stopPhoto = tk.PhotoImage(file='images/pause.png')
+        self.stopBtn = tk.Button(self.middleframe, image=self.stopPhoto, command=self.stop_music)
+        self.stopBtn.grid(row=0, column=1, padx=10)
+
+        # RIGHT BOTTOM FRAME
+        self.mutePhoto = tk.PhotoImage(file='images/mute.png')
+        self.volumePhoto = tk.PhotoImage(file='images/volume.png')
+        self.volumeBtn = ttk.Button(self.bottomframe, image=self.volumePhoto, command=self.mute_music)
+        self.volumeBtn.grid(row=0, column=1)
+
+        self.scale = tk.Scale(self.bottomframe, from_=0, to=100, resolution=5, showvalue=True, orient="horizontal",
+                              command=self.set_vol)
+        self.scale.set(70)  # default volume
+        mixer.music.set_volume(0.7)
+        self.scale.grid(row=0, column=2, pady=15, padx=30)
+
+    def browse_file(self):
+        filename_path = simpledialog.askstring(None, "URL: ")
+        self.add_to_playlist(filename_path)
+
+    def add_to_playlist(self, filename_path):
+        self.playlistbox.insert("end", filename_path)
+        self.playlistbox.selection_set("end", "end")
+
+    def play_music(self):
+        selected_song = (self.playlistbox.curselection())[0]
+        self.curradiourl = list(self.playlist.values())[selected_song]
+        play_it = vlc.MediaPlayer(str(self.curradiourl))
+        try:
+            self.stop_music(play_it)
+            time.sleep(1)
+            play_it.play()
+            self.master.statusbar['text'] = " Playing - " + list(self.playlist.keys())[selected_song]
+        except os.error:
+            messagebox.showerror(None, 'URL could not be opened.\nPlease check and try again.')
+
+    def stop_music(self, play_it):
+        vlc.MediaPlayer.stop(play_it)
+        self.master.statusbar['text'] = " Stopped"
+
+    @staticmethod
+    def set_vol(val):
+        vlc.AudioSetVolumeCb(val)
+
+    def mute_music(self):
+        if self.muted:
+            vlc.MediaPlayer.audio_set_volume(70)
+            self.volumeBtn.configure(image=self.volumePhoto)
+            self.scale.set(70)
+            self.muted = False
+        else:
+            vlc.MediaPlayer.audio_set_volume(0)
+            self.volumeBtn.configure(image=self.mutePhoto)
+            self.scale.set(0)
+            self.muted = True
+
+
+class TabTheme(ttk.Frame):
+    def __init__(self, master):
+        ttk.Frame.__init__(self, master)
+        master.add(self, text="Theme")
+
+        ttk.Button(self, text="Pick a theme color", command=self.choose_theme_color).pack()
+
+    # @staticmethod
+    def choose_theme_color(self):
+        theme_color = colorchooser.askcolor()
+        for child in self.master.children.values():
+            child.configure(background=theme_color[1])
 
 
 def on_closing():
-    stop_music()
+    return
+    TabLocal.stop_music()
     root.destroy()
 
 
-root.protocol("WM_DELETE_WINDOW", on_closing)
-root.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.title("Music Player")
+    root.iconbitmap(r'images/melody.ico')
+    # root.geometry("360x280")
+    # root.resizable(0, 0)
+    root.protocol("WM_DELETE_WINDOW", None)
+    MainGUI(root)
+    root.mainloop()
