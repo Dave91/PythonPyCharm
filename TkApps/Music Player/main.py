@@ -28,7 +28,7 @@ class MainGUI(ttk.Notebook):
 class TabLocal(ttk.Frame):
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
-        master.add(self, text="Local")
+        master.add(self, text="Local Media")
 
         self.playlist = []
         self.paused = False
@@ -61,16 +61,18 @@ class TabLocal(ttk.Frame):
         self.bottomframe.pack()
 
         # RIGHT TOP FRAME
-        self.lengthlabel = ttk.Label(self.topframe, text="Total Length : --:--")
-        self.lengthlabel.pack(pady=2)
+        self.currenttimelabel = ttk.Label(self.topframe, text="--:--")
+        self.currenttimelabel.pack(side="left", padx=2)
 
-        self.currenttimelabel = ttk.Label(self.topframe, text="Current Time : --:--")
-        self.currenttimelabel.pack(pady=2)
+        self.timeslider = tk.Scale(self.topframe, from_=0, to=100, resolution=1, showvalue=False, orient="horizontal",
+                                   command=self.time_cue)
+        self.timeslider.set(0)
+        self.timeslider.pack(side="left", padx=2)
 
-        self.searchbar = tk.Scale(self.topframe, from_=0, to=100, resolution=5, showvalue=True, orient="horizontal",
-                                  command=self.search_dur)
-        self.searchbar.set(0)
-        self.searchbar.pack()
+        self.lengthlabel = ttk.Label(self.topframe, text="--:--")
+        self.lengthlabel.pack(side="left", padx=2)
+
+        self.current_time = 0
 
         # RIGHT MIDDLE FRAME
         self.playPhoto = tk.PhotoImage(file='images/play.png')
@@ -91,14 +93,36 @@ class TabLocal(ttk.Frame):
         self.volumeBtn = ttk.Button(self.bottomframe, image=self.volumePhoto, command=self.mute_music)
         self.volumeBtn.grid(row=0, column=1)
 
-        self.scale = tk.Scale(self.bottomframe, from_=0, to=100, resolution=5, showvalue=True, orient="horizontal",
-                              command=self.set_vol)
-        self.scale.set(70)  # default volume
+        self.volscale = tk.Scale(self.bottomframe, from_=0, to=100, resolution=5, showvalue=True, orient="horizontal",
+                                 command=self.set_vol)
+        self.volscale.set(70)  # default volume
         mixer.music.set_volume(0.7)
-        self.scale.grid(row=0, column=2, pady=15, padx=30)
+        self.volscale.grid(row=0, column=2, pady=15, padx=30)
 
-    def search_dur(self):
-        pass
+        self.after_id = None
+
+    def set_timescale(self, play_it):
+        songlength = self.getsonglen(play_it)
+        self.timeslider.config(to=songlength)
+
+    @staticmethod
+    def getsonglen(play_it):
+        s = mixer.Sound(play_it)
+        songlength = s.get_length()
+        return songlength
+
+    def time_cue(self, _=None):
+        mixer.music.set_pos(self.timeslider.get())
+        self.current_time += 1
+
+    def upd_time_slider(self, _=None):
+        if self.after_id is not None:
+            self.after_cancel(self.after_id)
+            self.after_id = None
+
+        timev = (mixer.music.get_pos() / 1000)
+        self.timeslider.set(timev)
+        self.after_id = self.after(1000, self.upd_time_slider)
 
     def prev_song(self):
         selected_song = int(self.playlistbox.curselection()[0])
@@ -144,28 +168,29 @@ class TabLocal(ttk.Frame):
         mins = round(mins)
         secs = round(secs)
         timeformat = '{:02d}:{:02d}'.format(mins, secs)
-        self.lengthlabel['text'] = "Total Length - " + timeformat
+        self.lengthlabel['text'] = timeformat
 
         t1 = threading.Thread(target=self.start_count, args=(total_length,))
         t1.start()
 
     def start_count(self, t):
-        current_time = 0
-        while current_time <= t and mixer.music.get_busy():  # returns false when stopped
+        while self.current_time <= t and mixer.music.get_busy():  # returns false when stopped
             if self.paused:
                 continue
             else:
-                mins, secs = divmod(current_time, 60)
+                mins, secs = divmod(self.current_time, 60)
                 mins = round(mins)
                 secs = round(secs)
                 timeformat = '{:02d}:{:02d}'.format(mins, secs)
-                self.currenttimelabel['text'] = "Current Time - " + timeformat
+                self.currenttimelabel['text'] = timeformat
+                self.timeslider.set(self.timeslider.get() + 1)
                 time.sleep(1)
-                current_time += 1
+                self.current_time += 1
 
     def play_music(self):
         selected_song = int(self.playlistbox.curselection()[0])
         play_it = self.playlist[selected_song]
+        self.set_timescale(play_it)
 
         if self.paused:
             mixer.music.unpause()
@@ -184,9 +209,10 @@ class TabLocal(ttk.Frame):
 
     def stop_music(self):
         mixer.music.stop()
-        self.lengthlabel['text'] = "Total Length : --:--"
-        self.currenttimelabel['text'] = "Current Time : --:--"
+        self.lengthlabel['text'] = "--:--"
+        self.currenttimelabel['text'] = "--:--"
         self.master.statusbar['text'] = " Stopped"
+        self.timeslider.set(0)
 
     def pause_music(self):
         self.paused = True
@@ -203,19 +229,19 @@ class TabLocal(ttk.Frame):
         if self.muted:
             mixer.music.set_volume(0.7)
             self.volumeBtn.configure(image=self.volumePhoto)
-            self.scale.set(70)
+            self.volscale.set(70)
             self.muted = False
         else:
             mixer.music.set_volume(0)
             self.volumeBtn.configure(image=self.mutePhoto)
-            self.scale.set(0)
+            self.volscale.set(0)
             self.muted = True
 
 
 class TabRadio(ttk.Frame):
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
-        master.add(self, text="Radio")
+        master.add(self, text="Radio & URL")
 
         self.playlist = {"NewWave: Synthwave": "https://ecast.myautodj.com/public1channel",
                          "RePlay: 90s / 00s": "https://mp3.stream.tb-group.fm/rp.mp3",
@@ -327,8 +353,7 @@ class TabTheme(ttk.Frame):
 
 
 def on_closing():
-    return
-    TabLocal.stop_music()
+    mixer.stop()
     root.destroy()
 
 
@@ -338,6 +363,6 @@ if __name__ == "__main__":
     root.iconbitmap(r'images/melody.ico')
     # root.geometry("360x280")
     # root.resizable(0, 0)
-    root.protocol("WM_DELETE_WINDOW", None)
+    root.protocol("WM_DELETE_WINDOW", on_closing)
     MainGUI(root)
     root.mainloop()
