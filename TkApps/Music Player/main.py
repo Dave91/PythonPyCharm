@@ -336,11 +336,16 @@ class TabTheme(ttk.Frame):
 
         ttk.Button(self, text="Pick a theme color", command=self.choose_theme_color).pack()
 
-    # @staticmethod
-    def choose_theme_color(self):
+    @staticmethod
+    def choose_theme_color():
         theme_color = colorchooser.askcolor()
-        for child in self.master.children.values():
-            child.configure(background=theme_color[1])
+        for bg in ["TFrame", "TLabel"]:
+            StyleConfig.configure(StyleConfig(), bg, background=theme_color[1])
+
+
+class StyleConfig(ttk.Style):
+    def __init__(self):
+        ttk.Style.__init__(self)
 
 
 def on_closing():
@@ -355,5 +360,6 @@ if __name__ == "__main__":
     # root.geometry("360x280")
     # root.resizable(0, 0)
     root.protocol("WM_DELETE_WINDOW", on_closing)
+    StyleConfig()
     MainGUI(root)
     root.mainloop()
