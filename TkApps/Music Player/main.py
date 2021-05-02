@@ -115,16 +115,6 @@ class TabLocal(ttk.Frame):
         mixer.music.set_pos(self.timeslider.get())
         self.current_time = self.timeslider.get()
 
-    def upd_time_slider(self, _=None):
-        if self.after_id is not None:
-            self.after_cancel(self.after_id)
-            self.after_id = None
-
-        timev = mixer.music.get_pos()
-        self.timeslider.set(timev)
-        self.current_time = mixer.music.get_pos()
-        self.after_id = self.after(1000, self.upd_time_slider)
-
     def prev_song(self):
         selected_song = int(self.playlistbox.curselection()[0])
         self.playlistbox.selection_clear(selected_song)
@@ -184,14 +174,13 @@ class TabLocal(ttk.Frame):
                 secs = round(secs)
                 timeformat = '{:02d}:{:02d}'.format(mins, secs)
                 self.currenttimelabel['text'] = timeformat
-                self.timeslider.set(self.timeslider.get() + 1)
+                self.timeslider.set(self.current_time)
                 time.sleep(1)
                 self.current_time += 1
 
     def play_music(self):
         selected_song = int(self.playlistbox.curselection()[0])
         play_it = self.playlist[selected_song]
-        self.set_timescale(play_it)
 
         if self.paused:
             mixer.music.unpause()
@@ -205,6 +194,7 @@ class TabLocal(ttk.Frame):
                 mixer.music.play()
                 self.master.statusbar['text'] = " Playing - " + os.path.basename(play_it)
                 self.show_details(play_it)
+                self.set_timescale(play_it)
             except os.error:
                 messagebox.showerror(None, 'File could not be opened.\nPlease check and try again.')
 
