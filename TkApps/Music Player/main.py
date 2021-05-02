@@ -113,15 +113,16 @@ class TabLocal(ttk.Frame):
 
     def time_cue(self, _=None):
         mixer.music.set_pos(self.timeslider.get())
-        self.current_time += 1
+        self.current_time = self.timeslider.get()
 
     def upd_time_slider(self, _=None):
         if self.after_id is not None:
             self.after_cancel(self.after_id)
             self.after_id = None
 
-        timev = (mixer.music.get_pos() / 1000)
+        timev = mixer.music.get_pos()
         self.timeslider.set(timev)
+        self.current_time = mixer.music.get_pos()
         self.after_id = self.after(1000, self.upd_time_slider)
 
     def prev_song(self):
