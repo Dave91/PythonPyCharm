@@ -95,7 +95,7 @@ class TabLocal(ttk.Frame):
 
         self.volscale = tk.Scale(self.bottomframe, from_=0, to=100, resolution=5, showvalue=True, orient="horizontal",
                                  command=self.set_vol)
-        self.volscale.set(70)  # default volume
+        self.volscale.set(100)  # default volume
         mixer.music.set_volume(0.7)
         self.volscale.grid(row=0, column=2, pady=15, padx=30)
 
@@ -218,9 +218,9 @@ class TabLocal(ttk.Frame):
 
     def mute_music(self):
         if self.muted:
-            mixer.music.set_volume(0.7)
+            mixer.music.set_volume(1)
             self.volumeBtn.configure(image=self.volumePhoto)
-            self.volscale.set(70)
+            self.volscale.set(100)
             self.muted = False
         else:
             mixer.music.set_volume(0)
@@ -282,11 +282,11 @@ class TabRadio(ttk.Frame):
         self.volumeBtn = ttk.Button(self.bottomframe, image=self.volumePhoto, command=self.mute_music)
         self.volumeBtn.grid(row=0, column=1)
 
-        self.scale = tk.Scale(self.bottomframe, from_=0, to=100, resolution=5, showvalue=True, orient="horizontal",
-                              command=self.set_vol)
-        self.scale.set(70)  # default volume
+        self.volscale = tk.Scale(self.bottomframe, from_=0, to=100, resolution=5, showvalue=True, orient="horizontal",
+                                 command=self.set_vol)
+        self.volscale.set(100)  # default volume
         mixer.music.set_volume(0.7)
-        self.scale.grid(row=0, column=2, pady=15, padx=30)
+        self.volscale.grid(row=0, column=2, pady=15, padx=30)
 
     def browse_file(self):
         filename_path = simpledialog.askstring(None, "URL: ")
@@ -299,17 +299,18 @@ class TabRadio(ttk.Frame):
     def play_music(self):
         selected_song = (self.playlistbox.curselection())[0]
         self.curradiourl = list(self.playlist.values())[selected_song]
-        play_it = vlc.MediaPlayer(str(self.curradiourl))
+        play_it = vlc.MediaPlayer(self.curradiourl)
         try:
-            self.stop_music(play_it)
+            if self.curradiourl != "":
+                vlc.MediaPlayer.stop()
             time.sleep(1)
             play_it.play()
             self.master.statusbar['text'] = " Playing - " + list(self.playlist.keys())[selected_song]
         except os.error:
             messagebox.showerror(None, 'URL could not be opened.\nPlease check and try again.')
 
-    def stop_music(self, play_it):
-        vlc.MediaPlayer.stop(play_it)
+    def stop_music(self):
+        vlc.AudioPauseCb()
         self.master.statusbar['text'] = " Stopped"
 
     @staticmethod
@@ -318,14 +319,14 @@ class TabRadio(ttk.Frame):
 
     def mute_music(self):
         if self.muted:
-            vlc.MediaPlayer.audio_set_volume(70)
+            vlc.AudioSetVolumeCb(100)
             self.volumeBtn.configure(image=self.volumePhoto)
-            self.scale.set(70)
+            self.volscale.set(100)
             self.muted = False
         else:
-            vlc.MediaPlayer.audio_set_volume(0)
+            vlc.AudioSetVolumeCb(0)
             self.volumeBtn.configure(image=self.mutePhoto)
-            self.scale.set(0)
+            self.volscale.set(0)
             self.muted = True
 
 
