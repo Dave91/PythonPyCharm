@@ -1,4 +1,3 @@
-
 # source code & details:
 # http://kira-tech.blogspot.com/2013/06/building-python-media-player-part-2.html
 
@@ -7,198 +6,123 @@ import tkinter as tk
 from tkinter import filedialog
 
 import pyglet
-
-pyglet.resource.path = ['images']
-# pyglet.resource.reindex()
-batch = pyglet.graphics.Batch()
+# import mp3play as mpp
+from audioplayer import AudioPlayer
 
 
-class PygWin(pyglet.window.Window):
+class AppGui(tk.Tk):
     def __init__(self):
-        super(PygWin, self).__init__()
-        self.set_size(600, 400)
-        # self.set_fullscreen(True)
+        super(AppGui, self).__init__()
 
-        # loading graphics
-        self.img_background = pyglet.resource.image('space.png')
-        self.img_background.width = 800
-        self.img_background.height = 600
-        self.img_pause = pyglet.resource.image('pause.png')
-        self.img_play = pyglet.resource.image('play.png')
-        self.img_unmute = pyglet.resource.image('mute.png')
-        self.img_mute = pyglet.resource.image('volume.png')
-        self.img_volume = pyglet.resource.image('volume_bar.png')
+        self.player = pyglet.media.Player()
+
+        self.geometry("350x250")
+        self.title("Music Player")
+        self.iconbitmap(r'images/melody.ico')
+        self.bgimgsrc = tk.PhotoImage(file="images/space.png").subsample(6)
+        self.bgimg = tk.Label(self, image=self.bgimgsrc)
+        self.bgimg.place(relx=0, rely=0)
+
+        self.mainframe = tk.Frame(self, relief="groove", border=4, background="lightblue")
+        self.mainframe.place(relwidth=0.6, relheight=0.6, relx=0.2, rely=0.2)
+        self.statbartxt = "kkkk"
+        self.statbar = tk.Label(self, text=self.statbartxt, background="beige")
+        self.statbar.pack(side="bottom", fill="x")
+
+        self.volscale = tk.Scale(self.mainframe, from_=0, to=100, resolution=5, showvalue=True, orient="horizontal",
+                                 command=self.set_vol)
+        self.volscale.set(100)
+        self.volscale.grid(row=1, column=1, columnspan=2, padx=2, pady=4)
+        # btn img
+        self.muteimg = tk.PhotoImage(file="images/mute.png")
+        self.volumeimg = tk.PhotoImage(file="images/volume.png")
+        self.playimg = tk.PhotoImage(file="images/play.png")
+        self.pauseimg = tk.PhotoImage(file="images/pause.png")
+
+        self.mutevolbtn = tk.Button(self.mainframe, image=self.volumeimg, command=self.mute_btn_func)
+        self.prevbtn = tk.Button(self.mainframe, text=" << ", command=self.previous)
+        self.playpausebtn = tk.Button(self.mainframe, image=self.playimg, command=self.pause_btn_func)
+        self.nextbtn = tk.Button(self.mainframe, text=" >> ", command=self.next)
+
+        self.mutevolbtn.grid(row=1, column=0, padx=2, pady=4)
+        self.prevbtn.grid(row=0, column=0, padx=2, pady=4)
+        self.playpausebtn.grid(row=0, column=1, padx=2, pady=4)
+        self.nextbtn.grid(row=0, column=2, padx=2, pady=4)
+        # key bindings
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.bind("<Escape>", self.on_closing)
+        self.bind("<o>", self.open_play_media)
+        self.bind("<p>", self.pause_btn_func)
+        self.bind("<m>", self.mute_btn_func)
+        self.bind("<Up>", self.upvol)
+        self.bind("<Down>", self.downvol)
+        self.bind("<Left>", self.previous)
+        self.bind("<Right>", self.next)
+        for k in range(10):
+            self.bind(str(k), self.seek_nums)
 
         self.can_play = True
         self.can_mute = True
-        self.main_menu_visible = True
-        self.frame_count = 0
         self.selected_file = "null"
-        self.current_volume = 0.5
-        self.curVolBarWidth = self.current_volume * 100.0
-        self.img_volume.width = self.curVolBarWidth
+        self.totaldur = 0
 
         self.refresh_player()
-
-    def update_sprites(self):
-        # self.backgroundSprite = pyglet.sprite.Sprite(self.img_background, x=400, y=240, batch=batch)
-
-        if self.main_menu_visible is True:
-            self.mainMenuSprites = None
-
-        if self.can_play is True and self.can_mute is True:
-            self.controlSprites = [pyglet.sprite.Sprite(self.img_mute, x=50, y=108, batch=batch),
-                                   pyglet.sprite.Sprite(self.img_play, x=242, y=35, batch=batch)]
-
-        if self.can_play is False and self.can_mute is True:
-            self.controlSprites = [pyglet.sprite.Sprite(self.img_mute, x=50, y=108, batch=batch),
-                                   pyglet.sprite.Sprite(self.img_pause, x=242, y=35, batch=batch)]
-
-        if self.can_play is False and self.can_mute is False:
-            self.controlSprites = [pyglet.sprite.Sprite(self.img_unmute, x=50, y=108, batch=batch),
-                                   pyglet.sprite.Sprite(self.img_pause, x=242, y=35, batch=batch)]
-
-        if self.can_play is True and self.can_mute is False:
-            self.controlSprites = [pyglet.sprite.Sprite(self.img_unmute, x=50, y=108, batch=batch),
-                                   pyglet.sprite.Sprite(self.img_play, x=242, y=35, batch=batch)]
-
-        self.volumeSprites = [pyglet.sprite.Sprite(self.img_volume, x=498, y=35, batch=batch)]
-
-    def update_volume(self, volkey=None):
-        if volkey == "up":
-            self.current_volume += 0.1
-        if volkey == "down":
-            self.current_volume -= 0.1
-        self.player.volume = self.current_volume
-
-    def on_draw(self):
-        self.clear()
-
-        if self.frame_count % 10 == 0:
-            self.frame_count = 0
-            self.update_volume()
-            self.update_sprites()
-
-        batch.draw()
-        self.frame_count += 1
-
-    def open_file(self):
-        self.root = tk.Tk()
-        self.root.withdraw()
-
-        f = filedialog.askopenfilename(parent=self.root, title='Please select an audio file:',
-                                       filetypes=[('MP3 Files', '.mp3'), ('WAV Files', '.wav'), ('All Files', '.*')],
-                                       initialdir='C:\\')  # vagy os.curdir
-        if f:
-            file = f
-            self.root.destroy()
-            return file
-        else:
-            self.root.destroy()
-            return None
+        self.mainloop()
 
     def refresh_player(self):
-        self.player = pyglet.media.Player()
 
         @self.player.event('on_eos')
         def auto_next():
             self.next()
 
-        self.player.volume = self.current_volume
+        self.set_vol()
 
-    def previous(self):
-        self.player.canPlay = True
-        self.player.pause()
-        if self.player.source != 'null':
-            # index of first / from end of src filepath
-            source_index = self.selected_file.rfind('/')
-            # name of dir with path
-            directory = self.selected_file[:source_index + 1]
-            previous_file = 'null'
-            for file in os.listdir(directory):
-                if file.endswith('.MP3') or file.endswith('.mp3') or file.endswith('.WAV') or file.endswith('.wav'):
-                    print('Previous Button: Checking ' + file)
-                    if self.selected_file == (directory + file):
-                        print('Previous Button: Match!')
-                        # find curr file, check if there is a file before this in src dir, play it if true
-                        if previous_file != 'null':
-                            print('Previous Button: Previous file is ' + previous_file)
-                            self.refresh_player()
-                            media = pyglet.media.load(directory + previous_file)
-                            self.player.queue(media)
-                            self.selected_file = directory + previous_file
-                            self.player.play()
-                            self.player.canPlay = False
-                        else:
-                            print('Previous Button: Current file first in directory!')
-                        return
-                    else:
-                        # to refer back later if next file is the curr src
-                        previous_file = file
+    def seek_nums(self, event):
+        if self.selected_file != "null":
+            num = int(event.char)
+            seekpos = self.totaldur * (num / 10)
+            self.player.seek(seekpos)
+            self.player.play()
 
-    def next(self):
-        self.player.canPlay = True
-        self.player.pause()
-        if self.player.source != 'null':
-            # index of first / from end of src filepath
-            source_index = self.selected_file.rfind('/')
-            # name of dir with path
-            directory = self.selected_file[:source_index + 1]
-            found_current = False
-            is_last_file = True
-            for file in os.listdir(directory):
-                if file.endswith('.MP3') or file.endswith('.mp3') or file.endswith('.WAV') or file.endswith('.wav'):
-                    if found_current:
-                        print('Next Button: Next file is ' + file)
-                        self.refresh_player()
-                        media = pyglet.media.load(directory + file)
-                        self.player.queue(media)
-                        self.selected_file = (directory + file)
-                        self.player.play()
-                        self.player.canPlay = False
-                        # successfully loaded next file?
-                        is_last_file = False
-                        return
-                    if self.selected_file == (directory + file):
-                        # Found curr file, change found_current to True
-                        found_current = True
-            if is_last_file:
-                print('Next Button: Current file is last in the directory!')
+    def upvol(self, event=None):
+        self.mutevolbtn["image"] = self.volumeimg
+        oldval = self.volscale.get()
+        if oldval < 100:
+            newval = oldval + 5
+            self.volscale.set(newval)
+            self.set_vol()
 
-    def check_for_button(self, x, y):
-        # Check all button coordinates against x and y, return True if a button was hit or False if not
+    def downvol(self, event=None):
+        oldval = self.volscale.get()
+        if oldval > 0:
+            newval = oldval - 5
+            self.volscale.set(newval)
+            self.set_vol()
+        else:
+            self.mutevolbtn["image"] = self.muteimg
 
-        if ((242 - (self.img_play.width / 2)) < x < (242 + (self.img_play.width / 2)) and (
-                (35 - (self.img_play.height / 2)) < y < (35 + (self.img_play.height / 2)))):
-            # coordinate lies inside the play/pause button
-            if self.can_play:
-                print('Play Button: Playing ' + self.selected_file)
-                self.player.play()
+    def mute_btn_func(self, event=None):  # mute/unmute button
+        if self.can_mute:
+            print('Audio Muted!')
+            self.player.volume = 0
+            self.volscale["state"] = "disabled"
+            self.mutevolbtn["image"] = self.muteimg
+            self.can_mute = False
+        else:
+            print('Audio Unmuted!')
+            self.set_vol()
+            self.volscale["state"] = "normal"
+            self.mutevolbtn["image"] = self.volumeimg
+            self.can_mute = True
 
-                self.can_play = False
-            else:
-                print('Pause Button: Pausing ' + self.selected_file)
-                self.player.pause()
+    def set_vol(self, event=None):
+        self.player.volume = self.volscale.get() / 100
+        if self.volscale.get() == 0:
+            self.mutevolbtn["image"] = self.muteimg
 
-                self.can_play = True
-
-        if ((50 - (self.img_mute.width / 2)) < x < (50 + (self.img_mute.width / 2)) and (
-                (108 - (self.img_mute.height / 2)) < y < (108 + (self.img_mute.height / 2)))):
-            # coordinate lies inside the mute/unmute button
-            if self.can_mute:
-                print('Mute Button: Audio Muted!')
-                self.player.volume = 0
-                self.can_mute = False
-            else:
-                print('Mute Button: Audio Unmuted!')
-                self.player.volume = self.current_volume
-                self.can_mute = True
-
-        self.volumeSprites = [pyglet.sprite.Sprite(self.img_volume, x=498, y=35, batch=batch)]
-
-    def open_play_media(self):
+    def open_play_media(self, event=None):
         if self.player.playing:
-            self.player.canPlay = True
+            self.can_play = False
             self.player.pause()
             was_playing = True
         else:
@@ -211,29 +135,98 @@ class PygWin(pyglet.window.Window):
             # drop curr queue, build new
             self.refresh_player()
             media = pyglet.media.load(filename)
+            self.totaldur = media.duration
             self.player.queue(media)
             self.can_play = False
             self.player.play()
+            self.playpausebtn["image"] = self.pauseimg
             if was_playing:
                 self.player.play()
 
-    def on_mouse_press(self, x, y, button, modifiers):
-        self.check_for_button(x, y)
+    def open_file(self):
+        file = filedialog.askopenfilename(parent=self, title='Please select an audio file:',
+                                          filetypes=[('MP3 Files', '.mp3'), ('WAV Files', '.wav'), ('All Files', '.*')],
+                                          initialdir=os.curdir)
+        if file:
+            return file
+        else:
+            return None
 
-    def on_key_press(self, symbol, modifiers):
-        if symbol == pyglet.window.key.O:
-            self.open_play_media()
-        if symbol == pyglet.window.key.LEFT:
-            self.previous()
-        if symbol == pyglet.window.key.RIGHT:
-            self.next()
-        if symbol == pyglet.window.key.UP:
-            self.update_volume("up")
-        if symbol == pyglet.window.key.DOWN:
-            self.update_volume("down")
+    def previous(self, event=None):
+        self.player.pause()
+        self.can_play = True
+        if self.player.source != 'null':
+            # index of first / from end of src filepath
+            source_index = self.selected_file.rfind('/')
+            # name of dir with path
+            directory = self.selected_file[:source_index + 1]
+            previous_file = 'null'
+            for file in os.listdir(directory):
+                if file.endswith('.mp3') or file.endswith('.wav'):
+                    print('Checking ' + file)
+                    if self.selected_file == (directory + file):
+                        print('Match!')
+                        # find curr file, check if there is a file before this in src dir, play it if true
+                        if previous_file != 'null':
+                            print('Previous file is ' + previous_file)
+                            self.selected_file = directory + previous_file
+                            media = pyglet.media.load(self.selected_file)
+                            self.totaldur = media.duration
+                            media.play()
+                            self.can_play = False
+                        else:
+                            print('Current file first in directory!')
+                        return
+                    else:
+                        # to refer back later if next file is the curr src
+                        previous_file = file
+
+    def next(self, event=None):
+        self.player.pause()
+        self.can_play = True
+        if self.player.source != 'null':
+            # index of first / from end of src filepath
+            source_index = self.selected_file.rfind('/')
+            # name of dir with path
+            directory = self.selected_file[:source_index + 1]
+            found_current = False
+            is_last_file = True
+            for file in os.listdir(directory):
+                if file.endswith('.mp3') or file.endswith('.wav'):
+                    if found_current:
+                        print('Next file is ' + file)
+                        self.selected_file = directory + file
+                        media = pyglet.media.load(self.selected_file)
+                        self.totaldur = media.duration
+                        media.play()
+                        self.can_play = False
+                        # successfully loaded next file?
+                        is_last_file = False
+                        return
+                    if self.selected_file == (directory + file):
+                        # Found curr file, change found_current to True
+                        found_current = True
+            if is_last_file:
+                print('Current file is last in the directory!')
+
+    def pause_btn_func(self, event=None):  # play/pause button
+        if self.can_play:
+            print('Playing ' + self.selected_file)
+            self.player.play()
+            self.playpausebtn["image"] = self.playimg
+            self.can_play = False
+        else:
+            print('Pausing ' + self.selected_file)
+            self.player.pause()
+            self.playpausebtn["image"] = self.pauseimg
+            self.can_play = True
+
+    def on_closing(self, event=None):
+        self.player.pause()
+        self.player.delete()
+        pyglet.app.exit()
+        self.destroy()
 
 
 if __name__ == '__main__':
-    window = PygWin()
-    # window.set_mouse_visible(False)
-    pyglet.app.run()
+    gui = AppGui()

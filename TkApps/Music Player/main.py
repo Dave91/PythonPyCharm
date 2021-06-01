@@ -96,7 +96,7 @@ class TabLocal(ttk.Frame):
         self.volscale = tk.Scale(self.bottomframe, from_=0, to=100, resolution=5, showvalue=True, orient="horizontal",
                                  command=self.set_vol)
         self.volscale.set(100)  # default volume
-        mixer.music.set_volume(0.7)
+        mixer.music.set_volume(1)
         self.volscale.grid(row=0, column=2, pady=15, padx=30)
 
         self.after_id = None
