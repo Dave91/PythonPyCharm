@@ -46,16 +46,20 @@ while running:
 
     grid.draw(window)
 
-    if grid.game_over and not grid.tie_game:  # is over, but not tie
+    if grid.game_over and not grid.tie_game:
         color = (0, 255, 0) if grid.winner_letter == "X" else (255, 0, 0)
         won_surface = winner_font.render(f"{grid.winner_letter} wins!", False, color)
-        window.blit(won_surface, (320, 520))
+        window.blit(won_surface, (50, 520))
         restart_surface = restart_font.render("Press Space to restart!", False, color)
-        window.blit(restart_surface, (250, 550))
-    if grid.tie_game:  # is tie
-        tie_game_surface = winner_font.render("No winner!", False, (255, 255, 255))
-        window.blit(tie_game_surface, (280, 520))
-        restart_surface = restart_font.render("Press Space to restart!", False, (255, 255, 255))
-        window.blit(restart_surface, (250, 550))
+        window.blit(restart_surface, (50, 550))
+    if grid.tie_game:
+        black = (0, 0, 0)
+        tie_game_surface = winner_font.render("No winner!", False, black)
+        window.blit(tie_game_surface, (50, 520))
+        restart_surface = restart_font.render("Press Space to restart!", False, black)
+        window.blit(restart_surface, (50, 550))
+
+    points_surface = restart_font.render(f"(X) {grid.pointsX} - {grid.pointsO} (O)", False, (0, 0, 0))
+    window.blit(points_surface, (350, 535))
 
     pygame.display.flip()

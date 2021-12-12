@@ -37,6 +37,8 @@ class Grid:
 
         self.game_over = False
         self.winner_letter = ""
+        self.pointsX = 0
+        self.pointsO = 0
         self.tie_game = False
 
     def draw(self, win):
@@ -78,7 +80,7 @@ class Grid:
         return True
 
     def is_within_bounds(self, x, y):
-        return 0 <= x < 5 and 0 <= y < 5
+        return 0 <= x < 10 and 0 <= y < 10  # grid row, col nums: NOT letter counts!!
 
     def check_grid(self, x, y, letter):
         count = 1
@@ -87,13 +89,24 @@ class Grid:
             if self.is_within_bounds(x + dirx, y + diry) \
             and self.get_cell_value(x + dirx, y + diry) == letter:
                 count += 1
-                xx = x + dirx
-                yy = y + diry
-                if self.is_within_bounds(xx + dirx, yy + diry) \
-                and self.get_cell_value(xx + dirx, yy + diry) == letter:
+                x2 = x + dirx
+                y2 = y + diry
+                if self.is_within_bounds(x2 + dirx, y2 + diry) \
+                and self.get_cell_value(x2 + dirx, y2 + diry) == letter:
                     count += 1
-                    if count == 5:
-                        break
+                    x3 = x2 + dirx
+                    y3 = y2 + diry
+                    if self.is_within_bounds(x3 + dirx, y3 + diry) \
+                    and self.get_cell_value(x3 + dirx, y3 + diry) == letter:
+                        count += 1
+                        x4 = x3 + dirx
+                        y4 = y3 + diry
+                        if self.is_within_bounds(x4 + dirx, y4 + diry) \
+                        and self.get_cell_value(x4 + dirx, y4 + diry) == letter:
+                            count += 1
+                            if count == 5:
+                                break
+
                 if count < 5:
                     new_dir = 0
                     if index == 0:  # N to S
@@ -124,6 +137,10 @@ class Grid:
         if count == 5:
             self.winner_letter = letter
             self.game_over = True
+            if letter == "X":
+                self.pointsX += 1
+            else:
+                self.pointsO += 1
         else:
             self.game_over = self.is_grid_full()
             if self.game_over:
