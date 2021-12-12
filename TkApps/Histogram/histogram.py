@@ -1,41 +1,38 @@
-"""
-Histogram for lottery (ötös/hatos lottó):
-* Setting the number of data bins.
-* The *density* parameter, which normalizes bin heights so that the integral of
-  the histogram is 1. The resulting histogram is an approximation of the
-  probability density function.
-* Setting the face color of the bars.
-* Setting the opacity (alpha value).
-
-Selecting different bin counts and sizes can significantly affect the shape
-of a histogram.
-"""
-
 import matplotlib.pyplot as plt
-import numpy as np
+import pandas as pd
 
-np.random.seed(19680801)
+'''tenyget = self.optmenu.get()
+tenyezo = {"Ötöslottó": "otos", "Hatoslottó": "hatos"}
+pdread = pd.read_csv("data/" + tenyezo[tenyget] + ".csv", delimiter=";")'''
 
-# example data
-mu = 100  # mean of distribution
-sigma = 15  # standard deviation of distribution
-x = mu + sigma * np.random.randn(437)
+pdread = pd.read_csv("data/otos.csv", delimiter=";")
 
-num_bins = 50
+kern = []
+for i in range(1, 6):
+    yval = pdread["#" + str(i)]
+    for yl in iter(yval):
+        kern.append(yl)
+# print(kern)
+huzottn = []
+for k in range(1, 91):
+    nm = 0
+    for kn in kern:
+        if kn == k:
+            nm += 1
+    huzottn.append(nm)
+# print(huzottn)
 
-fig, ax = plt.subplots()
-
-# the histogram of the data
-n, bins, patches = ax.hist(x, num_bins, density=True)
-
-# add a 'best fit' line
-y = ((1 / (np.sqrt(2 * np.pi) * sigma)) *
-     np.exp(-0.5 * (1 / sigma * (bins - mu)) ** 2))
-ax.plot(bins, y, '--')
-ax.set_xlabel('Smarts')
-ax.set_ylabel('Probability density')
-ax.set_title(r'Histogram of IQ: $\mu=100$, $\sigma=15$')
-
-# Tweak spacing to prevent clipping of ylabel
-fig.tight_layout()
+xn = range(1, 91)
+fig = plt.figure(figsize=(12, 4))
+canv = plt.FigureCanvasBase(fig)
+canv.draw()
+plt.bar(xn, height=huzottn, color="lightblue", edgecolor="grey")
+plt.xticks(xn, xn, rotation=90, fontsize=6)
+plt.yticks(fontsize=6)
+plt.xlabel("Lottószámok (1-90)", fontsize=8)
+plt.ylabel("Érték ", fontsize=8)
+plt.title("Kihúzott lottószámok megoszlása (Ötös)", fontsize=8)
+# plt.ylim(min(huzottn) - min(huzottn) * 0.2, max(huzottn) + max(huzottn) * 0.2)
+plt.grid(which="major", axis="y")
+# fig.tight_layout()
 plt.show()

@@ -204,8 +204,10 @@ class AppGui(tk.Tk):
             self.can_play = True
 
     def on_closing(self, event=None):
-        self.player.stop()
-        self.player.close()
+        if self.player is not None:
+            self.player.stop()
+            self.player.close()
+            self.destroy()
         self.destroy()
 
 

@@ -93,7 +93,7 @@ if __name__ == "__main__":
     root.appicon = tk.PhotoImage(file="icon_calc.png")
     root.iconphoto(False, root.appicon)
     root.geometry("360x280")
-    root.resizable(0, 0)
+    root.resizable(False, False)
     root.config(cursor="hand1")
     Styles()
     AppGUI(root)

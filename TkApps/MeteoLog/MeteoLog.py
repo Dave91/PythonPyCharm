@@ -392,9 +392,9 @@ class TabEvesReszl(ttk.Frame):
 
         # bottom row
         self.tree = ttk.Treeview(self.bottrow, columns=("Évszám", "Érték"), height=17)
-        self.tree.column("#0", width=110, minwidth=110, stretch=0)
-        self.tree.column("#1", width=85, minwidth=85, stretch=0)
-        self.tree.column("#2", width=95, minwidth=95, stretch=0)
+        self.tree.column("#0", width=110, minwidth=110, stretch=False)
+        self.tree.column("#1", width=85, minwidth=85, stretch=False)
+        self.tree.column("#2", width=95, minwidth=95, stretch=False)
         self.tree.heading("#0", text="Tényező")
         self.tree.heading("#1", text="Évszám")
         self.tree.heading("#2", text="Érték")
@@ -590,7 +590,7 @@ def main():
     appicon = tk.PhotoImage(file="icons/umbrella-icon-small.png")
     root.iconphoto(False, appicon)
     root.geometry("300x520")
-    root.resizable(0, 0)
+    root.resizable(False, False)
     root.config(background="beige")
     StyleConfig()
     MenuBar(root)
