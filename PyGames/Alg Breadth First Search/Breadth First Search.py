@@ -1,119 +1,129 @@
 import queue
+import tkinter as tk
 
 
-# TODO: pygame window recreation (like in pathfinder??)
-def create_maze():
-    maze = []
-    maze.append(["#", "#", "#", "#", "#", "O", "#", "#", "#"])
-    maze.append(["#", " ", " ", " ", " ", " ", " ", " ", "#"])
-    maze.append(["#", " ", "#", "#", " ", "#", "#", " ", "#"])
-    maze.append(["#", " ", "#", " ", " ", " ", "#", " ", "#"])
-    maze.append(["#", " ", "#", " ", "#", " ", "#", " ", "#"])
-    maze.append(["#", " ", "#", " ", "#", " ", "#", " ", "#"])
-    maze.append(["#", " ", "#", " ", "#", " ", "#", "#", "#"])
-    maze.append(["#", " ", " ", " ", " ", " ", " ", " ", "#"])
-    maze.append(["#", "#", "#", "#", "#", "#", "#", "X", "#"])
+class MainApp(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        # gui stuff
+        # self.btn_map = tk.Button(root, text="load map", command=self.load_map)
+        self.btn = tk.Button(root, text="find path", command=self.start_alg)
+        self.lab = tk.Text(root)
 
-    return maze
+        # self.btn_map.pack()
+        self.btn.pack()
+        self.lab.pack()
 
+        # alg stuff
+        self.maze = self.create_maze()
+        self.nums = queue.Queue()
+        self.nums.put("")
+        self.add = ""
+        self.moves = ["L", "R", "U", "D"]
 
-def print_maze(maze, path=""):
-    for x, pos in enumerate(maze[0]):
-        if pos == "O":
-            start = x
+    def start_alg(self):
+        while not self.find_end():
+            add = self.nums.get()
+            for j in self.moves:
+                put = add + j
+                if self.valid(put):
+                    self.nums.put(put)
 
-    i = start
-    j = 0
-    pos = set()
-    for move in path:
-        if move == "L":
-            i -= 1
+    def create_maze(self):
+        maze = []
+        maze.append(["#", "#", "#", "#", "#", "O", "#", "#", "#"])
+        maze.append(["#", " ", " ", " ", " ", " ", " ", " ", "#"])
+        maze.append(["#", " ", "#", "#", " ", "#", "#", " ", "#"])
+        maze.append(["#", " ", "#", " ", " ", " ", "#", " ", "#"])
+        maze.append(["#", " ", "#", " ", "#", " ", "#", " ", "#"])
+        maze.append(["#", " ", "#", " ", "#", " ", "#", " ", "#"])
+        maze.append(["#", " ", "#", " ", "#", " ", "#", "#", "#"])
+        maze.append(["#", " ", " ", " ", " ", " ", " ", " ", "#"])
+        maze.append(["#", "#", "#", "#", "#", "#", "#", "X", "#"])
 
-        elif move == "R":
-            i += 1
+        for j, row in enumerate(maze):
+            self.lab.insert("end", "\n")
+            for i, col in enumerate(row):
+                self.lab.insert("end", col)
 
-        elif move == "U":
-            j -= 1
+        return maze
 
-        elif move == "D":
-            j += 1
-        pos.add((j, i))
+    def print_maze(self, path=""):
+        for x, pos in enumerate(self.maze[0]):
+            if pos == "O":
+                start = x
 
-    for j, row in enumerate(maze):
-        for i, col in enumerate(row):
-            if (j, i) in pos:
-                print("+ ", end="")
-            else:
-                print(col + " ", end="")
-        print()
+        i = start
+        j = 0
+        pos = set()
+        for move in path:
+            if move == "L":
+                i -= 1
+            elif move == "R":
+                i += 1
+            elif move == "U":
+                j -= 1
+            elif move == "D":
+                j += 1
+            pos.add((j, i))
 
+        for j, row in enumerate(self.maze):
+            for i, col in enumerate(row):
+                if (j, i) in pos:
+                    self.maze[j][i] = "+ "
+                else:
+                    self.maze[j][i] = col + " "
+            print()
 
-def valid(maze, moves):
-    for x, pos in enumerate(maze[0]):
-        if pos == "O":
-            start = x
+    def valid(self, put):
+        for x, pos in enumerate(self.maze[0]):
+            if pos == "O":
+                start = x
 
-    i = start
-    j = 0
-    for move in moves:
-        if move == "L":
-            i -= 1
+        i = start
+        j = 0
+        for move in self.moves:
+            if move == "L":
+                i -= 1
+            elif move == "R":
+                i += 1
+            elif move == "U":
+                j -= 1
+            elif move == "D":
+                j += 1
 
-        elif move == "R":
-            i += 1
+            if not (0 <= i < len(self.maze[0]) and 0 <= j < len(self.maze)):
+                return False
+            elif self.maze[j][i] == "#":
+                return False
 
-        elif move == "U":
-            j -= 1
-
-        elif move == "D":
-            j += 1
-
-        if not (0 <= i < len(maze[0]) and 0 <= j < len(maze)):
-            return False
-        elif maze[j][i] == "#":
-            return False
-
-    return True
-
-
-def find_end(maze, moves):
-    for x, pos in enumerate(maze[0]):
-        if pos == "O":
-            start = x
-
-    i = start
-    j = 0
-    for move in moves:
-        if move == "L":
-            i -= 1
-
-        elif move == "R":
-            i += 1
-
-        elif move == "U":
-            j -= 1
-
-        elif move == "D":
-            j += 1
-
-    if maze[j][i] == "X":
-        print("Found: " + moves)
-        print_maze(maze, moves)
         return True
 
-    return False
+    def find_end(self):
+        for x, pos in enumerate(self.maze[0]):
+            if pos == "O":
+                start = x
+
+        i = start
+        j = 0
+        for move in self.moves:
+            if move == "L":
+                i -= 1
+            elif move == "R":
+                i += 1
+            elif move == "U":
+                j -= 1
+            elif move == "D":
+                j += 1
+        if self.maze[j][i] == "X":
+            print("Found: " + str(self.moves))
+            self.print_maze()
+            return True
+
+        return False
 
 
-# MAIN ALGORITHM
-nums = queue.Queue()
-nums.put("")
-add = ""
-maze = create_maze()
-
-while not find_end(maze, add):
-    add = nums.get()
-    # print(add)
-    for j in ["L", "R", "U", "D"]:
-        put = add + j
-        if valid(maze, put):
-            nums.put(put)
+if __name__ == "__main__":
+    root = tk.Tk()
+    MainApp(root)
+    root.mainloop()

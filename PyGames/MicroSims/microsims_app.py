@@ -61,12 +61,12 @@ def move_dots():
 def decay_reprod_dots():
     global dtotal, dot_life, dot_age
     dlife = {"0": 20, "1": 15, "2": 10, "3": 5}
-    drep = {"0": random.randint(0, 5), "1": random.randint(0, 10),
+    drep = {"0": random.randint(0, 5), "1": random.randint(0, 10),  # reprod rates
             "2": random.randint(0, 15), "3": random.randint(0, 20)}
     for i in range(4):
         try:
             if dot_life[i] > dlife[str(i)]:
-                for x in range(random.randint(0, 10)):
+                for x in range(random.randint(0, 20)):  # decay rate
                     dtotal[i].pop(0)
                     dot_age[i].pop(0)
                 dot_life[i] = 0
