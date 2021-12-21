@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkcalendar import Calendar
 from datetime import date, datetime
-from calendar import TextCalendar
+# from tkinter import messagebox as msg, simpledialog as dia
 
 
 class App(tk.Frame):
@@ -13,58 +13,67 @@ class App(tk.Frame):
         self.gotoday_btn = tk.Button(self, text="Go to Today", background="lightblue", command=self.go_today)
         self.addev_btn = tk.Button(self, text="Add Event", background="lightblue", command=self.add_event)
         self.dispcal = Calendar(self, selectmode="day")
-        self.dispcal.bind("<Button-1>", self.color_date)
+        # self.dispcal.bind("<Button-1>", self.color_date)
         self.labev = tk.Label(self, text="Upcoming Events:")
-        self.dispnote = tk.Listbox(self, height=10, background="beige")
+        self.dispnote = tk.Listbox(self, height=12, background="beige", selectmode="single", activestyle="dotbox")
+        self.dispnote.bind("<<ListboxSelect>>", self.mark_event)
         self.statbar = tk.Label(self, text="ready")
 
         self.gotoday_btn.pack(fill="x", pady=5)
         self.addev_btn.pack(fill="x")
         self.dispcal.pack(fill="x", pady=5)
         self.labev.pack(anchor="w")
-        self.dispnote.pack(fill="x", pady=5)
+        self.dispnote.pack(fill="x", pady=2)
         self.statbar.pack(anchor="w")
 
-        self.events = self.get_events()
         self.today = date.today()
+        self.events = self.get_events(self.today)
         self.disp_notif()
-        self.go_today()
 
-    @staticmethod
-    def get_events():
+    def get_events(self, tod):
         events_list = []
         with open("data/events.txt") as file:
             for line in file:
                 line = line.rstrip("\n")
                 col = line.split(";")
-                ed = datetime.strptime(col[0], "%y/%m/%d").date()
-                events_list.append([ed, col[1]])
+                ed = col[0].split(".")
+                # strptime(col[0], "%y/%m/%d")
+                edy, edm, edd = int(ed[0]), int(ed[1]), int(ed[2])
+                du = self.diff(date(edy, edm, edd), date(tod.year, tod.month, tod.day))
+                events_list.append([du, col[1], col[0]])  # days until, event name, date
+                # print(du)
+        events_list.sort(key=self.ev_sort)
+        # print(events_list)
         return events_list
-
-    def go_today(self):
-        self.dispcal.selection_set(self.today)
-
-    def disp_notif(self):
-        # self.dispnote.configure(state="normal")
-        self.dispnote.delete(0, "end")
-        for event in self.events:
-            en = event[1]
-            du = self.diff(event[0], self.today)  # .strip("days, 0:00:00")
-            display = f"It's {du} days until: {en}!\n"
-            self.dispnote.insert("end", display)
-            # self.mark_event(event)
-        # self.dispnote.configure(state="disabled")
 
     @staticmethod
     def diff(d1, d2):
-        nod = str(d1 - d2).strip("days, 0:00:00")
-        return nod
+        dd = str(d1 - d2).strip(", 0:00:00")
+        return dd
 
-    def mark_event(self, d):
-        # d = str(d[0])
-        day = datetime.date(d)
-        self.dispcal.tag_add("evn", 5.35)  # febr pl. 5.25 és 5.40 között kb itt keresse a napot: pl. "15", helye x, színezze x-től x+1ig
-        self.dispcal.tag_configure("evn", underline=True, background="lightgrey")
+    @staticmethod
+    def ev_sort(x):
+        return int(x[0].strip(" days"))
+
+    def go_today(self):
+        self.dispnote.selection_clear(0, "end")
+        self.dispcal.selection_set(self.today)
+
+    def disp_notif(self):
+        self.dispnote.delete(0, "end")
+        for event in self.events:
+            du, en, ed = event[0], event[1], event[2]  # days until, event name, date
+            display = f"{du} until: {en} ({ed})!"
+            self.dispnote.insert("end", display)
+
+    def mark_event(self, event):
+        selid = int(event.widget.curselection()[0])
+        selevd = self.events[selid][2].split(".")
+        # print(selevd)
+        sely, selm, seld = int(selevd[0]), int(selevd[1]), int(selevd[2])
+        self.dispcal.selection_set(date(sely, selm, seld))
+        # self.dispcal.tag_add("evn", 5.35)  # febr pl. 5.25 és 5.40 között kb itt keresse a napot: pl. "15", helye x, színezze x-től x+1ig
+        # self.dispcal.tag_configure("evn", underline=True, background="lightgrey")
 
     def add_event(self):
         # dselnew = str(self.dispcal.get_date()).split("/")  # in case of Calendar instead of TextCalendar
@@ -89,7 +98,6 @@ class App(tk.Frame):
 
 if __name__ == "__main__":
     gui = tk.Tk()
-    gui.config(background="beige")
     gui.title("My Event Calendar")
     gui.geometry("300x500")
     App(gui)
