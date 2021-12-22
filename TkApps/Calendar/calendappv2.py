@@ -13,18 +13,18 @@ class App(tk.Frame):
 
         # btn, lab, etc
         self.gotoday_btn = tk.Button(self, text="Show Today", background="lightblue", command=self.go_today)
-        self.addev_btn = tk.Button(self, text="Add Event", background="lightblue", command=self.add_event)
         self.dispcal = Calendar(self, selectmode="day")
-        self.labev = tk.Label(self, text="Upcoming Events:")
+        self.addev_btn = tk.Button(self, text="Add Event", background="lightblue", command=self.add_event)
+        self.delev_btn = tk.Button(self, text="Delete Event", background="lightblue", command=self.del_event)
         self.dispnote = tk.Listbox(self, height=12, background="beige", selectmode="single", activestyle="dotbox")
         self.dispnote.bind("<<ListboxSelect>>", self.mark_event)
         self.statbar = tk.Label(self, text="ready")
 
-        self.gotoday_btn.pack(fill="x", pady=5)
+        self.gotoday_btn.pack(fill="x")
+        self.dispcal.pack(fill="x", pady=4)
         self.addev_btn.pack(fill="x")
-        self.dispcal.pack(fill="x", pady=5)
-        self.labev.pack(anchor="w")
-        self.dispnote.pack(fill="x", pady=2)
+        self.delev_btn.pack(fill="x")
+        self.dispnote.pack(fill="x", pady=4)
         self.statbar.pack(anchor="w")
 
         self.today = date.today()
@@ -103,6 +103,16 @@ class App(tk.Frame):
             return False
         else:
             return True
+
+    def del_event(self):
+        tod = self.today
+        if msg.askyesno("Selection", "Are you sure to delete selected event in list?"):
+            selid = int(self.dispnote.curselection()[0])
+            self.events.pop(selid)
+            # print(selid)
+            self.save_events()
+            self.get_events(tod)
+            self.disp_notif()
 
     def save_events(self):
         try:
