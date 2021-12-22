@@ -1,6 +1,6 @@
 import tkinter as tk
 from datetime import date
-from tkinter import messagebox as msg  # , simpledialog as dia
+from tkinter import messagebox as msg, simpledialog as dia
 
 from tkcalendar import Calendar
 
@@ -15,7 +15,6 @@ class App(tk.Frame):
         self.gotoday_btn = tk.Button(self, text="Show Today", background="lightblue", command=self.go_today)
         self.addev_btn = tk.Button(self, text="Add Event", background="lightblue", command=self.add_event)
         self.dispcal = Calendar(self, selectmode="day")
-        # self.dispcal.bind("<Button-1>", self.color_date)
         self.labev = tk.Label(self, text="Upcoming Events:")
         self.dispnote = tk.Listbox(self, height=12, background="beige", selectmode="single", activestyle="dotbox")
         self.dispnote.bind("<<ListboxSelect>>", self.mark_event)
@@ -80,12 +79,30 @@ class App(tk.Frame):
         # self.dispcal.tag_configure("evn", underline=True, background="lightgrey")
 
     def add_event(self):
-        # dselnew = str(self.dispcal.get_date()).split("/")  # in case of Calendar instead of TextCalendar
-        # m, d, y = dselnew[0], dselnew[1], dselnew[2]
-        # day = datetime.date(datetime(int(y), int(m), int(d)))
+        tod = self.today
+        if msg.askyesno("Selection", "Continue with selected day in calendar?"):
+            dselnew = str(self.dispcal.get_date()).split("/")
+            m, d, y = dselnew[0], dselnew[1], dselnew[2]
+            ed = "20" + str(y) + "." + str(m) + "." + str(d)
+            du = self.diff(date(int("20" + y), int(m), int(d)), date(tod.year, tod.month, tod.day))
+            en = dia.askstring("Event Name", "Enter name for the event:", initialvalue="max. 25 chars")
+            while self.inp_valid(en) is False:
+                en = dia.askstring("Event Name", "Enter name for the event:", initialvalue="max. 25 chars")
+            # print([du, en, ed])
+            self.events.append([du, en, ed])
+            self.save_events()
+            self.get_events(tod)
+            self.disp_notif()
+
         # self.dispcal.calevent_create(day, "", tags="ev")
         # self.dispcal.tag_config("ev", font="bold")
-        pass
+
+    @staticmethod
+    def inp_valid(en):
+        if 2 > len(en) > 25 or en == "max. 25 chars" or en == "":
+            return False
+        else:
+            return True
 
     def save_events(self):
         try:
@@ -98,9 +115,8 @@ class App(tk.Frame):
             msg.showerror("Error", "File error")
 
     def on_closing(self):
-        if msg.askyesno("Save", "Do you want to save changes?"):
-            self.save_events()
         if msg.askyesno("Quit", "Quit program?"):
+            self.save_events()
             gui.destroy()
 
 
