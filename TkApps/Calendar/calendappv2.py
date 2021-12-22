@@ -1,16 +1,18 @@
 import tkinter as tk
+from datetime import date
+from tkinter import messagebox as msg  # , simpledialog as dia
+
 from tkcalendar import Calendar
-from datetime import date, datetime
-# from tkinter import messagebox as msg, simpledialog as dia
 
 
 class App(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
         self.pack(fill="both")
+        gui.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         # btn, lab, etc
-        self.gotoday_btn = tk.Button(self, text="Go to Today", background="lightblue", command=self.go_today)
+        self.gotoday_btn = tk.Button(self, text="Show Today", background="lightblue", command=self.go_today)
         self.addev_btn = tk.Button(self, text="Add Event", background="lightblue", command=self.add_event)
         self.dispcal = Calendar(self, selectmode="day")
         # self.dispcal.bind("<Button-1>", self.color_date)
@@ -32,16 +34,18 @@ class App(tk.Frame):
 
     def get_events(self, tod):
         events_list = []
-        with open("data/events.txt") as file:
-            for line in file:
-                line = line.rstrip("\n")
-                col = line.split(";")
-                ed = col[0].split(".")
-                # strptime(col[0], "%y/%m/%d")
-                edy, edm, edd = int(ed[0]), int(ed[1]), int(ed[2])
-                du = self.diff(date(edy, edm, edd), date(tod.year, tod.month, tod.day))
-                events_list.append([du, col[1], col[0]])  # days until, event name, date
-                # print(du)
+        try:
+            with open("data/events.txt") as file:
+                for line in file:
+                    line = line.rstrip("\n")
+                    col = line.split(";")
+                    ed = col[0].split(".")
+                    edy, edm, edd = int(ed[0]), int(ed[1]), int(ed[2])
+                    du = self.diff(date(edy, edm, edd), date(tod.year, tod.month, tod.day))
+                    events_list.append([du, col[1], col[0]])  # days until, event name, date
+                    # print(du)
+        except IOError:
+            msg.showerror("Error", "File error")
         events_list.sort(key=self.ev_sort)
         # print(events_list)
         return events_list
@@ -72,7 +76,7 @@ class App(tk.Frame):
         # print(selevd)
         sely, selm, seld = int(selevd[0]), int(selevd[1]), int(selevd[2])
         self.dispcal.selection_set(date(sely, selm, seld))
-        # self.dispcal.tag_add("evn", 5.35)  # febr pl. 5.25 és 5.40 között kb itt keresse a napot: pl. "15", helye x, színezze x-től x+1ig
+        # self.dispcal.tag_add("evn", 5.35)
         # self.dispcal.tag_configure("evn", underline=True, background="lightgrey")
 
     def add_event(self):
@@ -83,17 +87,21 @@ class App(tk.Frame):
         # self.dispcal.tag_config("ev", font="bold")
         pass
 
-    def color_date(self, event):
-        # print(self.dispcal.index(f"@{event.x},{event.y}"), self.dispcal.index("current"))
-        ind = float(self.dispcal.index("current"))
-        if self.dispcal.get(ind).isnumeric() is False or self.dispcal.get(ind) == " ":
-            pass
-        else:
-            indleft = ind - 0.1 if self.dispcal.get(ind - 0.1) != " " else ind
-            indright = ind + 0.1 if self.dispcal.get(ind + 0.1) != " " else ind
-            print(float(indleft), float(indright))
-            self.dispcal.tag_add("evn", float(indleft), float(indright))
-            self.dispcal.tag_configure("evn", underline=True, background="lightgrey")
+    def save_events(self):
+        try:
+            with open("data/events.txt", "w") as file:
+                file.writelines(str(event[2]) + ";" + str(event[1]) + "\n" for event in self.events)
+                '''for event in self.events:
+                    line = str(event[2]) + ";" + str(event[1]) + "\n"
+                    file.write(line)'''
+        except IOError:
+            msg.showerror("Error", "File error")
+
+    def on_closing(self):
+        if msg.askyesno("Save", "Do you want to save changes?"):
+            self.save_events()
+        if msg.askyesno("Quit", "Quit program?"):
+            gui.destroy()
 
 
 if __name__ == "__main__":
