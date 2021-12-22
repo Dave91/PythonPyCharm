@@ -99,7 +99,7 @@ class App(tk.Frame):
 
     @staticmethod
     def inp_valid(en):
-        if 2 > len(en) > 25 or en == "max. 25 chars" or en == "":
+        if len(en) < 2 or len(en) > 25 or en == "max. 25 chars" or en == "":
             return False
         else:
             return True
@@ -118,9 +118,6 @@ class App(tk.Frame):
         try:
             with open("data/events.txt", "w") as file:
                 file.writelines(str(event[2]) + ";" + str(event[1]) + "\n" for event in self.events)
-                '''for event in self.events:
-                    line = str(event[2]) + ";" + str(event[1]) + "\n"
-                    file.write(line)'''
         except IOError:
             msg.showerror("Error", "File error")
 
