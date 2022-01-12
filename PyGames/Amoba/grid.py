@@ -80,61 +80,81 @@ class Grid:
         return True
 
     def is_within_bounds(self, x, y):
-        return 0 <= x < 10 and 0 <= y < 10  # grid row, col nums: NOT letter counts!!
+        return 0 <= x < 10 and 0 <= y < 10  # grid row and col nums
+
+    def win_cond_hori(self, y, letter):
+        # hori: x 0-9 y val pl. 2 2 --> 0 2, 1 2, 2 2, 3 2, 4 2, 5 2, stb. x+1, y+0
+        count = 0
+        for i in range(10):
+            if self.get_cell_value(i, y) == letter:
+                count += 1
+            else:
+                count = 0
+            if count == 5:
+                return True
+        return False
+
+    def win_cond_verti(self, x, letter):
+        # verti: x val y 0-9 pl. 2 2 --> 2 0, 2 1, 2 2, 2 3, 2 4, 2 5, stb. x+0, y+1
+        count = 0
+        for i in range(10):
+            if self.get_cell_value(x, i) == letter:
+                count += 1
+            else:
+                count = 0
+            if count == 5:
+                return True
+        return False
+
+    def win_cond_diag(self, x, y, letter):
+        # right-to-down
+        if y - x >= 0:
+            y = y - x
+            count = 0
+            for i in range(10):
+                if self.is_within_bounds(i, y + i) and self.get_cell_value(i, y + i) == letter:  # x=0
+                    count += 1
+                else:
+                    count = 0
+                if count == 5:
+                    return True
+        else:
+            x = x - y
+            count = 0
+            for i in range(10):
+                if self.is_within_bounds(x + i, i) and self.get_cell_value(x + i, i) == letter:  # y=0
+                    count += 1
+                else:
+                    count = 0
+                if count == 5:
+                    return True
+
+        # right-to-up
+        count = 0
+        for i in range(10):
+            for d in range(10):
+                if self.is_within_bounds(d, i - d) and self.get_cell_value(d, i - d) == letter:  # x=0
+                    count += 1
+                else:
+                    count = 0
+                if count == 5:
+                    return True
+
+        count = 0
+        for i in range(10):
+            for d in range(10):
+                if self.is_within_bounds(i + d, 9 - d) and self.get_cell_value(i + d, 9 - d) == letter:  # y=9
+                    count += 1
+                else:
+                    count = 0
+                if count == 5:
+                    return True
+
+        # default and if none True
+        return False
 
     def check_grid(self, x, y, letter):
-        count = 1
-        for index, (dirx, diry) in enumerate(self.search_dirs):
-            # print(dirx, diry)
-            if self.is_within_bounds(x + dirx, y + diry) \
-            and self.get_cell_value(x + dirx, y + diry) == letter:
-                count += 1
-                x2 = x + dirx
-                y2 = y + diry
-                if self.is_within_bounds(x2 + dirx, y2 + diry) \
-                and self.get_cell_value(x2 + dirx, y2 + diry) == letter:
-                    count += 1
-                    x3 = x2 + dirx
-                    y3 = y2 + diry
-                    if self.is_within_bounds(x3 + dirx, y3 + diry) \
-                    and self.get_cell_value(x3 + dirx, y3 + diry) == letter:
-                        count += 1
-                        x4 = x3 + dirx
-                        y4 = y3 + diry
-                        if self.is_within_bounds(x4 + dirx, y4 + diry) \
-                        and self.get_cell_value(x4 + dirx, y4 + diry) == letter:
-                            count += 1
-                            if count == 5:
-                                break
-
-                if count < 5:
-                    new_dir = 0
-                    if index == 0:  # N to S
-                        new_dir = self.search_dirs[4]
-                    elif index == 1:  # NW to SE
-                        new_dir = self.search_dirs[5]
-                    elif index == 2:  # W to E
-                        new_dir = self.search_dirs[6]
-                    elif index == 3:  # SW to NE
-                        new_dir = self.search_dirs[7]
-                    elif index == 4:  # S to N
-                        new_dir = self.search_dirs[0]
-                    elif index == 5:  # SE to NW
-                        new_dir = self.search_dirs[1]
-                    elif index == 6:  # E to W
-                        new_dir = self.search_dirs[2]
-                    elif index == 7:  # NE to SW
-                        new_dir = self.search_dirs[3]
-
-                    if self.is_within_bounds(x + new_dir[0], y + new_dir[1]) \
-                    and self.get_cell_value(x + new_dir[0], y + new_dir[1]) == letter:
-                        count += 1
-                        if count == 5:
-                            break
-                    else:
-                        count = 1
-        # win cond
-        if count == 5:
+        if self.win_cond_hori(y, letter) or self.win_cond_verti(x, letter) or self.win_cond_diag(x, y, letter):
             self.winner_letter = letter
             self.game_over = True
             if letter == "X":
