@@ -3,6 +3,7 @@ import tkinter.ttk as ttk
 from tkinter.filedialog import askopenfile, asksaveasfile
 
 import PyPDF2
+import pyttsx3
 from PIL import Image, ImageTk
 
 
@@ -45,32 +46,43 @@ class ExtractText(tk.Frame):
 
         btn_row = tk.Frame(self, bg="lightblue3")
         btn_row.pack(fill="x")
-        btn_row.columnconfigure(0, weight=2)
-        btn_row.columnconfigure(1, weight=2)
+        btn_row.columnconfigure(0, weight=1)
+        btn_row.columnconfigure(1, weight=1)
         btn_row.columnconfigure(2, weight=1)
+        btn_row.columnconfigure(3, weight=1)
 
         ext_btn = tk.Button(btn_row, text="Browse File",
                             command=self.open_file,
                             font="Corbel 12 bold", bg="coral", fg="white",
-                            height=2, width=15)
+                            height=2, width=12)
         ext_btn.grid(row=0, column=0, padx=2, sticky="e")
 
         self.save_btn = tk.Button(btn_row, text="Save File",
                                   command=self.save_file,
                                   font="Corbel 12 bold", bg="coral", fg="white",
-                                  height=2, width=15,
-                                  state="disabled")
+                                  height=2, width=12, state="disabled")
         self.save_btn.grid(row=0, column=1, padx=2, sticky="w")
 
         self.copyall_btn = tk.Button(btn_row, text="Copy All Text",
                                      command=self.copy_all_txt,
                                      font="Corbel", bg="coral", fg="white",
-                                     height=2, width=15,
-                                     state="disabled")
-        self.copyall_btn.grid(row=0, column=2, padx=2, sticky="w")
+                                     height=2, width=15, state="disabled")
+        self.copyall_btn.grid(row=0, column=2, padx=2)
+
+        self.speak_btn = tk.Button(btn_row, text="Speak Text (ENG)",
+                                   command=self.speak_all_txt,
+                                   font="Corbel", bg="coral", fg="white",
+                                   height=2, width=15, state="disabled")
+        self.speak_btn.grid(row=0, column=3, padx=2)
 
         self.txt_box = tk.Text(self, bg="beige")
         self.txt_box.pack(fill="both")
+
+    def speak_all_txt(self):
+        engine = pyttsx3.init()
+        txt = self.txt_box.get(1.0, "end")
+        engine.say("Hello, I'm Dave!")
+        engine.runAndWait()
 
     def copy_all_txt(self):
         root.clipboard_clear()
@@ -82,8 +94,10 @@ class ExtractText(tk.Frame):
                            filetypes=[("Pdf file", "*.pdf")])
         if file:
             self.stat_txt.set("Loading file...")
+            self.update_idletasks()
             try:
                 read_pdf = PyPDF2.PdfFileReader(file)
+                self.txt_box.delete(1.0, "end")
                 p_num = read_pdf.getNumPages()
                 for p in range(p_num):
                     get_p = read_pdf.getPage(p)
@@ -94,6 +108,7 @@ class ExtractText(tk.Frame):
                 fn = file.name
                 self.stat_txt.set("Found " + str(p_num) + " page(s) in: " + fn)
                 if len(self.txt_box.get(1.0, "end")) > 1:
+                    self.speak_btn.configure(state="normal")
                     self.copyall_btn.configure(state="normal")
                     self.save_btn.configure(state="normal")
                 file.close()
@@ -199,17 +214,22 @@ class ExtractImage(tk.Frame):
         return img
 
     def ext_img(self, page):
-        if "/XObject" in page["/Resources"]:
-            xobj = page["/Resources"]["/XObject"].getObject()
+        if r"/XObject" in page[r"/Resources"]:
+            xobj = page[r"/Resources"][r"/XObject"].getObject()
             for obj in xobj:
-                if xobj[obj]["/Subtype"] == "/Image":
-                    size = (xobj[obj]["/Width"], xobj[obj]["/Height"])
+                print(xobj)
+                print(obj)
+                if xobj[obj][r"/Subtype"] == r"/Image":
+                    size = (xobj[obj][r"/Width"], xobj[obj][r"/Height"])
                     data = xobj[obj].getData()
-                    if xobj[obj]["/ColorSpace"] == "/DeviceRGB":
+                    print(size)
+                    print(data)
+                    if xobj[obj][r"/ColorSpace"] == r"/DeviceRGB":
                         img = Image.frombytes("RGB", size, data)
                     else:
                         img = Image.frombytes("CMYK", size, data)
                     img = self.res_img(img)
+                    print(img)
                     return img
 
     def open_file(self):
@@ -235,6 +255,7 @@ class ExtractImage(tk.Frame):
                 else:
                     self.stat_txt.set("No images can be extracted from selected file!")
                 file.close()
+                print(images)
             except IOError:
                 self.stat_txt.set("File Error: selected file cannot be opened!")
 
