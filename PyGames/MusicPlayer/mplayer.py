@@ -1,8 +1,10 @@
 import os
-import tkinter as tk
-from tkinter import filedialog as fd
-import pygame
 import time
+import tkinter as tk
+import tkinter.ttk as ttk
+from tkinter import filedialog as fd
+
+import pygame
 from mutagen.mp3 import MP3
 
 
@@ -21,8 +23,8 @@ class AppGui(tk.Tk):
 
         self.volsint = tk.IntVar()
         self.volsint.set(100)
-        self.volscale = tk.Scale(self.mainframe, from_=0, to=100, resolution=5, showvalue=True, orient="horizontal",
-                                 variable=self.volsint, command=self.set_vol)
+        self.volscale = ttk.Scale(self.mainframe, from_=0, to=100, orient="horizontal",
+                                  variable=self.volsint, command=self.set_vol)
         self.volscale.grid(row=1, column=1, columnspan=2, padx=2, pady=4)
 
         # btn img
@@ -48,17 +50,17 @@ class AppGui(tk.Tk):
         self.playlistbox = tk.Listbox(self.mainframe, height=7, width=39, bg="beige")
         self.playlistbox.grid(row=0, column=3, rowspan=3)
         self.playlistbox.bind("<Double-1>", self.play_song)
-        # del to del_songs??
+        self.playlistbox.bind("<Delete>", self.del_songs)
         self.playlist = []
 
         self.seekstatframe = tk.Frame(self, relief="groove", border=2)
         self.seekstatframe.pack(fill="x")
 
-        self.seekval = tk.IntVar()
-        self.seekbar = tk.Scale(self.seekstatframe, variable=self.seekval,
-                                length=380, showvalue=False, orient="horizontal")
+        self.seekbar = ttk.Scale(self.seekstatframe, value=0, length=380,
+                                 command=self.seek_slide, orient="horizontal")
         self.seekbar.grid(row=0, column=0, columnspan=3)
-        self.durelap = tk.Label(self.seekstatframe, text="dur/elap")
+
+        self.durelap = tk.Label(self.seekstatframe, text="00:00 / 00:00")
         self.durelap.grid(row=1, column=2, sticky="e")
 
         self.statbartxt = tk.StringVar()
@@ -70,7 +72,6 @@ class AppGui(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.bind("<Escape>", self.on_closing)
         self.bind("<o>", self.open_file)
-        self.bind("<Delete>", self.del_songs)
         self.bind("<space>", self.play_pause)
         self.bind("<m>", self.mute_btn_func)
         self.bind("<Up>", self.upvol)
@@ -86,20 +87,49 @@ class AppGui(tk.Tk):
         self.can_mute = True
         self.selected_song = ""
         self.selected_file = ""
+        self.currdur = 0
+        self.currtime = 0
 
         self.mainloop()
 
     def dur_elap_calc(self):
-        pass
+        currtime = pygame.mixer.music.get_pos() / 1000
+        convcurrtime = time.strftime("%M:%S", time.gmtime(currtime))
+
+        songind = self.playlistbox.curselection()[0]
+        currfile = self.playlist[songind]
+        self.currdur = MP3(currfile).info.length
+
+        currtime += 1
+        if int(self.seekbar.get()) == int(self.currdur):
+            pass
+        elif self.paused:
+            pass
+        elif int(self.seekbar.get()) == int(currtime):
+            # if seekbar hasn't moved yet
+            self.seekbar["to"] = int(self.currdur)
+            self.seekbar["value"] = int(currtime)
+        else:
+            self.seekbar["to"] = int(self.currdur)
+            self.seekbar["value"] = int(currtime)
+            convcurrdur = time.strftime("%M:%S", time.gmtime(self.currdur))
+            self.durelap["text"] = f'{convcurrtime} / {convcurrdur}'
+
+        self.durelap.after(1000, self.dur_elap_calc)
+
+    def seek_slide(self, x):
+        pygame.mixer.music.stop()
+        songind = self.playlistbox.curselection()[0]
+        currfile = self.playlist[songind]
+        pygame.mixer.music.load(currfile)
+        pygame.mixer.music.play(loops=0, start=int(self.seekbar.get()))
 
     def seek_nums(self, event=None):
         if self.selected_song != "":
-            pygame.mixer.music.pause()
             num = int(event.char)
-            totaldur = 100
-            seekpos = totaldur * (num / 10)
+            seekpos = self.currdur * (int(num) / 10)
             pygame.mixer.music.set_pos(seekpos)
-            pygame.mixer.music.unpause()
+            self.seekbar["value"] = seekpos
 
     def upvol(self, event=None):
         self.mutevolbtn["image"] = self.volumeimg
@@ -166,6 +196,7 @@ class AppGui(tk.Tk):
             pygame.mixer.music.load(filename)
             pygame.mixer.music.play(loops=0)
             self.playpausebtn["image"] = self.pauseimg
+            self.dur_elap_calc()
 
     def pause_song(self, song):
         self.statbartxt.set('Paused: ' + song)
@@ -196,8 +227,13 @@ class AppGui(tk.Tk):
             else:
                 self.pause_song(song)
 
-    def del_songs(self, event=None):
+    def stop_reset(self):
         pygame.mixer.music.stop()
+        self.durelap["text"] = "00:00 / 00:00"
+        self.seekbar["value"] = 0
+
+    def del_songs(self, event=None):
+        self.stop_reset()
         plbind = self.playlistbox.curselection()[0]
         self.playlistbox.delete("active")
         self.playlist.pop(plbind)
@@ -206,28 +242,6 @@ class AppGui(tk.Tk):
             self.playlistbox.selection_set(plbind)
         except IndexError:
             pass
-
-    def open_play_media(self, event=None):
-        if self.can_play is False:
-            self.can_play = True
-            pygame.mixer.music.stop()
-            was_playing = True
-        else:
-            was_playing = False
-
-        song = self.playlistbox.get("active")
-        plbind = self.playlistbox.curselection()[0]
-        filename = self.playlist[plbind]
-        if filename:
-            self.selected_song = song
-            self.selected_file = filename
-            self.statbartxt.set('Playing: ' + song)
-            self.can_play = False
-            pygame.mixer.music.load(filename)
-            pygame.mixer.music.play(loops=0)
-            self.playpausebtn["image"] = self.pauseimg
-            if was_playing:
-                pygame.mixer.music.play(loops=0)
 
     def previous(self, event=None):
         curr = self.playlistbox.curselection()

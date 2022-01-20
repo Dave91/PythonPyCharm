@@ -33,6 +33,8 @@ class ExtractText(tk.Frame):
         parent.add(self, text="Extract Text")
         self.configure(width="600", height="400", bg="lightblue3")
 
+        self.engine = pyttsx3.init()
+
         logo = Image.open("icons8-pdf-100.png")
         logo = ImageTk.PhotoImage(logo)
         logo_lab = tk.Label(self, image=logo, bg="lightblue3")
@@ -79,10 +81,9 @@ class ExtractText(tk.Frame):
         self.txt_box.pack(fill="both")
 
     def speak_all_txt(self):
-        engine = pyttsx3.init()
         txt = self.txt_box.get(1.0, "end")
-        engine.say("Hello, I'm Dave!")
-        engine.runAndWait()
+        self.engine.say("function is under development")
+        self.engine.runAndWait()
 
     def copy_all_txt(self):
         root.clipboard_clear()
