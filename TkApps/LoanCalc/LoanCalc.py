@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 
-class ToolsApp:
+class App:
     def __init__(self):
 
         # ROOT WINDOW DETAILS
@@ -79,4 +79,4 @@ class ToolsApp:
 
 
 if __name__ == "__main__":
-    ToolsApp()
+    App()
