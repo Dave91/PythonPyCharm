@@ -61,10 +61,10 @@ class AppGUI(ttk.Frame):
         self.listbox_audio.grid(row=1, column=2, pady=2)
         self.listbox_video.grid(row=1, column=3, pady=2)
 
-        docs = [".txt", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pps"]
+        docs = [".pdf", ".txt", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pps"]
         images = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]
-        audios = [".mp3", ".wav"]
-        videos = [".avi", ".mov", ".flv", ".mp4", ".mpeg"]
+        audios = [".mp3", ".wav", ".flac"]
+        videos = [".avi", ".mp4", ".mkv", ".mov", ".flv", ".mpeg"]
 
         for e in docs:
             self.listbox_docs.insert("end", e)
@@ -74,6 +74,11 @@ class AppGUI(ttk.Frame):
             self.listbox_audio.insert("end", e)
         for e in videos:
             self.listbox_video.insert("end", e)
+
+        self.listbox_docs.selection_set(0, "end")
+        self.listbox_image.selection_set(0, "end")
+        self.listbox_audio.selection_set(0, "end")
+        self.listbox_video.selection_set(0, "end")
 
         ttk.Button(self.mid_frame, text="add+", width=5,
                    command=lambda i="docs": self.add_to_list(i)).grid(row=2, column=0)
@@ -179,7 +184,7 @@ class Styles(ttk.Style):
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.title("Folder Sorter - organizing your files into folders")
+    root.title("Folder Sorter - organize your stuff into folders")
     root.geometry("500x450")
     root.resizable(False, False)
     Styles()
