@@ -35,7 +35,7 @@ class Pathfinder:
             start = self.grid.node(startx, starty)
             end = self.grid.node(endx, endy)
 
-            finder = AStarFinder()
+            finder = AStarFinder(diagonal_movement=allow_diag)
             self.path = finder.find_path(start, end, self.grid)
             self.grid.cleanup()
 
@@ -88,6 +88,7 @@ def draw_walls():
 
 matrix = init_matrix()
 pathfinder = Pathfinder(matrix)
+allow_diag = 0
 has_start = False
 startx, starty = None, None
 endx, endy = None, None
@@ -110,6 +111,12 @@ while True:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 exit()
+            if event.key == pygame.K_d:
+                if allow_diag == 0:
+                    allow_diag = 1
+                else:
+                    allow_diag = 0
+                pathfinder.create_path()
             if event.key == pygame.K_SPACE:
                 startx, endx = None, None
                 has_start = False
