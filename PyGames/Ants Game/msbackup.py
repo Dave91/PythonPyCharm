@@ -125,7 +125,11 @@ def get_input():
         if event.type == pygame.KEYDOWN:
             print(event)
         if event.type == pygame.MOUSEBUTTONDOWN:
-            print(event)
+            if event.button == 1:
+                m_pos = pygame.mouse.get_pos()
+                dx = m_pos[0]
+                dy = m_pos[1]
+                food_group.add(Food(dx, dy))
 
 
 running = True
