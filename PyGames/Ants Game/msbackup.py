@@ -8,10 +8,10 @@ class BlackDot(pygame.sprite.Sprite):
     def __init__(self, dx, dy):
         super().__init__()
 
-        walk_1 = pygame.image.load('ant1.png').convert_alpha()
-        walk_2 = pygame.image.load('ant2.png').convert_alpha()
-        walk_3 = pygame.image.load('ant3.png').convert_alpha()
-        walk_4 = pygame.image.load('ant4.png').convert_alpha()
+        walk_1 = pygame.image.load('assets/ant1.png').convert_alpha()
+        walk_2 = pygame.image.load('assets/ant2.png').convert_alpha()
+        walk_3 = pygame.image.load('assets/ant3.png').convert_alpha()
+        walk_4 = pygame.image.load('assets/ant4.png').convert_alpha()
 
         self.ant_walk_anim = [walk_1, walk_2, walk_3, walk_4]
         self.frame_index = 0
@@ -65,7 +65,7 @@ class Food(pygame.sprite.Sprite):
     def __init__(self, dx, dy):
         super().__init__()
 
-        self.image = pygame.image.load('icons8-bread-48.png').convert_alpha()
+        self.image = pygame.image.load('assets/icons8-bread-48.png').convert_alpha()
         self.rect = self.image.get_rect(midbottom=(50, 50))
 
         self.rect.x = dx

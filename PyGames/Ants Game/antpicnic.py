@@ -40,10 +40,10 @@ class Ants(pygame.sprite.Sprite):
     def __init__(self, dx, dy, nodes=None):
         super().__init__()
 
-        walk_1 = pygame.image.load('ant1.png').convert_alpha()
-        walk_2 = pygame.image.load('ant2.png').convert_alpha()
-        walk_3 = pygame.image.load('ant3.png').convert_alpha()
-        walk_4 = pygame.image.load('ant4.png').convert_alpha()
+        walk_1 = pygame.image.load('assets/ant1.png').convert_alpha()
+        walk_2 = pygame.image.load('assets/ant2.png').convert_alpha()
+        walk_3 = pygame.image.load('assets/ant3.png').convert_alpha()
+        walk_4 = pygame.image.load('assets/ant4.png').convert_alpha()
 
         self.ant_walk_anim = [walk_1, walk_2, walk_3, walk_4]
         self.frame_index = 0
@@ -115,7 +115,7 @@ class Food(pygame.sprite.Sprite):
     def __init__(self, dx, dy):
         super().__init__()
 
-        self.image = pygame.image.load('icons8-bread-48.png').convert_alpha()
+        self.image = pygame.image.load('assets/icons8-bread-48.png').convert_alpha()
         self.rect = self.image.get_rect(midbottom=(50, 50))
 
         self.rect.x = dx
@@ -183,8 +183,8 @@ def main():
     pygame.init()
     screen_size = (800, 700)
     surface = pygame.display.set_mode(screen_size)
-    bg = pygame.transform.scale(pygame.image.load("bgimg.jpg"), screen_size)
-    icon = pygame.image.load("icon.png")
+    bg = pygame.transform.scale(pygame.image.load("assets/bgimg.jpg"), screen_size)
+    icon = pygame.image.load("assets/icon.png")
     pygame.display.set_icon(icon)
     clock = pygame.time.Clock()
 
