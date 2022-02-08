@@ -57,6 +57,7 @@ class Ants(pygame.sprite.Sprite):
         self.node_index = 0
         self.nodes_to_go = nodes
         self.has_end = False
+        self.coll_food = None
 
     def animation_state(self):
         self.frame_index += 0.5
@@ -87,6 +88,8 @@ class Ants(pygame.sprite.Sprite):
                         self.has_end = False
                         self.node_index = 0
                         self.kill()
+                        self.coll_food[self][0].kill()
+                        self.coll_food = None
                     else:
                         nind = self.node_index // 10
                         node = self.nodes_to_go[nind]
@@ -118,6 +121,11 @@ class Ants(pygame.sprite.Sprite):
     def update(self):
         self.animation_state()
         self.within_bounds()
+        if collision_sprite():
+            self.coll_food = pygame.sprite.groupcollide(ants_group, food_group, False, False)
+        if self.coll_food:
+            self.coll_food[self][0].rect.x = self.rect.x
+            self.coll_food[self][0].rect.y = self.rect.y
 
     def within_bounds(self):
         if self.rect.x < 0:
@@ -145,27 +153,14 @@ class Food(pygame.sprite.Sprite):
             pass
 
 
-def display_intro(surface):
-    surface.fill((255, 255, 255))
-    logo = pygame.image.load("assets/logo.png").convert_alpha()
-    logo_rect = logo.get_rect(center=(400, 250))
-    surface.blit(logo, logo_rect)
-    intro_font = pygame.font.SysFont('Calibri', 32)
-    intro_surf = intro_font.render("Press Space to begin...", False, (64, 64, 64))
-    intro_rect = intro_surf.get_rect(center=(400, 350))
-    surface.blit(intro_surf, intro_rect)
-    pygame.display.update()
-
-
 def collision_sprite():
-    if pygame.sprite.groupcollide(ants_group, food_group, False, True):
+    if pygame.sprite.groupcollide(ants_group, food_group, False, False):
         return True
     else:
         return False
 
 
 def init_dots():
-    return
     for ant in range(80):
         ants_group.add(Ants(400, 350))
     for food in range(20):
@@ -195,6 +190,18 @@ def get_input(pathfinder):
                 ants_group.add(Ants(400, 350, nodes))
 
 
+def display_intro(surface):
+    surface.fill((255, 255, 255))
+    logo = pygame.image.load("assets/logo.png").convert_alpha()
+    logo_rect = logo.get_rect(center=(400, 250))
+    surface.blit(logo, logo_rect)
+    intro_font = pygame.font.SysFont('Calibri', 32)
+    intro_surf = intro_font.render("Press Space to begin...", False, (64, 64, 64))
+    intro_rect = intro_surf.get_rect(center=(400, 350))
+    surface.blit(intro_surf, intro_rect)
+    pygame.display.update()
+
+
 ants_group = pygame.sprite.Group()
 food_group = pygame.sprite.Group()
 
@@ -213,7 +220,7 @@ def main():
 
     init_done = False
     if not init_done:
-        init_dots()
+        # init_dots()  # when a starting num of stuff needed
         init_done = True
 
     matrix_done = False
