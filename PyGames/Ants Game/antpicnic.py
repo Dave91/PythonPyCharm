@@ -88,8 +88,11 @@ class Ants(pygame.sprite.Sprite):
                         self.has_end = False
                         self.node_index = 0
                         self.kill()
-                        self.coll_food[self][0].kill()
-                        self.coll_food = None
+                        try:
+                            self.coll_food[self][0].kill()
+                            self.coll_food = None
+                        except KeyError:
+                            pass
                     else:
                         nind = self.node_index // 10
                         node = self.nodes_to_go[nind]
@@ -124,8 +127,11 @@ class Ants(pygame.sprite.Sprite):
         if collision_sprite():
             self.coll_food = pygame.sprite.groupcollide(ants_group, food_group, False, False)
         if self.coll_food:
-            self.coll_food[self][0].rect.x = self.rect.x
-            self.coll_food[self][0].rect.y = self.rect.y
+            try:
+                self.coll_food[self][0].rect.x = self.rect.x
+                self.coll_food[self][0].rect.y = self.rect.y
+            except KeyError:
+                pass
 
     def within_bounds(self):
         if self.rect.x < 0:
