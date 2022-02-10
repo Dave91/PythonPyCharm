@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+from configparser import ConfigParser
 
 import requests
 
@@ -29,8 +30,15 @@ class AppGUI(ttk.Frame):
         self.txtlab = ttk.Label(self.mid_frame, text="Search for a location :)", style="lightlab.TLabel")
         self.txtlab.pack(padx=5, pady=5)
 
+    @staticmethod
+    def get_api_key():
+        config = ConfigParser()
+        config.read("config.ini")
+        key = config["api_key"]["key"]
+        return key
+
     def request_data(self, event=None):
-        api_key = "b0ebeeec7c74690e62e4099e20215d6e"
+        api_key = self.get_api_key()
         base_url = "http://api.openweathermap.org/data/2.5/weather"
         city = self.search_city.get()
         units = "metric"  # imperial, metric
