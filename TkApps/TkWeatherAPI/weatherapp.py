@@ -8,11 +8,11 @@ class AppGUI(ttk.Frame):
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
         self.pack(expand=1, fill="both")
-        self.configure(padding=15)
+        self.configure(padding=5)
 
         # --- TOP FRAME ---
         self.top_frame = ttk.Frame(self, style="lightfr.TFrame")
-        self.top_frame.pack(side="top", fill="x", ipadx=5, ipady=5, padx=10, pady=10)
+        self.top_frame.pack(side="top", fill="x", ipadx=5, ipady=5, padx=5, pady=5)
 
         ttk.Label(self.top_frame, text="Location:").pack()
         self.search_city = ttk.Entry(self.top_frame)
@@ -22,10 +22,10 @@ class AppGUI(ttk.Frame):
 
         # --- MID FRAME ---
         self.mid_frame = ttk.Frame(self, style="lightfr.TFrame")
-        self.mid_frame.pack(fill="both", ipadx=5, ipady=5, padx=10, pady=10)
-
+        self.mid_frame.pack(fill="both", ipadx=5, ipady=5, padx=5, pady=5)
         ttk.Label(self.mid_frame, text="Current weather data:").pack()
-        ttk.Label(self.mid_frame, image="").pack()
+        self.imglab = ttk.Label(self.mid_frame, image="", style="lightlab.TLabel")
+        self.imglab.pack()
         self.txtlab = ttk.Label(self.mid_frame, text="Search for a location :)", style="lightlab.TLabel")
         self.txtlab.pack(padx=5, pady=5)
 
@@ -34,7 +34,7 @@ class AppGUI(ttk.Frame):
         base_url = "http://api.openweathermap.org/data/2.5/weather"
         city = self.search_city.get()
         units = "metric"  # imperial, metric
-        lang = "en"  # en, hu
+        lang = "hu"  # en, hu
         request_url = f"{base_url}?appid={api_key}&q={city}&lang={lang}&units={units}"
         response = requests.get(request_url)
 
@@ -49,6 +49,10 @@ class AppGUI(ttk.Frame):
             humid = data["main"]["humidity"]
             wind = data["wind"]["speed"]
             visib = data["visibility"]
+            icon = data["weather"][0]["icon"]
+            img = tk.PhotoImage(file=f"icons/{icon}@2x.png").zoom(24).subsample(48)
+            self.imglab["image"] = img
+            img.image = img
             print(data)
             disp_txt = str(weather).swapcase() + "\n" +\
                 "Hőm. (°C): " + str(temp) + " (" + str(temp_min) + " / " + str(temp_max) + ")\n" +\
@@ -76,7 +80,7 @@ class Styles(ttk.Style):
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Folder Sorter - organize your stuff into folders")
-    root.geometry("300x250")
+    root.geometry("300x300")
     root.resizable(False, False)
     Styles()
     AppGUI(root)
