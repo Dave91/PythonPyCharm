@@ -1,5 +1,6 @@
 import random
 import time
+import bisect  # useful import in this topic
 
 
 def norm_search(seq, val):
