@@ -1,6 +1,7 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 from configparser import ConfigParser
+from tkinter import simpledialog, messagebox
 
 import requests
 
@@ -10,6 +11,16 @@ class AppGUI(ttk.Frame):
         ttk.Frame.__init__(self, master)
         self.pack(expand=1, fill="both")
         self.configure(padding=5)
+
+        self.key = self.config_init()
+
+        menubar = tk.Menu(root)
+
+        menu_key = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="API key", menu=menu_key)
+        menu_key.add_command(label="Enter API key", command=self.enter_key)
+
+        root.config(menu=menubar)
 
         # --- TOP FRAME ---
         self.top_frame = ttk.Frame(self, style="lightfr.TFrame")
@@ -31,18 +42,23 @@ class AppGUI(ttk.Frame):
         self.txtlab.pack(padx=5, pady=5)
 
     @staticmethod
-    def get_api_key():
+    def config_init():
         config = ConfigParser()
         config.read("config.ini")
         key = config["api_key"]["key"]
         return key
 
+    def enter_key(self):
+        inp = simpledialog.askstring("API key", "Enter your API key:")
+        if inp:
+            self.key = inp
+
     def request_data(self, event=None):
-        api_key = self.get_api_key()
+        api_key = self.key
         base_url = "http://api.openweathermap.org/data/2.5/weather"
         city = self.search_city.get()
         units = "metric"  # imperial, metric
-        lang = "hu"  # en, hu
+        lang = "en"  # en, hu
         request_url = f"{base_url}?appid={api_key}&q={city}&lang={lang}&units={units}"
         response = requests.get(request_url)
 
@@ -63,15 +79,15 @@ class AppGUI(ttk.Frame):
             img.image = img
             print(data)
             disp_txt = str(weather).swapcase() + "\n" +\
-                "Hőm. (°C): " + str(temp) + " (" + str(temp_min) + " / " + str(temp_max) + ")\n" +\
-                "Hőérzet (°C): " + str(feels) + "\n" +\
-                "Légny. (hPa): " + str(press) + "\n" +\
-                "Párat. (%): " + str(humid) + "\n" +\
-                "Szél (m/s): " + str(wind) + "\n" +\
-                "Látótáv (m): " + str(visib)
+                "Temp. (min/max) (°C): " + str(temp) + " (" + str(temp_min) + " / " + str(temp_max) + ")\n" +\
+                "Feels like (°C): " + str(feels) + "\n" +\
+                "Pressure (hPa): " + str(press) + "\n" +\
+                "Humidity (%): " + str(humid) + "\n" +\
+                "Wind Speed (m/s): " + str(wind) + "\n" +\
+                "Visibility (m): " + str(visib)
             self.txtlab["text"] = disp_txt
         else:
-            print("request error")
+            messagebox.showinfo("Error", "No data available or invalid API key!")
 
 
 class Styles(ttk.Style):
@@ -87,7 +103,7 @@ class Styles(ttk.Style):
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.title("Folder Sorter - organize your stuff into folders")
+    root.title("WeatherApp - current weather data from openweathermap.org")
     root.geometry("300x300")
     root.resizable(False, False)
     Styles()
