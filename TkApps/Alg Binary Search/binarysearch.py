@@ -31,14 +31,12 @@ def binary_search(sequence, item):
 src_list = [n for n in range(100000000)]
 target = 88910000
 
-start1 = time.time()
+start1 = time.perf_counter()
 norm_search(src_list, target)
-end1 = time.time()
-elapsed1 = float(end1) - float(start1)
-print(elapsed1)
+end1 = time.perf_counter()
+print(end1 - start1)
 
-start2 = time.time()
+start2 = time.perf_counter()
 binary_search(src_list, target)
-end2 = time.time()
-elapsed2 = float(end2) - float(start2)
-print(elapsed2)
+end2 = time.perf_counter()
+print(end2 - start2)
