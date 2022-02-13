@@ -78,13 +78,13 @@ class AppGUI(ttk.Frame):
             self.imglab["image"] = img
             img.image = img
             print(data)
-            disp_txt = str(weather).swapcase() + "\n" +\
-                "Temp. (min/max) (°C): " + str(temp) + " (" + str(temp_min) + " / " + str(temp_max) + ")\n" +\
-                "Feels like (°C): " + str(feels) + "\n" +\
-                "Pressure (hPa): " + str(press) + "\n" +\
-                "Humidity (%): " + str(humid) + "\n" +\
-                "Wind Speed (m/s): " + str(wind) + "\n" +\
-                "Visibility (m): " + str(visib)
+            disp_txt = f"{weather.swapcase()} \n" \
+                       f"Temp. (min/max) (°C): {temp} ({temp_min}/{temp_max}) \n" \
+                       f"Feels like (°C): {feels} \n" \
+                       f"Pressure (hPa): {press} \n" \
+                       f"Humidity (%): {humid} \n" \
+                       f"Wind Speed (m/s): {wind} \n" \
+                       f"Visibility (m): {visib}"
             self.txtlab["text"] = disp_txt
         else:
             messagebox.showinfo("Error", "No data available or invalid API key!")
