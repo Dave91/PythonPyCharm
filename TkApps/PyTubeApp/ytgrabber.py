@@ -1,10 +1,9 @@
 import os
-import shutil
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter.filedialog import askdirectory
-from tkinter.simpledialog import askstring
-from tkinter.messagebox import showinfo
+
+from pytube import YouTube
 
 
 class AppGUI(ttk.Frame):
@@ -12,164 +11,83 @@ class AppGUI(ttk.Frame):
         ttk.Frame.__init__(self, master)
         self.pack(expand=1, fill="both")
 
-        showinfo("Instructions", "1. Select source folder\n"
-                                 "2. Select destination folder\n"
-                                 "   (can be the same)\n"
-                                 "3. Select extensions/types to sort\n"
-                                 "4. Click 'Start Sorting' button\n"
-                                 "5. Folders will be created with the\n"
-                                 "   corresponding files inside :)")
+        self.dest_obj = None
 
-        # --- TOP FRAME ---
-        self.top_frame = ttk.Frame(self)
-        self.top_frame.pack(side="top", fill="x")
+        # ROW 1
+        self.row1 = ttk.Frame(self)
+        self.row1.pack(side="top", fill="x", padx=5, pady=5)
 
-        self.seldir_btn = ttk.Button(self.top_frame, text="Select Source", command=self.sel_dir)
-        self.seldir_btn.pack(anchor="w", padx=5, pady=5)
-        self.seldir_lab = ttk.Label(self.top_frame, text="", style="lightlab.TLabel")
-        self.seldir_lab.pack(fill="x", padx=5)
+        ttk.Button(self.row1, text="Select target folder...",
+                   command=self.sel_dir).pack(anchor="w", pady=5)
 
-        self.seldir_btn2 = ttk.Button(self.top_frame, text="Select Destination", command=self.sel_dir2)
-        self.seldir_btn2.pack(anchor="w", padx=5, pady=5)
-        self.seldir_lab2 = ttk.Label(self.top_frame, text="", style="lightlab.TLabel")
-        self.seldir_lab2.pack(fill="x", padx=5)
+        self.seldir_lab = ttk.Label(self.row1, text="", style="lightlab.TLabel")
+        self.seldir_lab.pack(fill="x")
 
-        # --- MID FRAME ---
-        self.mid_frame = ttk.Frame(self)
-        self.mid_frame.pack(fill="both", pady=15)
-        for c in range(4):
-            self.mid_frame.columnconfigure(index=c, weight=1)
-        for r in range(4):
-            self.mid_frame.rowconfigure(index=r, weight=1)
+        # ROW 2
+        self.row2 = ttk.Frame(self)
+        self.row2.pack(fill="both", padx=5, pady=5)
 
-        ttk.Label(self.mid_frame, text="Docs:").grid(row=0, column=0)
-        ttk.Label(self.mid_frame, text="Images:").grid(row=0, column=1)
-        ttk.Label(self.mid_frame, text="Audios:").grid(row=0, column=2)
-        ttk.Label(self.mid_frame, text="Videos:").grid(row=0, column=3)
+        self.opt_audio_var = tk.BooleanVar()
+        self.opt_audio_var.set(False)
+        self.opt_audio_only = ttk.Checkbutton(self.row2, text="Audio only",
+                                              variable=self.opt_audio_var)
+        self.opt_audio_only.pack(side="right", padx=5, pady=5)
 
-        self.listbox_docs = tk.Listbox(self.mid_frame, width=12, height=10, exportselection=False,
-                                       selectmode="multiple", activestyle="none")
-        self.listbox_image = tk.Listbox(self.mid_frame, width=12, height=10, exportselection=False,
-                                        selectmode="multiple", activestyle="none")
-        self.listbox_audio = tk.Listbox(self.mid_frame, width=12, height=10, exportselection=False,
-                                        selectmode="multiple", activestyle="none")
-        self.listbox_video = tk.Listbox(self.mid_frame, width=12, height=10, exportselection=False,
-                                        selectmode="multiple", activestyle="none")
+        self.url_input = ttk.Entry(self.row2)
+        self.url_input.bind("<Return>", self.load_url)
+        self.url_input.pack(fill="x", pady=5)
 
-        self.listbox_docs.grid(row=1, column=0, pady=2)
-        self.listbox_image.grid(row=1, column=1, pady=2)
-        self.listbox_audio.grid(row=1, column=2, pady=2)
-        self.listbox_video.grid(row=1, column=3, pady=2)
+        self.input_lab = ttk.Label(self.row2, text="", style="lightlab.TLabel")
+        self.input_lab.pack(fill="x")
 
-        docs = [".pdf", ".txt", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pps"]
-        images = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]
-        audios = [".mp3", ".wav", ".flac"]
-        videos = [".avi", ".mp4", ".mkv", ".mov", ".flv", ".mpeg"]
+        # ROW 3
+        self.row3 = ttk.Frame(self)
+        self.row3.pack(side="bottom", fill="x", padx=5, pady=5)
 
-        for e in docs:
-            self.listbox_docs.insert("end", e)
-        for e in images:
-            self.listbox_image.insert("end", e)
-        for e in audios:
-            self.listbox_audio.insert("end", e)
-        for e in videos:
-            self.listbox_video.insert("end", e)
+        ttk.Button(self.row3, text="Download",
+                   command=self.prep_download).pack(pady=5)
 
-        self.listbox_docs.selection_set(0, "end")
-        self.listbox_image.selection_set(0, "end")
-        self.listbox_audio.selection_set(0, "end")
-        self.listbox_video.selection_set(0, "end")
-
-        ttk.Button(self.mid_frame, text="add+", width=5,
-                   command=lambda i="docs": self.add_to_list(i)).grid(row=2, column=0)
-        ttk.Button(self.mid_frame, text="add+", width=5,
-                   command=lambda i="image": self.add_to_list(i)).grid(row=2, column=1)
-        ttk.Button(self.mid_frame, text="add+", width=5,
-                   command=lambda i="audio": self.add_to_list(i)).grid(row=2, column=2)
-        ttk.Button(self.mid_frame, text="add+", width=5,
-                   command=lambda i="video": self.add_to_list(i)).grid(row=2, column=3)
-
-        # --- BOT FRAME ---
-        self.bot_frame = ttk.Frame(self)
-        self.bot_frame.pack(side="bottom", fill="x")
-
-        ttk.Button(self.bot_frame, text="Start Sorting",
-                   command=self.start_sorting).pack(pady=5)
-
-        self.progbar = ttk.Progressbar(self.bot_frame, orient="horizontal", mode="determinate")
+        self.progbar = ttk.Progressbar(self.row3, orient="horizontal", mode="determinate")
         self.progbar.pack(fill="x")
         self.progbar.config(value=0, maximum=100)
 
-        self.statbar = ttk.Label(self.bot_frame, text="ready", style="lightlab.TLabel")
-        self.statbar.pack(fill="x")
-
-    def add_to_list(self, i=""):
-        new_item = askstring("Adding new list item", "Enter new extension to add:", initialvalue=".ext")
-        if new_item:
-            if i == "docs":
-                self.listbox_docs.insert("end", new_item)
-            elif i == "image":
-                self.listbox_image.insert("end", new_item)
-            elif i == "audio":
-                self.listbox_audio.insert("end", new_item)
-            elif i == "video":
-                self.listbox_video.insert("end", new_item)
+        self.statbar = ttk.Label(self.row3, text="ready")
+        self.statbar.pack()
 
     def sel_dir(self):
         folder = askdirectory(initialdir=os.curdir, mustexist=True, title="Please select a folder...")
         if folder:
             self.seldir_lab["text"] = folder
-            self.statbar["text"] = str(len(os.listdir(folder))) + " files found."
 
-    def sel_dir2(self):
-        folder2 = askdirectory(initialdir=os.curdir, mustexist=True, title="Please select a folder...")
-        if folder2:
-            self.seldir_lab2["text"] = folder2
+    def on_prog(self):
+        return
 
-    def start_sorting(self):
-        source_dir = self.seldir_lab["text"]
-        dest_dir = self.seldir_lab2["text"]
-        if source_dir != "" and dest_dir != "":
-            source_dir = source_dir + "/"
+    def load_url(self, event=None):
+        self.dest_obj = YouTube(
+            self.url_input.get()
+        )
+        if self.dest_obj:
+            dur = self.dest_obj.length
+            mins = dur // 60
+            secs = dur - (mins * 60)
+            self.input_lab["text"] = f"{self.dest_obj.title} ({str(mins)}:{str(secs)})"
+
+    def prep_download(self):
+        dest_obj = YouTube(
+            self.url_input.get(),
+            on_progress_callback=self.on_prog
+        )
+        dest_dir = self.input_lab["text"]
+        if dest_dir != "":
             dest_dir = dest_dir + "/"
-            total_item = len(os.listdir(source_dir))
+            total_item = len(os.listdir(dest_dir))
             self.progbar.config(value=0, maximum=total_item)
             self.progbar.update_idletasks()
 
-            if len(self.listbox_docs.curselection()) > 0:
-                dest_dir = dest_dir + "docs/"
-                if not os.path.isdir(dest_dir):
-                    os.makedirs(dest_dir)
-                listb = self.listbox_docs
-                self.sorting(source_dir, dest_dir, listb)
-            if len(self.listbox_image.curselection()) > 0:
-                dest_dir = dest_dir + "images/"
-                if not os.path.isdir(dest_dir):
-                    os.makedirs(dest_dir)
-                listb = self.listbox_image
-                self.sorting(source_dir, dest_dir, listb)
-            if len(self.listbox_audio.curselection()) > 0:
-                dest_dir = dest_dir + "audios/"
-                if not os.path.isdir(dest_dir):
-                    os.makedirs(dest_dir)
-                listb = self.listbox_audio
-                self.sorting(source_dir, dest_dir, listb)
-            if len(self.listbox_video.curselection()) > 0:
-                dest_dir = dest_dir + "videos/"
-                if not os.path.isdir(dest_dir):
-                    os.makedirs(dest_dir)
-                listb = self.listbox_video
-                self.sorting(source_dir, dest_dir, listb)
-        else:
-            showinfo("Error", "Valid source & destination folders needed!")
-
-    def sorting(self, source_dir, dest_dir, listb):
-        for file in os.listdir(source_dir):
+    def start_download(self, dest_dir):
+        for file in os.listdir(dest_dir):
             self.progbar["value"] += 1
             self.progbar.update_idletasks()
-            for e in listb.curselection():
-                if file.endswith(listb.get(e)):
-                    shutil.move(source_dir + file, dest_dir)
 
 
 class Styles(ttk.Style):
@@ -177,6 +95,7 @@ class Styles(ttk.Style):
         ttk.Style.__init__(self)
         self.configure("TFrame", background="lightblue3")
         self.configure("TLabel", background="lightblue3")
+        self.configure("TCheckbutton", background="lightblue3")
         self.configure("lightlab.TLabel", background="lightblue")
         self.configure("TButton", foreground="black", background="white", padding=4)
         self.map("TButton", foreground=[("active", "maroon")], background=[("active", "coral")])
@@ -184,8 +103,8 @@ class Styles(ttk.Style):
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.title("Folder Sorter - organize your stuff into folders")
-    root.geometry("500x450")
+    root.title("YouTube Grabber - download video & audio from YouTube")
+    root.geometry("500x250")
     root.resizable(False, False)
     Styles()
     AppGUI(root)
