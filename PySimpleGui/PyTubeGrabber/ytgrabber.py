@@ -1,5 +1,4 @@
 import os
-from tkinter.filedialog import askdirectory
 
 import PySimpleGUI as Sg
 from pytube import YouTube
@@ -9,46 +8,55 @@ class AppGui:
     def __init__(self):
 
         Sg.theme('DarkAmber')
-        self.layout = [[Sg.FolderBrowse('Select target folder',
-                                        key='-SELDIR-')],
-                       [Sg.Text('Default destination: current folder')],
-                       [Sg.InputText()],
-                       [Sg.Text('Target URL:')],
+        self.layout = [[Sg.FolderBrowse('Browse folder', initial_folder=os.curdir,
+                                        key='SEL_DIR', enable_events=True, tooltip='Set destination folder')],
+                       [Sg.Text('Default destination: current folder', key='SEL_DIR_LAB')],
+                       [Sg.InputText(key='INPUT', enable_events=True, tooltip='Enter valid url')],
+                       [Sg.Text('Target URL:', key='INPUT_LAB')],
                        [Sg.Checkbox(text='audio only', default=False,
-                                    key='-AO-', enable_events=True)],
-                       [Sg.Button('Download', mouseover_colors=('maroon', 'white'))],
-                       [Sg.ProgressBar(max_value=100, orientation='horizontal')],
-                       [Sg.Text('ready', key='-STAT-')]]
+                                    key='OPT_AO', enable_events=True)],
+                       [Sg.Button('Download', mouseover_colors=('maroon', 'white'),
+                                  key='START')],
+                       [Sg.ProgressBar(key='PROG', max_value=100, orientation='horizontal')],
+                       [Sg.Text('ready', key='PROG_LAB')]]
 
         self.window = Sg.Window('YouTube Grabber - download video & audio from YouTube',
                                 size=(500, 300), resizable=False).layout(self.layout)
 
 
-class AppLogic:
+class App:
     def __init__(self):
+        self.gui = AppGui()
+        self.vid_obj = None
+        while True:
+            event, values = self.gui.window.read()
+            if event is None:
+                break
+            if event == Sg.WIN_CLOSED:
+                self.gui.window.close()
+            if event == 'SEL_DIR':
+                self.set_dest_dir(values)
+            if event == 'INPUT':
+                self.load_target_url(values)
 
-        self.dest_obj = None
+    def set_dest_dir(self, values):
+        self.gui.window['SEL_DIR_LAB'].update(value=values['SEL_DIR'])
 
-    def sel_dir(self):
-        folder = askdirectory(initialdir=os.curdir, mustexist=True, title="Please select a folder...")
-        if folder:
-            self.seldir_lab["text"] = folder
-
-    def on_prog(self):
-        return
-
-    def load_url(self, event=None):
-        self.dest_obj = YouTube(
-            self.url_input.get()
+    def load_target_url(self, values):
+        self.vid_obj = YouTube(
+            values['INPUT']
         )
-        if self.dest_obj:
-            dur = self.dest_obj.length
+        if self.vid_obj:
+            dur = self.vid_obj.length
             mins = dur // 60
             secs = dur - (mins * 60)
-            self.input_lab["text"] = f"{self.dest_obj.title} ({str(mins)}:{str(secs)})"
+            self.input_lab["text"] = f"{self.vid_obj.title} ({str(mins)}:{str(secs)})"
 
-    def prep_download(self):
-        dest_obj = YouTube(
+    def on_prog(self):
+        pass
+
+    def start_download(self):
+        self.vid_obj = YouTube(
             self.url_input.get(),
             on_progress_callback=self.on_prog
         )
@@ -65,20 +73,5 @@ class AppLogic:
             self.progbar.update_idletasks()
 
 
-def app():
-    gui = AppGui()
-    # same as tk mainloop, handles events, reads values
-    while True:
-        event, values = gui.window.Read()
-
-        if event == Sg.WIN_CLOSED:
-            gui.window.close()
-        if event in (None, 'Select target folder'):
-            pass
-        if event in (None, 'Download'):
-            pass
-        print('You entered ', values[0])
-
-
 if __name__ == "__main__":
-    app()
+    App()
