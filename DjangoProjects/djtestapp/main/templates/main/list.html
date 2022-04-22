@@ -1,0 +1,15 @@
+{% extends 'main/base.html' %}
+{% block title %}List View{% endblock %}
+
+{% block content %}
+    <h1>{{tdl.name}}</h1>
+    <ul>
+        {% for item in tdl.item_set.all %}
+            {% if item.complete == False %}
+                <li>{{item.text}} (done)</li>
+            {% else %}
+                <li>{{item.text}}</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+{% endblock %}
