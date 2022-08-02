@@ -1,13 +1,26 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>
-        {% block title %}title{% endblock %}
+        {% block title %}{% endblock %}
     </title>
+    <link rel="stylesheet" type="text/css" href="/static/css/base.css" />
+    {% block head %}{% endblock %}
 </head>
 <body>
-    <div id="content", name="content">
-        {% block content %}
-        {% endblock %}
+<div>
+    <!-- topnavhome/topnavcomp -->
+    {% block header %}{% endblock %}
+
+    <!-- custom page content comes here -->
+    <div id="content" name="content">
+        {% block content %}{% endblock %}
     </div>
+
+    <div class="footer">
+        <p style="float: left">Készítő: Prok Dávid</p>
+        <p style="float: right">Minden jog fenntartva (c) 2022.</p>
+    </div>
+</div>
 </body>
 </html>

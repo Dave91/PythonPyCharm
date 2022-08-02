@@ -1,0 +1,227 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Dave Website - Rólam{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/css/topnavcomp.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/tabs.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/rolam.css" />
+{% endblock %}
+
+{% block header %}
+    <div id="tabmenu">
+      <a href="#felgomb">
+        <img id="felgomb" src="/static/images/Up-icon.png" alt="oldal teteje" />
+      </a>
+      <div class="dropdown">
+        <a href="home" class="dropbtn">
+          <img src="/static/images/Apps-Home-icon.png" alt="menu" />
+        </a>
+        <div class="dropdown-content">
+          <a href="rolam"
+            ><img src="/static/images/new-message-icon.png" />
+            <p>Kapcsolat</p></a
+          >
+          <a href=""
+            ><img src="/static/images/My-Documents-icon.png" />
+            <p>Versek</p></a
+          >
+          <a href=""
+            ><img src="/static/images/Vector-Arts-icon.png" />
+            <p>Haiku, tanka</p></a
+          >
+          <a href=""
+            ><img src="/static/images/camera-icon.png" />
+            <p>Természetfotó</p></a
+          >
+          <hr style="margin: 0" />
+          <a href=""
+            ><img src="/static/images/tudomany.png" />
+            <p>Tudomány</p></a
+          >
+          <a href=""
+            ><img src="/static/images/App-Media-icon.png" />
+            <p>Szórakozás</p></a
+          >
+          <a href="programozas">Programozás</a>
+        </div>
+      </div>
+      <a class="tabbtn" href="#rolam">Rólam</a>
+      <a class="tabbtn" href="#kapcs">Kapcsolat</a>
+      <a class="tabbtn" href="#publik">Publikációk</a>
+      <a class="tabbtn" href="#vendk">Vendégkönyv</a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="tab" id="rolam">
+      <img
+        id="rolamshakeimg"
+        src="/static/images/DSC_8812 mod kicsi.jpg"
+        alt="profilkep"
+      />
+    </div>
+    <!-- rolam vége -->
+
+    <div class="tab" id="kapcs">
+      <img
+        id="olimg"
+        src="/static/images/renovation-1262389_640.png"
+        alt="oldal fejlesztés alatt"
+      />
+    </div>
+    <!-- kapcs vége -->
+
+    <div class="tab" id="publik">
+      <div class="publist">
+        <!-- 
+Sumida Magazin esetében nem kép, hanem az adott posztokra mutató linkek
+blogot is majd... -->
+        <b>2020</b>
+        <p>
+          <a href="#pegant2020">Pegazus Könyvek Antológia 2020</a> szereplés
+          <a href="#ceglink">(PegazusTv Kft.)</a>
+        </p>
+        <p>Holnap Magazin szerzői közé jelentkezés, regisztráció</p>
+        <hr />
+        <b>2019</b>
+        <p>
+          Sumida folyó hídja Kulturális Magazin általi megjelenések kezdete
+          <a href="#facebookcim">(Sumida Magazin)</a>
+        </p>
+        <hr />
+        <b>2018</b>
+        <p>3sor.hu regisztráció</p>
+        <p>A Georgikon Kar naptárfotó pályázatán való sikeres részvétel</p>
+        <p>
+          <a href="#pegant2018">Pegazus Könyvek Antológia 2018</a> szereplés
+          (PegazusTv Kft.)
+        </p>
+        <p>
+          <a href="#szarnyprob2018">Szárnypróbálgatók</a> - magyar anyanyelvű
+          alkotók országos antológiája <a href="">(Raszter Könyvkiadó)</a>
+        </p>
+        <hr />
+        <b>2017</b>
+        <p>
+          Első önálló verseskötet magánkiadása Röpke pillanatok címmel
+          (Info-Szponzor Kft.)
+        </p>
+        <p>Egyetemi Írópályázat 2017 (Pannon Egyetem)</p>
+        <hr />
+        <b>2016</b>
+        <p>Pegazus Könyvek Antológia 2016 szereplés (PegazusTv Kft.)</p>
+        <hr />
+        <b>2014</b>
+        <p>Pegazus Könyvek Antológia 2014 szereplés (PegazusTv Kft.)</p>
+        <p>
+          <a href="#monaptar2014">Magyarország 2014 naptárfotó</a> szereplés
+          (Media-Press '91 Kft., www.naptarshop.hu)
+        </p>
+        <hr />
+        <b>2013</b>
+        <p>Ígéretek 10. antológia szereplés (Garbo Kiadó)</p>
+        <hr />
+        <b>2012</b>
+        <p>
+          <a href="#monaptar2012">Magyarország 2012 naptárfotó</a> szereplés
+          (Media-Press '91 Kft., www.naptarshop.hu)
+        </p>
+        <hr />
+        <b>2011</b>
+        <p>
+          Megbúvó Csillagok 2. antológia szereplés (Lícium-Art Könyvkiadó)
+        </p>
+        <p>
+          Először került kiemelésre versem a Poet.hu oldalon: Mi várunk
+          (Zádor-vár) c.
+        </p>
+        <hr />
+        <b>2010</b>
+        <p>
+          Poet.hu regisztráció, amely verseim érdemi publikálásának,
+          nyilvánosság elé tárásának tulajdonképpeni kezdete is egyben
+        </p>
+        <hr />
+        <b>2008</b>
+        <p>
+          "Sajtó és Tanulás" (SÉTA) program keretében az olvasást, illetőleg a
+          könyvek világát népszerűsítő cikk írása (Zalai Hírlap)
+        </p>
+      </div>
+      <br />
+      <hr />
+      <br />
+      <!-- v simán csak kis fotók egymás után a könyvekről -->
+      <img src="/static/images/slide1.jpg" usemap="#image_map" />
+      <map name="image_map">
+        <area
+          alt="szarnyprob"
+          title="szarnyprob"
+          href=""
+          coords="9,8 148,1 161,31 260,15 299,177 2,232 "
+          shape="poly"
+        />
+        <area
+          alt="ropkepill"
+          title="ropkepill"
+          href=""
+          coords="273,25 364,15 403,159 302,174 "
+          shape="poly"
+        />
+        <area
+          alt="pannonegy"
+          title="pannonegy"
+          href=""
+          coords="375,2 461,18 494,149 404,153 "
+          shape="poly"
+        />
+        <area
+          alt="csillagok"
+          title="csillagok"
+          href=""
+          coords="19,249 128,229 145,430 70,448 26,449 "
+          shape="poly"
+        />
+        <area
+          alt="igeretek"
+          title="igeretek"
+          href=""
+          coords="144,216 256,195 290,390 164,422 "
+          shape="poly"
+        />
+        <area
+          alt="pegazusantsor"
+          title="pegazusantsor"
+          href=""
+          coords="280,189 482,156 499,210 497,344 428,358 413,375 301,388 "
+          shape="poly"
+        />
+      </map>
+    </div>
+    <!-- publik vége -->
+
+    <div class="tab" id="vendk">
+      <form
+        action="/static/php/addcomment.php"
+        method="post"
+        name="guest"
+        class="form-cont"
+      >
+        Név: <input type="text" name="neve" placeholder="(opcionális)" />
+        <br /><br />
+        E-mail: <input type="text" name="email" placeholder="(opcionális)" />
+        <br /><br />
+        <textarea
+          placeholder="Az üzenet szövege... (szükséges)"
+          name="komment"
+          required
+        ></textarea>
+        <button type="submit" class="btn">Küldés!</button>
+        <a href="/static/php/guestbook.php">
+          <button type="button" class="btn read">Üzenőfal megtekintése!</button>
+        </a>
+      </form>
+    </div>
+    <!-- vendk vége -->
+{% endblock %}

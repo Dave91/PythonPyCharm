@@ -1,0 +1,37 @@
+try:
+    # Python 2
+    import Tkinter as tk
+    import ttk
+    from tkFileDialog import askopenfilename
+except ImportError:
+    # Python 3
+    import tkinter as tk
+    from tkinter import ttk
+    from tkinter.filedialog import askopenfilename
+
+
+def savedata():
+    if evesadatmess is not "":
+        defdir = curdir
+        savenamedir = ""
+        while savenamedir == "":
+            savenamedir = filedialog.asksaveasfile(
+                mode="a",
+                initialdir=defdir,
+                filetypes=(("Text Files", "*.txt"), ("CSV Files", "*.csv")),
+                defaultextension=".txt"
+            )
+        if savenamedir is None:
+            return
+        with savenamedir as savefile:
+            evker = str(evkerinput.get())
+            savefile.write(
+                "\n\n(debreceni adatok, mm-ben)" +
+                "\nA vizsgált év: " + evker +
+                "\n\n" + str(evesadatoutput.get()) + "\n"
+            )
+            savefile.close()
+            messagebox.showinfo(None, "Keresett rekord sikeresen elmentve!")
+        # any way to check success here??
+    else:
+        messagebox.showerror(None, "Nincs menthető input!! \n(Előbb végezz keresést!)")

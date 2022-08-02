@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="css/scrollbar.css" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        background: url("images/geeks-2894621_1920.jpg") no-repeat center center
+          fixed;
+        background-size: cover;
+      }
+
+      body {
+        font-family: Georgia, Garamond;
+      }
+
+      .felgomb {
+        position: fixed;
+        top: 15px;
+        right: 25px;
+        float: right;
+      }
+
+      pre {
+        font-family: Comic Sans MS;
+        font-size: 14px;
+        text-align: center;
+        display: inline-block;
+        padding: 20px;
+      }
+
+      .filterPre {
+        text-align: center;
+        display: none;
+      }
+
+      .show {
+        display: inline-block;
+      }
+
+      .precontainer {
+        margin: 10px 10px 10px 10px;
+        overflow: hidden;
+        text-align: center;
+        padding: 10px;
+      }
+
+      #BtnContainer {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        background: url("images/web-1012467_1920.jpg") no-repeat center center
+          fixed;
+        background-size: cover;
+        border: 1px solid grey;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .btn {
+        border: none;
+        outline: none;
+        padding: 12px 16px;
+        background-color: #f1f1f1;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background-color: gold;
+      }
+      .btn.active {
+        background-color: orange;
+      }
+
+      .dropdown {
+        position: fixed;
+        top: 15px;
+        left: 25px;
+      }
+
+      .dropdown a,
+      .dropbtn {
+        display: inline-block;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        transition: 0.3s;
+      }
+
+      .dropdown a:hover,
+      .dropdown:hover .dropbtn {
+        background-color: gold;
+        background-image: linear-gradient(orange 10%, gold 30%, white);
+        color: black;
+      }
+
+      a.dropdown {
+        display: inline-block;
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #ddd;
+        background-image: linear-gradient(lightblue, lightgrey 95%, grey);
+        z-index: 1;
+      }
+
+      .dropdown-content a {
+        color: black;
+        font-size: 16px;
+        padding: 12px 12px;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+      }
+
+      .dropdown-content a:hover {
+        background-color: gold;
+      }
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="BtnContainer">
+      <a href="#versektop" id="versektop">
+        <img class="felgomb" src="images/Up-icon.png" alt="oldal teteje" />
+      </a>
+      <div class="dropdown">
+        <a href="index.htm" class="dropbtn">
+          <img src="images/Apps-Home-icon.png" alt="menu" />
+        </a>
+        <div class="dropdown-content">
+          <a href="rolam.htm">Kapcsolat</a>
+          <a href="versek.htm">Versek</a>
+          <a href="haiku.htm">Haiku, tanka</a>
+          <a href="termeszetfoto.htm">Term�szetfot�</a>
+          <hr style="margin: 0" />
+          <a href="tudomany.htm">Tudom�ny</a>
+          <a href="szorakozas.htm">Sz�rakoz�s</a>
+          <a href="programozas.htm">Programozás</a>
+          <a href="hasznos.htm">Hasznos linkek</a>
+        </div>
+      </div>
+      <button class="btn" onclick="filterSelection('all')">Mind</button>
+      <button class="btn" onclick="filterSelection('cars')">Haiku</button>
+      <button class="btn" onclick="filterSelection('animals')">Tanka</button>
+    </div>
+
+    <script>
+      filterSelection("all");
+      function filterSelection(c) {
+        var x, i;
+        x = document.getElementsByClassName("filterPre");
+        if (c == "all") c = "";
+        for (i = 0; i < x.length; i++) {
+          w3RemoveClass(x[i], "show");
+          if (x[i].className.indexOf(c) > -1) w3AddClass(x[i], "show");
+        }
+      }
+
+      function w3AddClass(element, name) {
+        var i, arr1, arr2;
+        arr1 = element.className.split(" ");
+        arr2 = name.split(" ");
+        for (i = 0; i < arr2.length; i++) {
+          if (arr1.indexOf(arr2[i]) == -1) {
+            element.className += " " + arr2[i];
+          }
+        }
+      }
+
+      function w3RemoveClass(element, name) {
+        var i, arr1, arr2;
+        arr1 = element.className.split(" ");
+        arr2 = name.split(" ");
+        for (i = 0; i < arr2.length; i++) {
+          while (arr1.indexOf(arr2[i]) > -1) {
+            arr1.splice(arr1.indexOf(arr2[i]), 1);
+          }
+        }
+        element.className = arr1.join(" ");
+      }
+
+      var btnContainer = document.getElementById("BtnContainer");
+      var btns = btnContainer.getElementsByClassName("btn");
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener("click", function () {
+          var current = document.getElementsByClassName("active");
+          current[0].className = current[0].className.replace(" active", "");
+          this.className += " active";
+        });
+      }
+    </script>
+
+    <div class="precontainer">
+      <pre class="filterPre cars">
+LEGEL�N
+n�ma szell�vel
+h�vogat e r�t, s n�z r�m
+boci-szemekkel.
+</pre
+      >
+      <pre>
+SZ�NYOG-L�T
+kicsiny v�rsz�v�,
+nem k�r, se sz�l - bel�led
+�l, s te lecsapod.
+</pre
+      >
+      <pre>
+(K)�JSZAKA
+l�sd, gy�r l�mpaf�ny
+alatt tompa agy - nem l�t
+tiszta eml�ket...
+</pre
+      >
+      <pre>
+ESTI �GBOLT I.
+n�zem az eget:
+lyukas, fekete v�szon -
+honnan j�n a f�ny?
+</pre
+      >
+      <pre>
+ESTI �GBOLT II.
+n�zem az eget!
+S�t�t molyr�gta v�szon -
+szaggatott f�nyek.
+</pre
+      >
+      <pre>
+SZABADS�G
+k�bult kismad�r,
+sz�k kalitka, lazult vas,
+mer�sz rep�l�s�
+</pre
+      >
+      <pre>
+D�LI ABLAK
+Ablakon kin�z:
+vak�t� f�ny, k�pr�zat,
+szem el� a k�z.
+</pre
+      >
+      <pre>
+NAPLEMENTE
+�rnyakb�l f�rt�k
+merednek, parazsat sz�r 
+Nap, l�ngol az �g.
+</pre
+      >
+      <pre>
+IGAZ HORG�SZ
+Dermedt t�relem.
+Egy kifogott szerencse...
+�gy van kenyerem.
+</pre
+      >
+      <pre>
+ES�BEN
+S�rni kezd az �g,
+k�nnye mossa arcomat -
+s�rok m�r �n is.
+</pre
+      >
+      <pre>
+HAZAI T�J
+Tengernyi sz�p z�ld,
+v�r-feh�r vir�gfoltok:
+ez itt magyar f�ld...
+</pre
+      >
+      <pre>
+NY�R
+M�llik a h�s�g...
+van a ny�rba� minden sz�p -
+lelkemnek b�s�g.
+</pre
+      >
+      <pre>
+R�ZS�K
+R�zs�k a tet�n:
+f�l-f�ldobott szerelem.
+Egyszer fenn maradt.
+</pre
+      >
+      <pre>
+SEMMIS�G
+Csak n�zek �n a
+semmibe. H�t semmi ez?
+Vagy valami m�s?
+</pre
+      >
+      <pre>
+�NV�D
+T�k�rbe n�zek,
+s r�m megvet�en n�znek
+r�gi �njeim.
+</pre
+      >
+      <pre>
+SZ�L�S... SZABADS�G
+F�j az igazs�g -
+ki pedig azt kimondja,
+annak igaz�n...
+</pre
+      >
+      <pre>
+ELT�N(�D)�S
+T�ves h� hullott -
+m�r elm�lott. A csod�k
+m�r csak ilyenek.
+</pre
+      >
+      <pre>
+SZ�VET SZ�V�RT
+Sz�vemre tett�l
+foglal�t; nem lesz m�s� -
+csak Te szeress�l.
+</pre
+      >
+      <pre>
+ZAKLAT�S
+A fejemben j�rsz
+folyton: ne lep�dj meg, ha
+ajt�dban �llok!
+</pre
+      >
+      <pre>
+A TETTES: JELEN
+J�v�m a m�ltat
+perli � �n felmentem �t
+minden v�d al�l.
+</pre
+      >
+      <pre>
+�SZI S�HAJ
+�szre j�r, j�r-j�r.
+R�m borul k�d-gondolat...
+�, de k�r, k�r-k�r.
+</pre
+      >
+      <pre>
+B� = SZ�
+B�nat ker�lget.
+Furcsa �rz�s: mint mikor
+f�t a f�reg r�g.
+</pre
+      >
+      <pre>
+KORAI H�
+Feh�r h�pelyhek
+kavarognak oly b�szen
+a z�g� sz�lben...
+Milyen sokan vannak! De
+m�gsem tal�lj�k egym�st...
+</pre
+      >
+      <pre>
+B�BJ�T�K
+Csak b�bok vagyunk...
+s mozgat�nk nem az Isten:
+sz�ks�g �s k�nyszer.
+</pre
+      >
+      <pre>
+ZUHAN� LELKEK
+�llunk. Alattunk
+suttog� m�lys�g. G�nyos
+szelek f�ty�lik
+zuhan� sikolyunk... s mi -
+m�r nem k�s�rtj�k sorsunk.
+</pre
+      >
+      <pre>
+TAL�NY
+Sziv�rv�ny t�rte
+meg a csendet. Vajon mi
+lehet m�g�tte?
+</pre
+      >
+      <pre>
+MAGYARS�G
+Keser�des l�t.
+M�s meg nem �rtheti ezt.
+�ld�z�tt vagyok,
+f�lek, kis-nagy haz�mban.
+B�lyeg - s b�szk�n v�llalom!
+</pre
+      >
+      <pre>
+�GI JEL
+Felh�k k�zt nyugszik
+a nap � r�sen f�ny sz�kik,
+l�tod, megny�lik
+az �g el�tted... mi�rt
+b�jsz, ha te �lni akarsz?
+</pre
+      >
+      <pre>
+VODKA
+Sz�ntelen p�r�ly.
+Sz�mold a perceket, m�g
+les�jt az �k�l.
+</pre
+      >
+      <pre>
+K�D�S �JSZAKA
+Csendesen h�v�s
+az utca, s r�m olvadnak
+k�dbe z�rt f�nyek.
+</pre
+      >
+      <pre>
+�SZI S�HAJ
+Lesz�llt az este,
+s �gy a k�d. R�m pedig a
+b�nat telepszik.
+Oly es�t adj, Uram, mely
+lemossa minden k�nnyem.
+</pre
+      >
+      <pre>
+SEJTELMEK
+Valami z�r�g
+a padl�son. Egy eml�k.
+S �gy �lek: vakon.
+</pre
+      >
+      <pre>
+�SZI K�P I.
+Sz�l susog, utca
+szuszog. S bennem v�gy�lmok
+sisteregnek m�g...
+</pre
+      >
+      <pre>
+�SZI K�P II.
+Sz�l susog, utca
+szuszog. Ny�ri v�gy�lmok -
+elt�ntek m�r r�g...
+</pre
+      >
+      <pre>
+V-�NDOROK
+Mad�rkarav�n
+bandukol t�g k�k mez�n.
+Menn�k... v�rjatok!
+</pre
+      >
+      <pre>
+MONOT�NIA
+K�dbe sz�tt t�vol.
+Sz�ntelen, n�ma gy�sszal
+fel�m araszol.
+</pre
+      >
+      <pre>
+KOCOG�S
+Fut maga el�l,
+sz�v�t k�tely mardossa.
+Futja k�reit.
+</pre
+      >
+      <pre>
+NOSZTALGIA I.
+Italos arcok,
+homokf�vott eml�kek,
+s �r�k dallamok.
+</pre
+      >
+      <pre>
+NOSZTALGIA II.
+M�moros dallam,
+homokf�vott pillanat -
+eml�karc-massza.
+</pre
+      >
+      <pre>
+K�LV�ROS
+Ac�los, hideg
+sz�rkes�g, �res kong�s.
+�szi est-�br�nd.
+</pre
+      >
+      <pre>
+�JJELI V�ROSK�P
+Apr� f�nyg�mb�k
+mini galaxis�ban
+id� hunyorog.
+</pre
+      >
+      <pre>
+HI�NY�RZET
+Csendben �l b�nat -
+eml�kek k�zt siratva
+�lmokat, s v�gyat...
+</pre
+      >
+      <pre>
+HOLDVIL�G
+H�v�s �jszak�n
+halk nesszel vacog, s ragyog
+holdf�nyes sz�vem.
+</pre
+      >
+      <pre>
+�SSZEL
+K�dbe l�badt b�s
+tekintetem. K�nny hullott
+reggel a f�kr�l.
+</pre
+      >
+      <pre>
+TE(L)HETETLENS�G
+L�m, forr� a fej,
+de �n hitem vesztettem,
+oly fagyos e hely.
+</pre
+      >
+      <pre>
+TAVASZI JELEN�SEK
+M�ly m�jusi csend
+rejtek�n s�ppal-dobbal
+kif�ty�l a sz�l...
+</pre
+      >
+      <pre>
+L�TMINIMUM
+Fizetj�k holnap
+nyomor�t, de mit kapunk?
+�pp csak uzsor�t.
+</pre
+      >
+      <pre>
+TABUK N�LK�L
+Mint italban j�g: 
+hangulattal old�d�
+k�rdezz-felelek.
+</pre
+      >
+      <pre>
+T�L NYOM�BAN
+Hamisan j�r-kel
+a csal�ka l�lek-cs�sz,
+T�l-b�jtat� �sz.
+
+H�sub�j�t meg
+nem r�zza, k�d-j�sz�g mind
+�t j�l �lc�zza.
+
+K�zel j�r, �rzem,
+k�dben lop�dzik, �tja
+h�v�s n�mas�g.
+</pre
+      >
+      <pre>
+SZ�LVIHAR
+Vill�m csapott le.
+Remeg�s fut v�gig a
+megszeppent t�jon.
+
+Versenyre keltek
+sz�l-fogatok az �gen: 
+f�ktelen robaj.
+</pre
+      >
+      <pre>
+ELHIDEG�L�S
+�szi levelek;
+f�ldi (s)�hajok � soha
+c�lba nem �rtek.
+</pre
+      >
+      <pre>
+�LET-T�R
+Vicsorg� falak
+k�zt vakolatlan szavak �
+ember, hol �l�nk?!
+</pre
+      >
+      <pre>
+M�LY CSEND
+K�r�lvesz t�ged,
+majd bek�szik elm�dbe
+s ott tombolni kezd.
+</pre
+      >
+      <pre>
+REGGEL I.
+Aranysugarak
+sz�knek, lassan szemeit
+nyitja a v�ros.
+</pre
+      >
+      <pre>
+REGGEL II.
+Aranyfonalat
+bontogat az �g, �bred
+a v�ros � szemek
+fel-felpattannak, s benn�k
+f�ny gy�l: �j nap var�zsa.
+</pre
+      >
+      <pre>
+NEKT�R
+Szirmok lengenek,
+zizeg� sz�rnyak nyom�n
+�des z�mm�g�s.
+</pre
+      >
+      <pre>
+NAPRA V�RVA
+V�zcseppek f�ggnek,
+ringanak most e gonddal
+sz�tt sz�lakon. B�s
+p�kl�bak toporognak
+sarokban � napra v�rnak.
+</pre
+      >
+      <pre>
+�NBIZALOM
+Hitemb�l emelt
+�veghegy �vatosan
+vigyen magasra.
+</pre
+      >
+      <pre>
+B�B�J
+Ahogy r�m n�zt�l,
+azonm�d megig�zt�l;
+hangom b�gyadtt�,
+m�g sz�vem par�zzs� v�lt:
+nyarat var�zsolsz el�m.
+</pre
+      >
+      <pre>
+ES� UT�N
+�gy es� ut�n
+apr� cseppeken f�nyek
+billegnek sut�n.
+</pre
+      >
+      <pre>
+LID�RC
+Gubbaszt, didereg.
+Hajnali d�r cineg�t
+�z: t�li reg�k.
+</pre
+      >
+      <pre>
+T�LI �LOM
+Fagyzugos sz�vben
+vacog� �lmokra lelt
+tavaszi l�nyem.
+</pre
+      >
+      <pre>
+VIHAR EL�TT
+k�k �gre sz�rke
+felh� �rt - es�t �rez
+a f�ld, mennyd�rg�st
+</pre
+      >
+      <pre>
+AZ ISMERETLEN
+f�lj�k, �mde hol
+lenn�nk a fejest ugr�k
+n�lk�l: m�g sehol.
+</pre
+      >
+      <pre>
+NIKTOF�BIA
+F�lelmet terem
+niktof�b hajlam m�ly�n
+minden tompa nesz.
+</pre
+      >
+      <pre>
+T�LEL�
+Lass� medr�ben
+csobog az �sz, m�g nem l�g
+j�g az ereszr�l.
+</pre
+      >
+      <pre>
+TELJESS�G
+Eg�sz, �gy teljes.
+Mert mit �r egy f�l, p�rja
+n�lk�l: c�ltalan.
+</pre
+      >
+      <pre>
+FED�L N�LK�L I
+varj�had b�song
+fa�gon: �znak-f�znak,
+egym�sra n�znek.
+</pre
+      >
+      <pre>
+FED�L N�LK�L II
+varj�-alakok
+b�jnak szit�l� k�dben:
+l�thatatlanok...
+</pre
+      >
+    </div>
+  </body>
+</html>

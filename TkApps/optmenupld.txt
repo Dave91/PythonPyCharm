@@ -1,0 +1,10 @@
+self.themebutt = ttk.Menubutton(self.botf, text="Kinézet", direction="above")
+self.themebutt.menu = tk.Menu(self.themebutt, tearoff=0)
+self.themebutt["menu"] = self.themebutt.menu
+self.lightvar = tk.IntVar()
+self.lightvar.set(1)
+self.darkvar = tk.IntVar()
+self.darkvar.set(0)
+self.themebutt.menu.add_checkbutton(label="light", variable=self.lightvar)
+self.themebutt.menu.add_checkbutton(label="dark", variable=self.darkvar)
+self.themebutt.pack(side="right")

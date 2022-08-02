@@ -1,0 +1,136 @@
+CREATE TABLE users (
+	user_id INTEGER PRIMARY KEY,
+	username TEXT NOT NULL UNIQUE,
+	password TEXT NOT NULL
+);
+
+insert into users (username, password) values ('admin', 'admin');
+insert into users (username, password) values ('Dave', 'dave91');
+insert into users (username, password) values ('TesztElek8891', '8891');
+
+CREATE TABLE carts (
+    cart_id INTEGER PRIMARY KEY,
+    cart_item_number TEXT NOT NULL,
+    cart_username TEXT NOT NULL,
+    user_id INTEGER,
+    FOREIGN KEY (user_id)
+        REFERENCES users (user_id)
+);
+
+insert into carts (cart_item_number, cart_username) values ('0287-TSV', 'Dave');
+insert into carts (cart_item_number, cart_username) values ('2697-VRP', 'TesztElek8891');
+insert into carts (cart_item_number, cart_username) values ('6545-CPT', 'admin');
+insert into carts (cart_item_number, cart_username) values ('8193-DXT', 'admin');
+insert into carts (cart_item_number, cart_username) values ('8077-HYJ', 'admin');
+
+CREATE TABLE items (
+    item_id INTEGER PRIMARY KEY,
+    item_number TEXT NOT NULL UNIQUE,
+    item_price REAL NOT NULL,
+    item_desc TEXT NOT NULL,
+    item_stock INTEGER NOT NULL,
+    cart_id INTEGER,
+    FOREIGN KEY (cart_id)
+        REFERENCES carts (cart_id)
+);
+
+insert into items (item_number, item_price, item_desc, item_stock) values ('9478-SZD', 724326, 'Terrapene carolina', 64);
+insert into items (item_number, item_price, item_desc, item_stock) values ('2697-VRP', 378900, 'Axis axis', 15);
+insert into items (item_number, item_price, item_desc, item_stock) values ('9499-DDD', 128749, 'Stercorarius longicausus', 2);
+insert into items (item_number, item_price, item_desc, item_stock) values ('2579-NIF', 530694, 'Bubalus arnee', 14);
+insert into items (item_number, item_price, item_desc, item_stock) values ('3540-HAB', 358031, 'Melophus lathami', 48);
+insert into items (item_number, item_price, item_desc, item_stock) values ('3010-AMT', 431883, 'Geochelone elegans', 80);
+insert into items (item_number, item_price, item_desc, item_stock) values ('9684-EEC', 291840, 'Paraxerus cepapi', 22);
+insert into items (item_number, item_price, item_desc, item_stock) values ('0577-YBS', 158703, 'Microcebus murinus', 80);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5891-BPA', 362232, 'Platalea leucordia', 98);
+insert into items (item_number, item_price, item_desc, item_stock) values ('2017-XAH', 214400, 'Mustela nigripes', 47);
+insert into items (item_number, item_price, item_desc, item_stock) values ('6545-CPT', 666669, 'Felis pardalis', 48);
+insert into items (item_number, item_price, item_desc, item_stock) values ('1580-GFP', 282899, 'Ceratotherium simum', 37);
+insert into items (item_number, item_price, item_desc, item_stock) values ('4341-QLB', 20566, 'Notechis semmiannulatus', 82);
+insert into items (item_number, item_price, item_desc, item_stock) values ('8193-DXT', 108670, 'Porphyrio porphyrio', 26);
+insert into items (item_number, item_price, item_desc, item_stock) values ('0084-TXK', 610577, 'Castor canadensis', 112);
+insert into items (item_number, item_price, item_desc, item_stock) values ('9654-AIM', 459280, 'Aegypius tracheliotus', 106);
+insert into items (item_number, item_price, item_desc, item_stock) values ('2186-MNH', 330798, 'Hyaena hyaena', 31);
+insert into items (item_number, item_price, item_desc, item_stock) values ('1496-HSG', 491518, 'Bos mutus', 12);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5760-RNS', 660082, 'Semnopithecus entellus', 49);
+insert into items (item_number, item_price, item_desc, item_stock) values ('6166-KXV', 418874, 'Genetta genetta', 65);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5402-YRS', 622661, 'Microcebus murinus', 63);
+insert into items (item_number, item_price, item_desc, item_stock) values ('7119-UTM', 745250, 'Lamprotornis superbus', 12);
+insert into items (item_number, item_price, item_desc, item_stock) values ('7571-PAQ', 673238, 'Acridotheres tristis', 63);
+insert into items (item_number, item_price, item_desc, item_stock) values ('1570-MKD', 464933, 'Paradoxurus hermaphroditus', 106);
+insert into items (item_number, item_price, item_desc, item_stock) values ('2952-HJZ', 713728, 'Actophilornis africanus', 83);
+insert into items (item_number, item_price, item_desc, item_stock) values ('0898-KEU', 476505, 'Bubulcus ibis', 101);
+insert into items (item_number, item_price, item_desc, item_stock) values ('8622-IKJ', 35992, 'Sula nebouxii', 71);
+insert into items (item_number, item_price, item_desc, item_stock) values ('9513-WTZ', 448239, 'Connochaetus taurinus', 5);
+insert into items (item_number, item_price, item_desc, item_stock) values ('7114-AWD', 323196, 'Tragelaphus angasi', 24);
+insert into items (item_number, item_price, item_desc, item_stock) values ('8591-HXA', 577833, 'Procyon cancrivorus', 57);
+insert into items (item_number, item_price, item_desc, item_stock) values ('8481-REC', 64517, 'Ardea golieth', 108);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5112-SHR', 67894, 'Priodontes maximus', 119);
+insert into items (item_number, item_price, item_desc, item_stock) values ('3171-RDQ', 183121, 'Coluber constrictor', 86);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5320-RNO', 406813, 'Phalacrocorax niger', 81);
+insert into items (item_number, item_price, item_desc, item_stock) values ('4931-IBX', 114550, 'Naja haje', 63);
+insert into items (item_number, item_price, item_desc, item_stock) values ('0746-OBW', 263080, 'Chlamydosaurus kingii', 50);
+insert into items (item_number, item_price, item_desc, item_stock) values ('2570-RYG', 114791, 'Bubo bubo', 87);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5010-LZE', 533513, 'Lamprotornis nitens', 71);
+insert into items (item_number, item_price, item_desc, item_stock) values ('1784-RBH', 496343, 'Alopex lagopus', 85);
+insert into items (item_number, item_price, item_desc, item_stock) values ('8077-HYJ', 564346, 'Pytilia melba', 2);
+insert into items (item_number, item_price, item_desc, item_stock) values ('8728-BPD', 379674, 'Dusicyon thous', 118);
+insert into items (item_number, item_price, item_desc, item_stock) values ('0930-LFC', 347671, 'Perameles nasuta', 102);
+insert into items (item_number, item_price, item_desc, item_stock) values ('9113-XWP', 85538, 'Pelecans onocratalus', 55);
+insert into items (item_number, item_price, item_desc, item_stock) values ('3245-SHE', 337773, 'Vulpes cinereoargenteus', 113);
+insert into items (item_number, item_price, item_desc, item_stock) values ('1009-BNR', 408628, 'Panthera leo', 17);
+insert into items (item_number, item_price, item_desc, item_stock) values ('4976-YUP', 60802, 'Ctenophorus ornatus', 108);
+insert into items (item_number, item_price, item_desc, item_stock) values ('8743-GQS', 155308, 'Lacerta viridis', 95);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5145-IFW', 235537, 'Coluber constrictor', 100);
+insert into items (item_number, item_price, item_desc, item_stock) values ('2769-BWO', 606504, 'Uraeginthus angolensis', 90);
+insert into items (item_number, item_price, item_desc, item_stock) values ('9638-UYC', 124188, 'Dromaeus novaehollandiae', 46);
+insert into items (item_number, item_price, item_desc, item_stock) values ('4678-HES', 5272, 'Equus hemionus', 1);
+insert into items (item_number, item_price, item_desc, item_stock) values ('6256-HEU', 685709, 'Sitta canadensis', 86);
+insert into items (item_number, item_price, item_desc, item_stock) values ('4575-GKU', 351670, 'Actophilornis africanus', 98);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5114-LFR', 87087, 'Tockus erythrorhyncus', 113);
+insert into items (item_number, item_price, item_desc, item_stock) values ('3933-CJG', 641812, 'Phoenicopterus chilensis', 105);
+insert into items (item_number, item_price, item_desc, item_stock) values ('6595-SLP', 53060, 'Theropithecus gelada', 30);
+insert into items (item_number, item_price, item_desc, item_stock) values ('7195-CMD', 330264, 'Alopex lagopus', 22);
+insert into items (item_number, item_price, item_desc, item_stock) values ('8803-CVV', 202772, 'Cochlearius cochlearius', 28);
+insert into items (item_number, item_price, item_desc, item_stock) values ('9925-AMW', 575662, 'Kobus defassa', 100);
+insert into items (item_number, item_price, item_desc, item_stock) values ('8533-GKU', 545172, 'Odocoileus hemionus', 44);
+insert into items (item_number, item_price, item_desc, item_stock) values ('7545-JDG', 742868, 'Eudyptula minor', 25);
+insert into items (item_number, item_price, item_desc, item_stock) values ('3910-AEG', 234950, 'Bubalornis niger', 102);
+insert into items (item_number, item_price, item_desc, item_stock) values ('3263-TXV', 16991, 'Numida meleagris', 79);
+insert into items (item_number, item_price, item_desc, item_stock) values ('3695-QVZ', 439709, 'Cereopsis novaehollandiae', 89);
+insert into items (item_number, item_price, item_desc, item_stock) values ('4043-TVZ', 399275, 'Alligator mississippiensis', 26);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5240-EXC', 66229, 'Colobus guerza', 88);
+insert into items (item_number, item_price, item_desc, item_stock) values ('0714-NWD', 148477, 'Mazama gouazoubira', 13);
+insert into items (item_number, item_price, item_desc, item_stock) values ('3879-CKB', 519259, 'Tyto novaehollandiae', 90);
+insert into items (item_number, item_price, item_desc, item_stock) values ('4905-PNX', 570559, 'Ovis musimon', 21);
+insert into items (item_number, item_price, item_desc, item_stock) values ('7566-GVA', 129009, 'Globicephala melas', 71);
+insert into items (item_number, item_price, item_desc, item_stock) values ('3523-YIA', 494785, 'Nycticorax nycticorax', 52);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5894-YTK', 744685, 'Acanthaster planci', 11);
+insert into items (item_number, item_price, item_desc, item_stock) values ('1788-FZL', 717271, 'Platalea leucordia', 41);
+insert into items (item_number, item_price, item_desc, item_stock) values ('9106-JBR', 106358, 'Bucephala clangula', 112);
+insert into items (item_number, item_price, item_desc, item_stock) values ('2506-MWV', 337212, 'Lepus arcticus', 62);
+insert into items (item_number, item_price, item_desc, item_stock) values ('1895-HMW', 647182, 'Bucephala clangula', 46);
+insert into items (item_number, item_price, item_desc, item_stock) values ('1307-CET', 721789, 'Chlidonias leucopterus', 69);
+insert into items (item_number, item_price, item_desc, item_stock) values ('8523-PLC', 176757, 'Martes pennanti', 36);
+insert into items (item_number, item_price, item_desc, item_stock) values ('2800-VAZ', 96587, 'Ctenophorus ornatus', 104);
+insert into items (item_number, item_price, item_desc, item_stock) values ('6290-ACV', 537259, 'Centrocercus urophasianus', 44);
+insert into items (item_number, item_price, item_desc, item_stock) values ('8712-DUY', 709737, 'Cercatetus concinnus', 54);
+insert into items (item_number, item_price, item_desc, item_stock) values ('9138-EOY', 700878, 'Hippopotamus amphibius', 107);
+insert into items (item_number, item_price, item_desc, item_stock) values ('7735-INF', 237545, 'Himantopus himantopus', 113);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5777-ECF', 545968, 'Isoodon obesulus', 76);
+insert into items (item_number, item_price, item_desc, item_stock) values ('1661-PTV', 534093, 'Pteropus rufus', 3);
+insert into items (item_number, item_price, item_desc, item_stock) values ('1649-CDA', 123624, 'Paraxerus cepapi', 72);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5372-QBV', 570100, 'Corallus hortulanus cooki', 39);
+insert into items (item_number, item_price, item_desc, item_stock) values ('6098-RDC', 715684, 'Alopochen aegyptiacus', 38);
+insert into items (item_number, item_price, item_desc, item_stock) values ('4344-OTH', 725298, 'Sceloporus magister', 88);
+insert into items (item_number, item_price, item_desc, item_stock) values ('0287-TSV', 442326, 'Sus Scrufa', 40);
+insert into items (item_number, item_price, item_desc, item_stock) values ('7967-DZZ', 589503, 'Cereopsis novaehollandiae', 2);
+insert into items (item_number, item_price, item_desc, item_stock) values ('9037-XPA', 439093, 'Grus antigone', 119);
+insert into items (item_number, item_price, item_desc, item_stock) values ('6249-JHP', 155914, 'Estrilda erythronotos', 35);
+insert into items (item_number, item_price, item_desc, item_stock) values ('1690-TQP', 401098, 'Macropus robustus', 93);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5405-DDT', 730031, 'Psophia viridis', 82);
+insert into items (item_number, item_price, item_desc, item_stock) values ('3386-TIV', 741236, 'Macropus giganteus', 95);
+insert into items (item_number, item_price, item_desc, item_stock) values ('3745-OZB', 682178, 'Oreamnos americanus', 76);
+insert into items (item_number, item_price, item_desc, item_stock) values ('0206-GWQ', 697043, 'Chelodina longicollis', 85);
+insert into items (item_number, item_price, item_desc, item_stock) values ('7051-HZH', 365985, 'Phylurus milli', 60);
+insert into items (item_number, item_price, item_desc, item_stock) values ('5678-JNZ', 208547, 'Tyto novaehollandiae', 59);
