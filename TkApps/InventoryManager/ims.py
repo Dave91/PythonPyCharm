@@ -483,20 +483,22 @@ class TabAdminLogs(ttk.Frame):
         # OUTP ELEMENTS
         self.scrbar = ttk.Scrollbar(self.outp)
         self.scrbar.pack(side="right", fill="y")
-        self.tree = ttk.Treeview(self.outp, column=("column1", "column2", "column3", "column4"), show='headings',
-                                 selectmode="browse", height=13, yscrollcommand=self.scrbar.set)
-        self.tree.column("#1", width=80, minwidth=80, stretch=0)
-        self.tree.column("#2", width=80, minwidth=80, stretch=0)
-        self.tree.column("#3", width=240, minwidth=240, stretch=0)
-        self.tree.column("#4", width=40, minwidth=40, stretch=0)
+        
+        self.tree = ttk.Treeview(self.outp, column=("column1", "column2", "column3"), show='headings',
+                                 selectmode="browse", height=10, yscrollcommand=self.scrbar.set)
+        self.tree.column("#1", width=120, minwidth=120, stretch=0)
+        self.tree.column("#2", width=100, minwidth=100, stretch=0)
+        self.tree.column("#3", width=270, minwidth=270, stretch=0)
         self.tree.heading("#1", text="Timestamp")
         self.tree.heading("#2", text="Username")
-        self.tree.heading("#3", text="Tab & Function")  # csak ez a 3, show details vagy dupla katt felugrik a desc sor
-        self.tree.heading("#4", text="Error Description")  # kijelölni és akkor mutassa külön? csakmert marha hosszú...
-        self.tree.pack(side="left", expand=1, fill="both")
+        self.tree.heading("#3", text="Tab & Function")
+        self.tree.pack(side="top", expand=1, fill="both")
         self.scrbar.config(command=self.tree.yview)
 
-        # felugró desc box?? v külön csak simán label a tree alatt???
+        #show details vagy dupla kattra felugrik a desc alul??
+        self.logdesc = tk.Text(self.outp)
+        self.logdesc.pack(side="bottom", fill="x")
+        self.logdesc.insert("end", "Error Details: " + "test")
 
         # MENU ELEMENTS & FUNCS
         self.logsel = tk.StringVar()
@@ -513,7 +515,8 @@ class TabAdminLogs(ttk.Frame):
     def showrecords(self):
         logsel = self.logsel.get()
         logs = {"Errors": "errorlog", "Events": "log"}
-        #
+        self.logdesc.configure(value="test")
+        #FuncVars.wtoerrorlog[0]
 
     def showdetails(self):
         pass
@@ -543,7 +546,7 @@ class StyleConfig(ttk.Style):
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.title("InventoryManager - Inventory Management Tools - Dave")
+    root.title("InventoryManager - Inventory Management System - Dave")
     root.appicon = tk.PhotoImage(file="images/imsicon.png")
     root.iconphoto(False, root.appicon)
     root.geometry("640x420")
