@@ -37,12 +37,12 @@ def update(screen, cells, size, with_prog=False):
 def main():
     pygame.init()
     screen = pygame.display.set_mode((800, 600))
+    clock = pygame.time.Clock()
     size = 10
     cells = np.zeros((60, 80))
     screen.fill(color_grid)
     update(screen, cells, size)
     pygame.display.flip()
-    clock = pygame.time.Clock()
     pygame.display.update()
     running = False
 
