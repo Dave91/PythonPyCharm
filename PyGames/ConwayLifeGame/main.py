@@ -42,6 +42,7 @@ def main():
     screen.fill(color_grid)
     update(screen, cells, size)
     pygame.display.flip()
+    clock = pygame.time.Clock()
     pygame.display.update()
     running = False
 
@@ -65,6 +66,7 @@ def main():
         if running:
             cells = update(screen, cells, size, with_prog=True)
             pygame.display.update()
+            clock.tick(5)
 
 
 if __name__ == '__main__':
