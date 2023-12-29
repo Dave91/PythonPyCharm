@@ -27,8 +27,9 @@ class Pathfinder:
             steps = self.path[0]
             nodes = []
             for step in range(len(steps)):
-                nx = steps[step][0] * 50
-                ny = steps[step][1] * 50
+                node = steps[step]
+                nx = node.x * 50
+                ny = node.y * 50
                 nodes.append((nx, ny))
             return nodes
 
