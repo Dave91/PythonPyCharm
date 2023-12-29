@@ -84,7 +84,7 @@ def display_score():
 	global stars
 	current_time = int(pygame.time.get_ticks() / 1000) - start_time
 	score_surf = game_font.render(
-		f'Time: {current_time} secs, stars: {stars}', False, (64, 64, 64))
+		f'Time: {current_time} secs, stars: {stars}', False, (255, 255, 255))
 	score_rect = score_surf.get_rect(center=(400, 50))
 	screen.blit(score_surf, score_rect)
 	return current_time
