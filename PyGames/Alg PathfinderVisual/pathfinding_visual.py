@@ -44,9 +44,10 @@ class Pathfinder:
             steps = self.path[0]
             nodes = []
             for step in range(len(steps)):
+                node = steps[step]
                 # +5 for circle, line / not for rect
-                nx = (steps[step][0] * 10) + 5
-                ny = (steps[step][1] * 10) + 5
+                nx = (node.x * 10) + 5
+                ny = (node.y * 10) + 5
                 nodes.append((nx, ny))
             try:
                 pygame.draw.lines(screen, (255, 155, 55), False, nodes, 5)
