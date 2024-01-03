@@ -1,11 +1,10 @@
-import time
 import pygame
 import numpy as np
 
 color_bg = (255, 255, 255)
-color_grid = (40, 40, 40)
-color_die_next = (170, 170, 170)
-color_alive_next = (10, 10, 10)
+color_grid = (0, 0, 0)
+color_die_next = (0, 0, 0)
+color_alive_next = (0, 0, 0)
 
 
 def update(screen, cells, size, with_prog=False):
@@ -66,7 +65,7 @@ def main():
         if running:
             cells = update(screen, cells, size, with_prog=True)
             pygame.display.update()
-            clock.tick(5)
+            clock.tick(30)
 
 
 if __name__ == '__main__':
