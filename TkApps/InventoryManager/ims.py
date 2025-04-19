@@ -494,11 +494,11 @@ class TabAdminLogs(ttk.Frame):
         self.tree.heading("#3", text="Tab & Function")
         self.tree.pack(side="top", expand=1, fill="both")
         self.scrbar.config(command=self.tree.yview)
+        self.tree.bind("<Button-1>", self.showdetails)
 
         #show details vagy dupla kattra felugrik a desc alul??
         self.logdesc = tk.Text(self.outp)
         self.logdesc.pack(side="bottom", fill="x")
-        self.logdesc.insert("end", "Error Details: " + "test")
 
         # MENU ELEMENTS & FUNCS
         self.logsel = tk.StringVar()
@@ -506,10 +506,10 @@ class TabAdminLogs(ttk.Frame):
         ttk.OptionMenu(self.menu, self.logsel, "Choose Log", "Errors", "Events", command=self.showrecords).pack(
             fill="x", pady=4)
 
-        self.btnshowdetails = ttk.Button(self.menu, text="Show details", command=self.showdetails)
+        #self.btnshowdetails = ttk.Button(self.menu, text="Show details", command=self.showdetails)
         self.btnclearlog = ttk.Button(self.menu, text="Clear log", command=self.clearlog)
 
-        self.btnshowdetails.pack(fill="x", pady=4)
+        #self.btnshowdetails.pack(fill="x", pady=4)
         self.btnclearlog.pack(fill="x", pady=4)
 
     def showrecords(self):
@@ -518,12 +518,19 @@ class TabAdminLogs(ttk.Frame):
         self.logdesc.configure(value="test")
         #FuncVars.wtoerrorlog[0]
 
-    def showdetails(self):
-        pass
+    def showdetails(self, event):
+        self.logdesc.insert("end", "Error Details: " + "test")
 
     def clearlog(self):
         if self.logsel.get() != "Choose Log":
-            pass
+            if self.logsel.get() == "Events":
+                FuncVars.wtolog = []
+                with open("data/log.txt", "w") as f:
+                    f.write("")
+            if self.logsel.get() == "Errors":
+                FuncVars.wtoerrorlog = []
+                with open("data/errorlog.txt", "w") as f:
+                    f.write("")
         else:
             return
 
