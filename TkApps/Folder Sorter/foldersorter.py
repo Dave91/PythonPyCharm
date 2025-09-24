@@ -137,29 +137,29 @@ class AppGUI(ttk.Frame):
             self.progbar.update_idletasks()
 
             if len(self.listbox_docs.curselection()) > 0:
-                dest_dir = dest_dir + "docs/"
-                if not os.path.isdir(dest_dir):
-                    os.makedirs(dest_dir)
+                dest_dir_docs = dest_dir + "docs/"
+                if not os.path.isdir(dest_dir_docs):
+                    os.makedirs(dest_dir_docs)
                 listb = self.listbox_docs
-                self.sorting(source_dir, dest_dir, listb)
+                self.sorting(source_dir, dest_dir_docs, listb)
             if len(self.listbox_image.curselection()) > 0:
-                dest_dir = dest_dir + "images/"
-                if not os.path.isdir(dest_dir):
-                    os.makedirs(dest_dir)
+                dest_dir_images = dest_dir + "images/"
+                if not os.path.isdir(dest_dir_images):
+                    os.makedirs(dest_dir_images)
                 listb = self.listbox_image
-                self.sorting(source_dir, dest_dir, listb)
+                self.sorting(source_dir, dest_dir_images, listb)
             if len(self.listbox_audio.curselection()) > 0:
-                dest_dir = dest_dir + "audios/"
-                if not os.path.isdir(dest_dir):
-                    os.makedirs(dest_dir)
+                dest_dir_audios = dest_dir + "audios/"
+                if not os.path.isdir(dest_dir_audios):
+                    os.makedirs(dest_dir_audios)
                 listb = self.listbox_audio
-                self.sorting(source_dir, dest_dir, listb)
+                self.sorting(source_dir, dest_dir_audios, listb)
             if len(self.listbox_video.curselection()) > 0:
-                dest_dir = dest_dir + "videos/"
-                if not os.path.isdir(dest_dir):
-                    os.makedirs(dest_dir)
+                dest_dir_videos = dest_dir + "videos/"
+                if not os.path.isdir(dest_dir_videos):
+                    os.makedirs(dest_dir_videos)
                 listb = self.listbox_video
-                self.sorting(source_dir, dest_dir, listb)
+                self.sorting(source_dir, dest_dir_videos, listb)
         else:
             showinfo("Error", "Valid source & destination folders needed!")
 
