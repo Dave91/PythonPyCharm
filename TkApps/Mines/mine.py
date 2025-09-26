@@ -91,7 +91,8 @@ class App(ttk.Frame):
     def btn_click(self, event, r, c):
         # self.win_cond()  # checking before or after func run
         ev_num, row, col = event.num, r, c
-        if self.playing and self.game_grid[row][col]["state"] != r'disabled':
+        if self.playing and self.game_grid[row][col]["state"] != r'disabled' \
+                and self.game_grid[row][col]["text"] == "":
             if ev_num == 3:
                 if self.game_grid[row][col]["image"] == "":
                     self.game_grid[row][col]["image"] = self.img_f
