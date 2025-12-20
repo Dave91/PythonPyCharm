@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -6,6 +7,17 @@ from tkinter import filedialog as fd
 
 import pygame
 from mutagen.mp3 import MP3
+
+
+def resource_path(relative_path):
+    """ Segédfüggvény az erőforrások eléréséhez (fejlesztéskor és .exe-ként is) """
+    try:
+        # PyInstaller által létrehozott ideiglenes mappa
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 
 class AppGui(tk.Tk):
@@ -16,7 +28,7 @@ class AppGui(tk.Tk):
 
         self.geometry("390x180")
         self.title("Minimalist Music Player")
-        self.iconbitmap(r'images/player.ico')
+        self.iconbitmap(resource_path('images/player.ico'))
 
         self.mainframe = tk.Frame(self, relief="groove", border=2)
         self.mainframe.pack()
@@ -28,10 +40,10 @@ class AppGui(tk.Tk):
         self.volscale.grid(row=1, column=1, columnspan=2, padx=2, pady=4)
 
         # btn img
-        self.muteimg = tk.PhotoImage(file="images/mute.png")
-        self.volumeimg = tk.PhotoImage(file="images/volume.png")
-        self.playimg = tk.PhotoImage(file="images/player.png")
-        self.pauseimg = tk.PhotoImage(file="images/pause.png")
+        self.muteimg = tk.PhotoImage(file=resource_path("images/mute.png"))
+        self.volumeimg = tk.PhotoImage(file=resource_path("images/volume.png"))
+        self.playimg = tk.PhotoImage(file=resource_path("images/player.png"))
+        self.pauseimg = tk.PhotoImage(file=resource_path("images/pause.png"))
 
         self.mutevolbtn = tk.Button(self.mainframe, image=self.volumeimg,
                                     borderwidth=0, command=self.mute_btn_func)
