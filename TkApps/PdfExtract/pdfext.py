@@ -184,23 +184,17 @@ class ExtractImage(tk.Frame):
                                   state="disabled")
         self.next_btn.grid(row=0, column=3, padx=2, sticky="w")
 
-        """
-        disp_box = tk.Frame(self, bg="beige")
-        disp_box.pack(fill="both")
-        disp_box.grid_columnconfigure(0, weight=1)
-        disp_box.grid_columnconfigure(1, weight=4)
-        disp_box.grid_columnconfigure(2, weight=1)
-        """
+        self.disp_box = tk.Frame(self, bg="beige")
+        self.disp_box.pack(fill="both", expand=True)
+        #self.disp_box.grid_columnconfigure(0, weight=1)
+        #self.disp_box.grid_columnconfigure(1, weight=4)
+        #self.disp_box.grid_columnconfigure(2, weight=1)
 
-        # pi = tk.PhotoImage(None)
-        # disp_img = tk.Image(pi)
-        # disp_img.grid(row=0, column=1)
+        self.img_lab = tk.Label(self.disp_box)
+        self.img_lab.pack(expand=True)
 
-    def prev_img(self):
-        pass
-
-    def next_img(self):
-        pass
+        self.img_list = []
+        self.curr_img_ind = 0
 
     def res_img(self, img):
         width, height = int(img.size[0]), int(img.size[1])
@@ -216,23 +210,31 @@ class ExtractImage(tk.Frame):
         return img
 
     def ext_img(self, page):
-        if r"/XObject" in page[r"/Resources"]:
+        if r"/Resources" in page and r"/XObject" in page[r"/Resources"]:
             xobj = page[r"/Resources"][r"/XObject"].get_object()
             for obj in xobj:
-                print(xobj)
-                print(obj)
+                # print(xobj)
+                # print(obj)
                 if xobj[obj][r"/Subtype"] == r"/Image":
-                    size = (xobj[obj][r"/Width"], xobj[obj][r"/Height"])
-                    data = xobj[obj].getData()
-                    print(size)
-                    print(data)
-                    if xobj[obj][r"/ColorSpace"] == r"/DeviceRGB":
-                        img = Image.frombytes("RGB", size, data)
-                    else:
-                        img = Image.frombytes("CMYK", size, data)
-                    img = self.res_img(img)
-                    print(img)
-                    return img
+                    image_object = xobj[obj]
+                    from io import BytesIO
+                    try:
+                        data = image_object.get_data()
+                        size = (image_object[r"/Width"], image_object[r"/Height"])
+                        if r"/Filter" in image_object:
+                            if image_object[r"/Filter"] == r"/DCTDecode":
+                                img = Image.open(BytesIO(data))
+                            else:
+                                if xobj[obj][r"/ColorSpace"] == r"/DeviceRGB":
+                                    img = Image.frombytes("RGB", size, data)
+                                else:
+                                    img = Image.frombytes("CMYK", size, data)
+                        img = self.res_img(img)
+                        return img
+                    except Exception as e:
+                        print(f"Hiba a kép feldolgozásakor: {e}")
+                        continue
+        return None
 
     def open_file(self):
         file = askopenfile(parent=root, mode="rb", title="Choose a file...",
@@ -242,24 +244,43 @@ class ExtractImage(tk.Frame):
             try:
                 read_pdf = PyPDF2.PdfReader(file)
                 p_num = len(read_pdf.pages)
-                images = []
+                self.img_list = []
                 for p in range(p_num):
                     page = read_pdf.pages[p]
-                    images.append(self.ext_img(page))
-                    # self.txt_box.insert(1.0, p_cont)
-                # self.txt_box.tag_add("center", 1.0, "end")
+                    img = self.ext_img(page)
+                    if img:
+                        self.img_list.append(img)
                 fn = file.name
-                self.stat_txt.set("Found " + str(len(images)) + " image(s) in: " + fn)
-                if len(images) > 0:
+                self.stat_txt.set("Found " + str(len(self.img_list)) + " image(s) in: " + fn)
+                if self.img_list:
+                    self.curr_img_ind = 0
+                    self.show_img(self.curr_img_ind)
                     self.save_btn.configure(state="normal")
                     self.prev_btn.configure(state="normal")
                     self.next_btn.configure(state="normal")
                 else:
-                    self.stat_txt.set("No images can be extracted from selected file!")
+                    self.stat_txt.set("No images found or could be extracted!")
                 file.close()
-                print(images)
+                print(self.img_list)
             except IOError:
                 self.stat_txt.set("File Error: selected file cannot be opened!")
+
+    def show_img(self, ind):
+        if 0 <= ind < len(self.img_list):
+            img = self.img_list[ind]
+            tk_img = ImageTk.PhotoImage(img)
+            self.img_lab.configure(image=tk_img)
+            self.img_lab.image = tk_img
+
+    def prev_img(self):
+        if self.img_list and self.curr_img_ind > 0:
+            self.curr_img_ind -= 1
+            self.show_img(self.curr_img_ind)
+
+    def next_img(self):
+        if self.img_list and self.curr_img_ind < len(self.img_list) - 1:
+            self.curr_img_ind += 1
+            self.show_img(self.curr_img_ind)
 
     def save_file(self):
         file = asksaveasfile(parent=root, mode="wb", title="Save file as...",
