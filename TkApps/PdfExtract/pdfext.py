@@ -3,7 +3,6 @@ import tkinter.ttk as ttk
 from tkinter.filedialog import askopenfile, asksaveasfile
 
 import PyPDF2
-import pyttsx3
 from PIL import Image, ImageTk
 
 
@@ -32,8 +31,6 @@ class ExtractText(tk.Frame):
         self.parent = parent
         parent.add(self, text="Extract Text")
         self.configure(width="600", height="400", bg="lightblue3")
-
-        self.engine = pyttsx3.init()
 
         logo = Image.open("icons8-pdf-100.png")
         logo = ImageTk.PhotoImage(logo)
@@ -71,19 +68,8 @@ class ExtractText(tk.Frame):
                                      height=2, width=15, state="disabled")
         self.copyall_btn.grid(row=0, column=2, padx=2)
 
-        self.speak_btn = tk.Button(btn_row, text="Speak Text (ENG)",
-                                   command=self.speak_all_txt,
-                                   font="Corbel", bg="coral", fg="white",
-                                   height=2, width=15, state="disabled")
-        self.speak_btn.grid(row=0, column=3, padx=2)
-
         self.txt_box = tk.Text(self, bg="beige")
         self.txt_box.pack(fill="both")
-
-    def speak_all_txt(self):
-        txt = self.txt_box.get(1.0, "end")
-        self.engine.say(txt)
-        self.engine.runAndWait()
 
     def copy_all_txt(self):
         root.clipboard_clear()
@@ -109,7 +95,6 @@ class ExtractText(tk.Frame):
                 fn = file.name
                 self.stat_txt.set("Found " + str(p_num) + " page(s) in: " + fn)
                 if len(self.txt_box.get(1.0, "end")) > 1:
-                    self.speak_btn.configure(state="normal")
                     self.copyall_btn.configure(state="normal")
                     self.save_btn.configure(state="normal")
                 file.close()
