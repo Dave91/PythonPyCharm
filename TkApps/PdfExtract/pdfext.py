@@ -229,7 +229,7 @@ class ExtractImage(tk.Frame):
                                     img = Image.frombytes("RGB", size, data)
                                 else:
                                     img = Image.frombytes("CMYK", size, data)
-                        img = self.res_img(img)  # optional resizing??
+                        # img = self.res_img(img)  # optional resizing?? here or during show_img
                         return img
                     except Exception as e:
                         print(f"Hiba a kép feldolgozásakor: {e}")
@@ -268,7 +268,7 @@ class ExtractImage(tk.Frame):
     def show_img(self, ind):
         if 0 <= ind < len(self.img_list):
             img = self.img_list[ind]
-            tk_img = ImageTk.PhotoImage(img)
+            tk_img = ImageTk.PhotoImage(self.res_img(img))  # or only (img)
             self.img_lab.configure(image=tk_img)
             self.img_lab.image = tk_img
 
