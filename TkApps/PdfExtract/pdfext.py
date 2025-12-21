@@ -82,7 +82,7 @@ class ExtractText(tk.Frame):
 
     def speak_all_txt(self):
         txt = self.txt_box.get(1.0, "end")
-        self.engine.say("function is under development")
+        self.engine.say(txt)
         self.engine.runAndWait()
 
     def copy_all_txt(self):
@@ -97,12 +97,12 @@ class ExtractText(tk.Frame):
             self.stat_txt.set("Loading file...")
             self.update_idletasks()
             try:
-                read_pdf = PyPDF2.PdfFileReader(file)
+                read_pdf = PyPDF2.PdfReader(file)
                 self.txt_box.delete(1.0, "end")
-                p_num = read_pdf.getNumPages()
+                p_num = len(read_pdf.pages)
                 for p in range(p_num):
-                    get_p = read_pdf.getPage(p)
-                    p_cont = get_p.extractText()
+                    get_p = read_pdf.pages[p]
+                    p_cont = get_p.extract_text()
                     self.txt_box.insert(1.0, p_cont)
                 self.txt_box.tag_configure("center", justify="center")
                 self.txt_box.tag_add("center", 1.0, "end")
@@ -134,6 +134,7 @@ class ExtractText(tk.Frame):
 class ExtractImage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
+        self.txt_box = None
         self.parent = parent
         parent.add(self, text="Extract Image")
         self.configure(width="600", height="400", bg="lightblue3")
@@ -162,7 +163,7 @@ class ExtractImage(tk.Frame):
                             height=2, width=15)
         ext_btn.grid(row=0, column=1, padx=2, sticky="e")
 
-        self.save_btn = tk.Button(btn_row, text="Save Text",
+        self.save_btn = tk.Button(btn_row, text="Save Image",
                                   command=self.save_file,
                                   font="Corbel 12 bold", bg="coral", fg="white",
                                   height=2, width=15,
@@ -216,7 +217,7 @@ class ExtractImage(tk.Frame):
 
     def ext_img(self, page):
         if r"/XObject" in page[r"/Resources"]:
-            xobj = page[r"/Resources"][r"/XObject"].getObject()
+            xobj = page[r"/Resources"][r"/XObject"].get_object()
             for obj in xobj:
                 print(xobj)
                 print(obj)
@@ -239,11 +240,11 @@ class ExtractImage(tk.Frame):
         if file:
             self.stat_txt.set("Loading file...")
             try:
-                read_pdf = PyPDF2.PdfFileReader(file)
-                p_num = read_pdf.getNumPages()
+                read_pdf = PyPDF2.PdfReader(file)
+                p_num = len(read_pdf.pages)
                 images = []
                 for p in range(p_num):
-                    page = read_pdf.getPage(p)
+                    page = read_pdf.pages[p]
                     images.append(self.ext_img(page))
                     # self.txt_box.insert(1.0, p_cont)
                 # self.txt_box.tag_add("center", 1.0, "end")
@@ -261,24 +262,18 @@ class ExtractImage(tk.Frame):
                 self.stat_txt.set("File Error: selected file cannot be opened!")
 
     def save_file(self):
-        file = askopenfile(parent=root, mode="rb", title="Choose a file...",
-                           filetypes=[("Pdf file", "*.pdf")])
+        file = asksaveasfile(parent=root, mode="wb", title="Save file as...",
+                             filetypes=[("Image file", "*.*")])
         if file:
             self.stat_txt.set("Saving as...")
+            content = self.ext_img()
+            fn = file.name
             try:
-                read_pdf = PyPDF2.PdfFileReader(file)
-                p_num = read_pdf.getNumPages()
-                for p in range(p_num):
-                    get_p = read_pdf.getPage(p)
-                    p_cont = get_p.extractText()
-                    self.txt_box.insert(1.0, p_cont)
-                self.txt_box.tag_configure("center", justify="center")
-                self.txt_box.tag_add("center", 1.0, "end")
-                fn = file.name
-                self.stat_txt.set("Found " + str(p_num) + " page(s) in: " + fn)
+                file.write(content)
+                self.stat_txt.set("File saved: " + fn)
                 file.close()
             except IOError:
-                self.stat_txt.set("File Error: selected file cannot be opened!")
+                self.stat_txt.set("File Error: file cannot be saved!")
 
 
 if __name__ == "__main__":
