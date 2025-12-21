@@ -186,9 +186,9 @@ class ExtractImage(tk.Frame):
 
         self.disp_box = tk.Frame(self, bg="beige")
         self.disp_box.pack(fill="both", expand=True)
-        #self.disp_box.grid_columnconfigure(0, weight=1)
-        #self.disp_box.grid_columnconfigure(1, weight=4)
-        #self.disp_box.grid_columnconfigure(2, weight=1)
+        # self.disp_box.grid_columnconfigure(0, weight=1)
+        # self.disp_box.grid_columnconfigure(1, weight=4)
+        # self.disp_box.grid_columnconfigure(2, weight=1)
 
         self.img_lab = tk.Label(self.disp_box)
         self.img_lab.pack(expand=True)
@@ -229,7 +229,7 @@ class ExtractImage(tk.Frame):
                                     img = Image.frombytes("RGB", size, data)
                                 else:
                                     img = Image.frombytes("CMYK", size, data)
-                        img = self.res_img(img)
+                        img = self.res_img(img)  # optional resizing??
                         return img
                     except Exception as e:
                         print(f"Hiba a kép feldolgozásakor: {e}")
@@ -284,17 +284,19 @@ class ExtractImage(tk.Frame):
 
     def save_file(self):
         file = asksaveasfile(parent=root, mode="wb", title="Save file as...",
-                             filetypes=[("Image file", "*.*")])
+                             filetypes=[("PNG file", "*.png"), ("JPEG file", "*.jpg"),
+                                        ("All files", "*.*")], defaultextension=".png")
         if file:
             self.stat_txt.set("Saving as...")
-            content = self.ext_img()
-            fn = file.name
             try:
-                file.write(content)
+                curr_img = self.img_list[self.curr_img_ind]
+                fn = file.name
+                curr_img.save(fn)
                 self.stat_txt.set("File saved: " + fn)
                 file.close()
-            except IOError:
+            except IOError or Exception as e:
                 self.stat_txt.set("File Error: file cannot be saved!")
+                print(e)
 
 
 if __name__ == "__main__":
