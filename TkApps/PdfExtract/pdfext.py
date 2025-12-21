@@ -245,6 +245,10 @@ class ExtractImage(tk.Frame):
                 read_pdf = PyPDF2.PdfReader(file)
                 p_num = len(read_pdf.pages)
                 self.img_list = []
+                self.save_btn.configure(state="disabled")
+                self.prev_btn.configure(state="disabled")
+                self.next_btn.configure(state="disabled")
+                self.img_lab.configure(image="")
                 for p in range(p_num):
                     page = read_pdf.pages[p]
                     img = self.ext_img(page)
@@ -261,7 +265,7 @@ class ExtractImage(tk.Frame):
                 else:
                     self.stat_txt.set("No images found or could be extracted!")
                 file.close()
-                print(self.img_list)
+                # print(self.img_list)
             except IOError:
                 self.stat_txt.set("File Error: selected file cannot be opened!")
 
