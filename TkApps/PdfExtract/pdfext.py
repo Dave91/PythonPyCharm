@@ -275,16 +275,19 @@ class ExtractImage(tk.Frame):
             tk_img = ImageTk.PhotoImage(self.res_img(img))  # or only (img)
             self.img_lab.configure(image=tk_img)
             self.img_lab.image = tk_img
+            self.stat_txt.set(f"{ind}/{len(self.img_list)}")
 
     def prev_img(self):
         if self.img_list and self.curr_img_ind > 0:
             self.curr_img_ind -= 1
             self.show_img(self.curr_img_ind)
+            self.stat_txt.set(f"{self.curr_img_ind}/{len(self.img_list)}")
 
     def next_img(self):
         if self.img_list and self.curr_img_ind < len(self.img_list) - 1:
             self.curr_img_ind += 1
             self.show_img(self.curr_img_ind)
+            self.stat_txt.set(f"{self.curr_img_ind}/{len(self.img_list)}")
 
     def save_file(self):
         file = asksaveasfile(parent=root, mode="wb", title="Save file as...",
