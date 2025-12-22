@@ -48,7 +48,7 @@ class TabLogin(ttk.Frame):
         # self.master = master
 
         # BG IMG
-        self.bgimg = tk.PhotoImage(file="images/menubgimg.png")
+        self.bgimg = tk.PhotoImage(file=res_path("images/menubgimg.png"))
         self.bg = ttk.Label(self, image=self.bgimg)
         self.bg.place(x=0, y=0, relwidth=1, relheight=1)
 
@@ -122,7 +122,7 @@ class TabGuest(ttk.Frame):
         self.tree.delete(*self.tree.get_children())
         coln = {"#1": "item_number", "#2": "item_price", "#3": "item_desc", "#4": "item_stock"}
         try:
-            con = sqlite3.connect("data/stock.db")
+            con = sqlite3.connect(res_path("data/stock.db"))
             try:
                 cur = con.cursor()
                 if ordermode == 1:
@@ -208,7 +208,7 @@ class TabAcc(ttk.Frame):
     def showimg(self):
         usern = FuncVars.curuser
         try:
-            con = sqlite3.connect("data/stock.db")
+            con = sqlite3.connect(res_path("data/stock.db"))
             try:
                 cur = con.cursor()
                 cur.execute("SELECT photo FROM users WHERE username = ?", (usern,))
@@ -233,7 +233,7 @@ class TabAcc(ttk.Frame):
     def uploadimg(self):
         usern = FuncVars.curuser
         try:
-            con = sqlite3.connect("data/stock.db")
+            con = sqlite3.connect(res_path("data/stock.db"))
             try:
                 cur = con.cursor()
                 imgpath = filedialog.askopenfilename()
@@ -250,7 +250,7 @@ class TabAcc(ttk.Frame):
     @staticmethod
     def convimgtoblob(filename):
         try:
-            with open(filename, 'rb') as file:
+            with open(res_path(filename), 'rb') as file:
                 imgblob = file.read()
             return imgblob
         except IOError:
@@ -389,7 +389,7 @@ class TabAdminUsers(ttk.Frame):
     def listallusers(self):
         self.tree.delete(*self.tree.get_children())
         try:
-            con = sqlite3.connect("data/stock.db")
+            con = sqlite3.connect(res_path("data/stock.db"))
             try:
                 cur = con.cursor()
                 cur.execute("SELECT username, password, email, address FROM users ORDER BY username ASC")
@@ -407,7 +407,7 @@ class TabAdminUsers(ttk.Frame):
 
     def adduser(self):
         try:
-            con = sqlite3.connect("data/stock.db")
+            con = sqlite3.connect(res_path("data/stock.db"))
             try:
                 cur = con.cursor()
                 usern = simpledialog.askstring(None, "Enter username:")
@@ -430,7 +430,7 @@ class TabAdminUsers(ttk.Frame):
         selinput = self.tree.selection()
         if len(selinput) != 0:
             try:
-                con = sqlite3.connect("data/stock.db")
+                con = sqlite3.connect(res_path("data/stock.db"))
                 try:
                     cur = con.cursor()
                     selusern = self.tree.item(selinput, "values")[0]
@@ -454,7 +454,7 @@ class TabAdminUsers(ttk.Frame):
             are_you_sure = messagebox.askyesno(None, "Are you sure to remove this user account?")
             if are_you_sure is True:
                 try:
-                    con = sqlite3.connect("data/stock.db")
+                    con = sqlite3.connect(res_path("data/stock.db"))
                     try:
                         cur = con.cursor()
                         selusern = self.tree.item(selinput, "values")[0]
@@ -525,11 +525,11 @@ class TabAdminLogs(ttk.Frame):
         if self.logsel.get() != "Choose Log":
             if self.logsel.get() == "Events":
                 FuncVars.wtolog = []
-                with open("data/log.txt", "w") as f:
+                with open(res_path("data/log.txt"), "w") as f:
                     f.write("")
             if self.logsel.get() == "Errors":
                 FuncVars.wtoerrorlog = []
-                with open("data/errorlog.txt", "w") as f:
+                with open(res_path("data/errorlog.txt"), "w") as f:
                     f.write("")
         else:
             return
@@ -554,7 +554,7 @@ class StyleConfig(ttk.Style):
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("InventoryManager - Inventory Management System - Dave")
-    root.appicon = tk.PhotoImage(file="images/imsicon.png")
+    root.appicon = tk.PhotoImage(file=res_path("images/imsicon.png"))
     root.iconphoto(False, root.appicon)
     root.geometry("640x420")
     root.resizable(0, 0)

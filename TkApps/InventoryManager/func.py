@@ -1,8 +1,19 @@
+import datetime
+import os
+import sqlite3
+import sys
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkinter import simpledialog, messagebox, filedialog
-import sqlite3
-import datetime
+from tkinter import simpledialog, messagebox
+
+
+def res_path(rel_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, rel_path)
 
 
 class FuncVars:
@@ -36,13 +47,15 @@ def viewasusern(tabself):
             tabself.btnremoveuser.configure(state="normal")
         tabself.master.statbar.statright.set("View as: " + str(usern))
 
+
 def connectdb(tabself):
     try:
-        con = sqlite3.connect("data/stock.db")
+        con = sqlite3.connect(res_path("data/stock.db"))
         return con
     except sqlite3.Error as errn:
         errorlog(error=str(errn), funcname=str(tabself) + " - connectdb")
         tabself.master.statbar.statright.set("Database error: connection failed. Details logged.")
+
 
 def searchitem(tabself):
     kerinput = simpledialog.askstring(None, "Enter item ID\n(1234-ABC):")
@@ -65,6 +78,7 @@ def searchitem(tabself):
     finally:
         con.close()
 
+
 def listallitems(tabself):
     tabself.tree.delete(*tabself.tree.get_children())
     con = connectdb(tabself)
@@ -82,6 +96,7 @@ def listallitems(tabself):
         tabself.master.statbar.statright.set("An error occurred! Details logged.")
     finally:
         con.close()
+
 
 def additem(tabself):
     con = connectdb(tabself)
@@ -107,6 +122,7 @@ def additem(tabself):
         tabself.master.statbar.statright.set("An error occurred! Details logged.")
     finally:
         con.close()
+
 
 def edititem(tabself):
     selinput = tabself.tree.selection()
@@ -135,6 +151,7 @@ def edititem(tabself):
         finally:
             con.close()
 
+
 def removeitem(tabself):
     selinput = tabself.tree.selection()
     if len(selinput) != 0:
@@ -154,6 +171,7 @@ def removeitem(tabself):
                 tabself.master.statbar.statright.set("An error occurred! Details logged.")
             finally:
                 con.close()
+
 
 def addtocart(tabself):
     selinput = tabself.tree.selection()
@@ -194,6 +212,7 @@ def addtocart(tabself):
         finally:
             con.close()
 
+
 def showcart(tabself):
     tabself.treecart.delete(*tabself.treecart.get_children())
     usern = FuncVars.curuser
@@ -215,6 +234,7 @@ def showcart(tabself):
         tabself.master.statbar.statright.set("An error occurred! Details logged.")
     finally:
         con.close()
+
 
 def checkoutitems(tabself):
     usern = FuncVars.curuser
@@ -250,6 +270,7 @@ def checkoutitems(tabself):
     finally:
         con.close()
 
+
 def toplevcheck(usern, checkoutrow, totalprice):
     toplev = tk.Toplevel()
     toplev.title(usern)
@@ -263,6 +284,7 @@ def toplevcheck(usern, checkoutrow, totalprice):
     ttk.Label(toplev, text=checkoutrow).pack()
     ttk.Label(toplev, text=totalpricestr).pack(anchor="e")
     toplev.mainloop()
+
 
 def removefromcart(tabself):
     selinput = tabself.treecart.selection()
@@ -285,6 +307,7 @@ def removefromcart(tabself):
             finally:
                 con.close()
 
+
 def clearcart(tabself):
     usern = FuncVars.curuser
     are_you_sure = messagebox.askyesno(None, "Are you sure to clear ALL items from cart?")
@@ -302,6 +325,7 @@ def clearcart(tabself):
             tabself.master.statbar.statright.set("An error occurred! Details logged.")
         finally:
             con.close()
+
 
 def login(tabself):
     usern = str(tabself.entusern.get())
@@ -328,6 +352,7 @@ def login(tabself):
             tabself.entusern.set("")
             tabself.entpassw.set("")
 
+
 def changepassw(tabself):
     usern = FuncVars.curuser
     con = connectdb(tabself)
@@ -353,6 +378,7 @@ def changepassw(tabself):
         tabself.entactpassw.set("")
         tabself.entnewpassw.set("")
 
+
 def changecontact(tabself):
     usern = FuncVars.curuser
     con = connectdb(tabself)
@@ -373,6 +399,7 @@ def changecontact(tabself):
         tabself.master.statbar.statright.set("An error occurred! Details logged.")
     finally:
         con.close()
+
 
 def accountinterior(usern, tabself, email, address):
     FuncVars.curuser = str(usern)
@@ -396,6 +423,7 @@ def accountinterior(usern, tabself, email, address):
     tabself.master.tabmenu.tab(0, state="hidden")
     tabself.master.tabmenu.tab(1, state="hidden")
 
+
 def logout(tabself):
     log(eventtxt=" - has logged out.")
     FuncVars.curuser = "guest"
@@ -411,15 +439,18 @@ def logout(tabself):
     tabself.master.tabmenu.tab(4, state="hidden")
     tabself.master.tabmenu.tab(5, state="hidden")
 
+
 def errorlog(error, funcname):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     toerrorlog = str(timestamp) + " - " + str(FuncVars.curuser) + " - " + str(funcname) + " - " + str(error)
     FuncVars.wtoerrorlog.append(toerrorlog)
 
+
 def log(eventtxt):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     tolog = str(timestamp) + " - " + str(FuncVars.curuser) + " - " + str(eventtxt)
     FuncVars.wtolog.append(tolog)
+
 
 def exitprog(root):
     if FuncVars.curuser != "guest" and len(FuncVars.cart) != 0:
@@ -428,12 +459,12 @@ def exitprog(root):
             return
     log(eventtxt=" - has logged out.")
     lines = FuncVars.wtolog
-    with open("data/log.txt", "a") as f:
+    with open(res_path("data/log.txt"), "a") as f:
         for line in lines:
             f.write(line)
             f.write("\n")
     lines = FuncVars.wtoerrorlog
-    with open("data/errorlog.txt", "a") as f:
+    with open(res_path("data/errorlog.txt"), "a") as f:
         for line in lines:
             f.write(line)
             f.write("\n")

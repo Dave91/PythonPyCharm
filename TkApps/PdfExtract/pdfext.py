@@ -192,7 +192,8 @@ class ExtractImage(tk.Frame):
         self.img_list = []
         self.curr_img_ind = 0
 
-    def res_img(self, img):
+    @staticmethod
+    def res_img(img):
         width, height = int(img.size[0]), int(img.size[1])
         if width > height:
             height = int(300/width * height)
@@ -205,7 +206,8 @@ class ExtractImage(tk.Frame):
         img = img.resize((width, height))
         return img
 
-    def ext_img(self, page):
+    @staticmethod
+    def ext_img(page):
         if r"/Resources" in page and r"/XObject" in page[r"/Resources"]:
             xobj = page[r"/Resources"][r"/XObject"].get_object()
             for obj in xobj:
@@ -271,19 +273,18 @@ class ExtractImage(tk.Frame):
             tk_img = ImageTk.PhotoImage(self.res_img(img))  # or only (img)
             self.img_lab.configure(image=tk_img)
             self.img_lab.image = tk_img
-            self.stat_txt.set(f"{ind}/{len(self.img_list)}")
+            self.stat_txt.set(f"{ind + 1}/{len(self.img_list)}")
+            self.update_idletasks()
 
     def prev_img(self):
         if self.img_list and self.curr_img_ind > 0:
             self.curr_img_ind -= 1
             self.show_img(self.curr_img_ind)
-            self.stat_txt.set(f"{self.curr_img_ind}/{len(self.img_list)}")
 
     def next_img(self):
         if self.img_list and self.curr_img_ind < len(self.img_list) - 1:
             self.curr_img_ind += 1
             self.show_img(self.curr_img_ind)
-            self.stat_txt.set(f"{self.curr_img_ind}/{len(self.img_list)}")
 
     def save_file(self):
         file = asksaveasfile(parent=root, mode="wb", title="Save file as...",
