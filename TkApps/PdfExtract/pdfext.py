@@ -1,9 +1,20 @@
+import os
+import sys
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter.filedialog import askopenfile, asksaveasfile
 
 import PyPDF2
 from PIL import Image, ImageTk
+
+
+def res_path(rel_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, rel_path)
 
 
 class StyleConfig(ttk.Style):
@@ -32,7 +43,7 @@ class ExtractText(tk.Frame):
         parent.add(self, text="Extract Text")
         self.configure(width="600", height="400", bg="lightblue3")
 
-        logo = Image.open("icons8-pdf-100.png")
+        logo = Image.open(res_path("images/icon_pdf.png"))
         logo = ImageTk.PhotoImage(logo)
         logo_lab = tk.Label(self, image=logo, bg="lightblue3")
         logo_lab.image = logo
@@ -124,7 +135,7 @@ class ExtractImage(tk.Frame):
         parent.add(self, text="Extract Image")
         self.configure(width="600", height="400", bg="lightblue3")
 
-        logo = Image.open("icons8-pdf-100.png")
+        logo = Image.open(res_path("images/icon_pdf.png"))
         logo = ImageTk.PhotoImage(logo)
         logo_lab = tk.Label(self, image=logo, bg="lightblue3")
         logo_lab.image = logo
@@ -294,7 +305,7 @@ class ExtractImage(tk.Frame):
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("PDF 2 Txt")
-    appicon = tk.PhotoImage(file="file.png")
+    appicon = tk.PhotoImage(file=res_path("images/file.png"))
     root.iconphoto(False, appicon)
     root.resizable(False, False)
     StyleConfig()

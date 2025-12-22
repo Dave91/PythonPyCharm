@@ -12,7 +12,7 @@ class App(tk.Frame):
         self.configure(width="600", height="400", bg="lightblue3")
         self.pack(fill="both")
 
-        logo = Image.open("icons8-pdf-100.png")
+        logo = Image.open("images/icons_pdf.png")
         logo = ImageTk.PhotoImage(logo)
         logo_lab = tk.Label(self, image=logo, bg="lightblue3")
         logo_lab.image = logo
@@ -93,7 +93,7 @@ class App(tk.Frame):
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("PDF 2 Txt")
-    appicon = tk.PhotoImage(file="file.png")
+    appicon = tk.PhotoImage(file="images/file.png")
     root.iconphoto(False, appicon)
     root.resizable(False, False)
     App(root)
