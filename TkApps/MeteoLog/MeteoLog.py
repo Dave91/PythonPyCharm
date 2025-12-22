@@ -485,9 +485,9 @@ class TabEvesReszl(ttk.Frame):
                 return False
             elif len(instr) == 2 and int(instr) not in range(19, 21):
                 return False
-            elif len(instr) == 3 and int(instr) not in range(190, 202):
+            elif len(instr) == 3 and int(instr) not in range(190, 203):
                 return False
-            elif len(instr) == 4 and int(instr) not in range(1901, 2011):
+            elif len(instr) == 4 and int(instr) not in range(1901, 2021):
                 return False
         return True
 
@@ -550,7 +550,7 @@ class TabDiagram(ttk.Frame):
             plt.bar(xn, yval, color="lightblue", edgecolor="grey")
             plt.plot(xn, yval, color="orange")
             plt.xticks(xn, [], rotation=90)
-            plt.xlabel("Idő (1901 - 2010)", fontsize=8)
+            plt.xlabel("Idő (1901 - 2020)", fontsize=8)
             plt.ylabel("Érték " + megys[tenyget], fontsize=8)
             plt.title("Évi " + tenyget + " százéves alakulása (Debrecen)", fontsize=8)
             plt.ylim(min(yval) - min(yval) * 0.2, max(yval) + max(yval) * 0.2)  # vagy pedig enélkül autoscale van
