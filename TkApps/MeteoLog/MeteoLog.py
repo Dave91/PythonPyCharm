@@ -1,12 +1,24 @@
-import tkinter as tk
-import tkinter.ttk as ttk
-from tkinter import messagebox
 # from tkinter import filedialog  # , simpledialog
 # from os import curdir
 import csv
-import pandas as pd
+import os
+import sys
+import tkinter as tk
+import tkinter.ttk as ttk
+from tkinter import messagebox
+
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+
+
+def res_path(rel_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, rel_path)
 
 
 class TabMenu(ttk.Notebook):
@@ -207,7 +219,7 @@ class TabNapiAlap(ttk.Frame):
                 else:
                     napker = ""
                 kerinput = evker + honapker + napker
-                helyker = "data/napialap/" + str(self.optmenu.get()) + "_19012019.csv"
+                helyker = res_path("data/napialap/" + str(self.optmenu.get()) + "_19012019.csv")
                 self.filtbutt.configure(state="disabled")
                 self.sumresbutt.configure(state="disabled")
                 filterfuncval = "str(row[0]).find(kerinput) == 0"
@@ -417,7 +429,7 @@ class TabEvesReszl(ttk.Frame):
             evker = str(self.evkerinput.get())
             idotal = 0
             rfold = self.tree.insert("", 1, 1, text="csap.össz.")
-            with open("data/evesreszl/DE_Y_r.txt") as csvfile:
+            with open(res_path("data/evesreszl/DE_Y_r.txt")) as csvfile:
                 csvolv = csv.reader(csvfile, delimiter=";")
                 for row in csvolv:
                     if evker in str(row[0]):
@@ -428,7 +440,7 @@ class TabEvesReszl(ttk.Frame):
                         idotal += 1
             sfold = self.tree.insert("", 2, self.iid, text="naps. órák")
             self.iid += 1
-            with open("data/evesreszl/DE_Y_s.txt") as csvfile:
+            with open(res_path("data/evesreszl/DE_Y_s.txt")) as csvfile:
                 csvolv = csv.reader(csvfile, delimiter=";")
                 for row in csvolv:
                     if evker in str(row[0]):
@@ -439,7 +451,7 @@ class TabEvesReszl(ttk.Frame):
                         idotal += 1
             tafold = self.tree.insert("", 3, self.iid, text="átlaghőm.")
             self.iid += 1
-            with open("data/evesreszl/DE_Y_ta.txt") as csvfile:
+            with open(res_path("data/evesreszl/DE_Y_ta.txt")) as csvfile:
                 csvolv = csv.reader(csvfile, delimiter=";")
                 for row in csvolv:
                     if evker in str(row[0]):
@@ -506,7 +518,7 @@ class TabDiagram(ttk.Frame):
             tenyezo = {"csapadékösszeg": "r", "napsütéses órák": "s", "átlaghőmérséklet": "ta"}
             megys = {"csapadékösszeg": "(mm)", "napsütéses órák": "(h)", "átlaghőmérséklet": "(°C)"}
             oszlyn = {"csapadékösszeg": "y_rs", "napsütéses órák": "y_ss", "átlaghőmérséklet": "y_ta"}
-            pdread = pd.read_csv("data/evesreszl/DE_Y_" + tenyezo[tenyget] + ".txt", delimiter=";")
+            pdread = pd.read_csv(res_path("data/evesreszl/DE_Y_" + tenyezo[tenyget] + ".txt"), delimiter=";")
             yval = pdread[oszlyn[tenyget]]
             # xlab = pdread["#datum"]  # xticks [] helyére dátum címkékhez!
             xn = np.arange(len(pdread))
@@ -554,15 +566,15 @@ class BottomBar(ttk.Frame):
     def __init__(self):
         ttk.Frame.__init__(self)
 
-        self.metim1 = tk.PhotoImage(file="icons/meteo1sunny.png").zoom(25).subsample(32)
+        self.metim1 = tk.PhotoImage(file=res_path("icons/meteo1sunny.png")).zoom(25).subsample(32)
         ttk.Label(self, image=self.metim1).pack(side="left")
-        self.metim2 = tk.PhotoImage(file="icons/meteo2cloudy-partly.png").zoom(25).subsample(32)
+        self.metim2 = tk.PhotoImage(file=res_path("icons/meteo2cloudy-partly.png")).zoom(25).subsample(32)
         ttk.Label(self, image=self.metim2).pack(side="left", padx=5)
-        self.metim3 = tk.PhotoImage(file="icons/meteo3cloudy.png").zoom(25).subsample(32)
+        self.metim3 = tk.PhotoImage(file=res_path("icons/meteo3cloudy.png")).zoom(25).subsample(32)
         ttk.Label(self, image=self.metim3).pack(side="left")
-        self.metim4 = tk.PhotoImage(file="icons/meteo4thunder-lightning-storm.png").zoom(25).subsample(32)
+        self.metim4 = tk.PhotoImage(file=res_path("icons/meteo4thunder-lightning-storm.png")).zoom(25).subsample(32)
         ttk.Label(self, image=self.metim4).pack(side="left", padx=5)
-        self.metim5 = tk.PhotoImage(file="icons/meteo5rain.png").zoom(25).subsample(32)
+        self.metim5 = tk.PhotoImage(file=res_path("icons/meteo5rain.png")).zoom(25).subsample(32)
         ttk.Label(self, image=self.metim5).pack(side="left")
 
 
@@ -587,7 +599,7 @@ def main():
     # GUI ROOT WINDOW
     root = tk.Tk()
     root.title("MeteoLog")
-    appicon = tk.PhotoImage(file="icons/umbrella-icon-small.png")
+    appicon = tk.PhotoImage(file=res_path("icons/umbrella-icon-small.png"))
     root.iconphoto(False, appicon)
     root.geometry("300x520")
     root.resizable(False, False)
