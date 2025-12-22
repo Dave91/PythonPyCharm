@@ -4,7 +4,7 @@ import sqlite3
 import sys
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkinter import simpledialog, messagebox
+from tkinter import simpledialog, messagebox, filedialog
 
 
 def res_path(rel_path):
