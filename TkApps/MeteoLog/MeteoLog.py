@@ -503,12 +503,17 @@ class TabDiagram(ttk.Frame):
         self.bottrow.pack(side="bottom", expand=1, fill="both")
 
         # top row
-        ttk.Label(self.toprow, text="(Debrecen: 1901 - 2010)").pack()
+        ttk.Label(self.toprow, text="(BP/Debrecen/Pécs/Szeged/Szomb.: 1901-2020)").pack()
         ttk.Label(self.toprow, text="(csap.össz., naps. órák és átl.hőm.)").pack()
 
-        self.optmenu = tk.StringVar()
+        self.optmenuhely = tk.StringVar()
         ttk.OptionMenu(
-            self.toprow, self.optmenu, "<tényező>", "csapadékösszeg", "napsütéses órák", "átlaghőmérséklet"
+            self.toprow, self.optmenuhely, "<állomáshely>", "Budapest", "Debrecen", "Pécs", "Szeged", "Szombathely"
+        ).pack(side="left", padx=4)
+
+        self.optmenuteny = tk.StringVar()
+        ttk.OptionMenu(
+            self.toprow, self.optmenuteny, "<tényező>", "csapadékösszeg", "napsütéses órák", "átlaghőmérséklet"
         ).pack(side="left", padx=4)
 
         ttk.Button(self.toprow, text="Keresés", command=self.searchdrawdata).pack(side="left", padx=4)
@@ -524,12 +529,18 @@ class TabDiagram(ttk.Frame):
         '''
 
     def searchdrawdata(self):
-        if self.optmenu.get() != "<tényező>":
-            tenyget = self.optmenu.get()
+        if str(self.optmenuhely.get()) != "<állomáshely>":
+            hely_list = {"Budapest": "BP", "Debrecen": "DE", "Pécs": "PE", "Szeged": "SZE", "Szombathely": "SZO"}
+            helyker = hely_list[self.optmenuhely.get()]
+        else:
+            messagebox.showerror(None, "Nem megfelelő input!! \n(Kötelező: Állomáshely kiválasztása!)")
+            return
+        if self.optmenuteny.get() != "<tényező>":
+            tenyget = self.optmenuteny.get()
             tenyezo = {"csapadékösszeg": "r", "napsütéses órák": "s", "átlaghőmérséklet": "ta"}
             megys = {"csapadékösszeg": "(mm)", "napsütéses órák": "(h)", "átlaghőmérséklet": "(°C)"}
             oszlyn = {"csapadékösszeg": "y_rs", "napsütéses órák": "y_ss", "átlaghőmérséklet": "y_ta"}
-            pdread = pd.read_csv(res_path("data/evesreszl/DE_Y_" + tenyezo[tenyget] + ".txt"), delimiter=";")
+            pdread = pd.read_csv(res_path("data/evesreszl/" + helyker + "_Y_" + tenyezo[tenyget] + ".txt"), delimiter=";")
             yval = pdread[oszlyn[tenyget]]
             # xlab = pdread["#datum"]  # xticks [] helyére dátum címkékhez!
             xn = np.arange(len(pdread))
