@@ -391,8 +391,13 @@ class TabEvesReszl(ttk.Frame):
         self.bottrow.pack(side="bottom", expand=1, fill="both")
 
         # top row
-        ttk.Label(self.toprow, text="(Debrecen: 1901 - 2010)").pack()
+        ttk.Label(self.toprow, text="(BP/Debrecen/Pécs/Szeged/Szomb.: 1901-2020)").pack()
         ttk.Label(self.toprow, text="(csap.össz., naps. órák, átlaghőm.)").pack()
+
+        self.optmenu = tk.StringVar()
+        ttk.OptionMenu(
+            self.toprow, self.optmenu, "<állomáshely>", "Budapest", "Debrecen", "Pécs", "Szeged", "Szombathely"
+        ).pack(side="left", padx=4)
 
         self.evkerinput = tk.StringVar()
         self.evkerinput.set("ÉÉÉÉ")
@@ -415,6 +420,12 @@ class TabEvesReszl(ttk.Frame):
         self.id, self.iid = 0, 2
 
     def searchdata(self):
+        if str(self.optmenu.get()) != "<állomáshely>":
+            hely_list = {"Budapest": "BP", "Debrecen": "DE", "Pécs": "PE", "Szeged": "SZE", "Szombathely": "SZO"}
+            helyker = hely_list[self.optmenu.get()]
+        else:
+            messagebox.showerror(None, "Nem megfelelő input!! \n(Kötelező: Állomáshely kiválasztása!)")
+            return
         if self.evkerinput.get().isnumeric() and len(self.evkerinput.get()) == 4:
             for item in self.tree.get_children():
                 self.tree.delete(item)
@@ -429,7 +440,7 @@ class TabEvesReszl(ttk.Frame):
             evker = str(self.evkerinput.get())
             idotal = 0
             rfold = self.tree.insert("", 1, 1, text="csap.össz.")
-            with open(res_path("data/evesreszl/DE_Y_r.txt")) as csvfile:
+            with open(res_path("data/evesreszl/" + helyker + "_Y_r.txt")) as csvfile:
                 csvolv = csv.reader(csvfile, delimiter=";")
                 for row in csvolv:
                     if evker in str(row[0]):
@@ -440,7 +451,7 @@ class TabEvesReszl(ttk.Frame):
                         idotal += 1
             sfold = self.tree.insert("", 2, self.iid, text="naps. órák")
             self.iid += 1
-            with open(res_path("data/evesreszl/DE_Y_s.txt")) as csvfile:
+            with open(res_path("data/evesreszl/" + helyker + "_Y_s.txt")) as csvfile:
                 csvolv = csv.reader(csvfile, delimiter=";")
                 for row in csvolv:
                     if evker in str(row[0]):
@@ -451,7 +462,7 @@ class TabEvesReszl(ttk.Frame):
                         idotal += 1
             tafold = self.tree.insert("", 3, self.iid, text="átlaghőm.")
             self.iid += 1
-            with open(res_path("data/evesreszl/DE_Y_ta.txt")) as csvfile:
+            with open(res_path("data/evesreszl/" + helyker + "_Y_ta.txt")) as csvfile:
                 csvolv = csv.reader(csvfile, delimiter=";")
                 for row in csvolv:
                     if evker in str(row[0]):
