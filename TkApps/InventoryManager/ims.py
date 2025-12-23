@@ -512,11 +512,17 @@ class TabAdminLogs(ttk.Frame):
         #self.btnshowdetails.pack(fill="x", pady=4)
         self.btnclearlog.pack(fill="x", pady=4)
 
-    def showrecords(self):
+    def showrecords(self, event):
         logsel = self.logsel.get()
         logs = {"Errors": "errorlog", "Events": "log"}
-        self.logdesc.configure(value="test")
-        #FuncVars.wtoerrorlog[0]
+        logname = "data/" + logs[logsel] + ".txt"
+        self.logdesc.delete("1.0", tk.END)
+        try:
+            with open(res_path(logname), "r") as f:
+                for row in f:
+                    self.logdesc.insert(tk.END, row)
+        except FileNotFoundError:
+            messagebox.showerror(None, "Error: logfile not found!")
 
     def showdetails(self, event):
         self.logdesc.insert("end", "Error Details: " + "test")
@@ -532,6 +538,7 @@ class TabAdminLogs(ttk.Frame):
                 with open(res_path("data/errorlog.txt"), "w") as f:
                     f.write("")
         else:
+            messagebox.showwarning(None, "Please select a logfile to clear!")
             return
 
 
