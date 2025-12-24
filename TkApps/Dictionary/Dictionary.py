@@ -53,7 +53,7 @@ class MainFrame(ttk.Frame):
         self.kerent.set("")
         ent = ttk.Entry(self.topf, textvariable=self.kerent, width=20)
         ent.grid(row=5, column=2, sticky="w")
-        ent.bind("<KeyRelease>", self.ker_debounce)
+        ent.bind("<KeyRelease>", self.kerdelay)
         ent.focus()
         ttk.Button(self.topf, text="Keresés", command=self.kerinput).grid(row=5, column=3)
 
@@ -74,32 +74,35 @@ class MainFrame(ttk.Frame):
         ttk.Label(self.botf, textvariable=self.statlab).pack(side="left")
 
         # VARS
-        #
+        self.ker_session = None
+        self.curr_ker_offset = 0
+        self.page_size = 25
 
     def opendict(self):
         con = sqlite3.connect(res_path("data/dict.db"))
-        with con:
-            cur = con.cursor()
-            for row in cur.execute("SELECT * FROM dict"):
-                self.tree.insert("", tk.END, values=row)
+        try:
+            with con:
+                cur = con.cursor()
+                for row in cur.execute("SELECT * FROM dict"):
+                    self.tree.insert("", tk.END, values=row)
+        except Exception as e:
+            messagebox.showerror(None, "Error: " + str(e))
 
-    def ker_debounce(self, event=None):
+    def kerdelay(self, event=None):
         if self.ker_session:
             self.parent.after_cancel(self.ker_session)
-        self.ker_session = self.parent.after(350, self.start_new_ker)
+        self.ker_session = self.parent.after(350, self.kerstartnew)
 
-    def start_new_ker(self):
+    def kerstartnew(self):
         self.curr_ker_offset = 0
         self.tree.delete(*self.tree.get_children())
         self.kerinput()
+        self.botf.update_idletasks()
 
     def kerinput(self, event=None):
-        self.statlab.set("Keresés...")
-        self.botf.update_idletasks()
         lang = self.kerlang.get()
         ker = self.kerent.get()
         mod = self.kermod.get()
-        # self.tree.delete(*self.tree.get_children())
         if not ker:
             self.statlab.set("")
             return
@@ -116,7 +119,7 @@ class MainFrame(ttk.Frame):
                 else:
                     param = f"%{ker}%"
                 query = f"{base} {col} LIKE ? LIMIT ? OFFSET ?"
-                cur.execute(query, (param, self.pagesize, self.curr_ker_offset))
+                cur.execute(query, (param, self.page_size, self.curr_ker_offset))
                 rows = cur.fetchall()
                 for row in rows:
                     self.tree.insert("", tk.END, values=row)
