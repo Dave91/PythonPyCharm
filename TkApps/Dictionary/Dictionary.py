@@ -1,7 +1,18 @@
+import os
+import sqlite3
+import sys
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
-import sqlite3
+
+
+def res_path(rel_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, rel_path)
 
 
 class MainFrame(ttk.Frame):
@@ -62,7 +73,7 @@ class MainFrame(ttk.Frame):
         ttk.Label(self.botf, textvariable=self.statlab).pack(side="left")
 
     def opendict(self):
-        con = sqlite3.connect("data/dict.db")
+        con = sqlite3.connect(res_path("data/dict.db"))
         with con:
             cur = con.cursor()
             for row in cur.execute("SELECT * FROM dict"):
@@ -70,12 +81,12 @@ class MainFrame(ttk.Frame):
 
     def kerinput(self, event=None):
         self.statlab.set("Keresés...")
-        self.botf.update_idletasks()  # sima update helyett!!
+        self.botf.update_idletasks()
         lang = self.kerlang.get()
         ker = self.kerent.get()
         mod = self.kermod.get()
         self.tree.delete(*self.tree.get_children())
-        con = sqlite3.connect("data/dict.db")
+        con = sqlite3.connect(res_path("data/dict.db"))
         with con:
             cur = con.cursor()
             if mod == "teljes":
@@ -119,7 +130,7 @@ def main():
     # GUI ROOT WINDOW
     root = tk.Tk()
     root.title("Dictionary - Szótár (angol-magyar nagyszótár)")
-    appicon = tk.PhotoImage(file="icons/dicticon.png")
+    appicon = tk.PhotoImage(file=res_path("icons/dicticon.png"))
     root.iconphoto(False, appicon)
     root.geometry("560x480")
     root.resizable(0, 0)
