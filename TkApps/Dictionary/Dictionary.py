@@ -53,7 +53,7 @@ class MainFrame(ttk.Frame):
         self.kerent.set("")
         ent = ttk.Entry(self.topf, textvariable=self.kerent, width=20)
         ent.grid(row=5, column=2, sticky="w")
-        ent.bind("<Return>", self.kerinput)
+        ent.bind("<KeyRelease>", self.ker_debounce)
         ent.focus()
         ttk.Button(self.topf, text="Keresés", command=self.kerinput).grid(row=5, column=3)
 
@@ -66,11 +66,15 @@ class MainFrame(ttk.Frame):
         self.tree.heading("#2", text="Magyar")
         self.tree.pack(side="left", expand=1, fill="both")
         self.scrbar.config(command=self.tree.yview)
+        self.tree.bind("<MouseWheel>", self.check_scr)
 
         # BOTF
         self.statlab = tk.StringVar()
         self.statlab.set("")
         ttk.Label(self.botf, textvariable=self.statlab).pack(side="left")
+
+        # VARS
+        #
 
     def opendict(self):
         con = sqlite3.connect(res_path("data/dict.db"))
@@ -79,40 +83,49 @@ class MainFrame(ttk.Frame):
             for row in cur.execute("SELECT * FROM dict"):
                 self.tree.insert("", tk.END, values=row)
 
+    def ker_debounce(self, event=None):
+        if self.ker_session:
+            self.parent.after_cancel(self.ker_session)
+        self.ker_session = self.parent.after(350, self.start_new_ker)
+
+    def start_new_ker(self):
+        self.curr_ker_offset = 0
+        self.tree.delete(*self.tree.get_children())
+        self.kerinput()
+
     def kerinput(self, event=None):
         self.statlab.set("Keresés...")
         self.botf.update_idletasks()
         lang = self.kerlang.get()
         ker = self.kerent.get()
         mod = self.kermod.get()
-        self.tree.delete(*self.tree.get_children())
+        # self.tree.delete(*self.tree.get_children())
+        if not ker:
+            self.statlab.set("")
+            return
         con = sqlite3.connect(res_path("data/dict.db"))
-        with con:
-            cur = con.cursor()
-            if mod == "teljes":
-                if lang == "eng":
-                    cur.execute("SELECT * FROM dict WHERE eng LIKE ?", (ker, ))
-                if lang == "hun":
-                    cur.execute("SELECT * FROM dict WHERE hun LIKE ?", (ker, ))
-            elif mod == "eleje":
-                if lang == "eng":
-                    cur.execute("SELECT * FROM dict WHERE eng LIKE ?", (ker + "%", ))
-                if lang == "hun":
-                    cur.execute("SELECT * FROM dict WHERE hun LIKE ?", (ker + "%", ))
-            elif mod == "mindegy":
-                if lang == "eng":
-                    cur.execute("SELECT * FROM dict WHERE eng LIKE ?", ("%" + ker + "%", ))
-                if lang == "hun":
-                    cur.execute("SELECT * FROM dict WHERE hun LIKE ?", ("%" + ker + "%", ))
-            else:
-                messagebox.showerror(None, "Hiba!")
-            rows = cur.fetchall()
-            for row in rows:
-                self.tree.insert("", tk.END, values=row)
-            if len(rows) == 0:
-                self.statlab.set("Nincs találat!")
-            else:
-                self.statlab.set(str(len(rows)) + " találat")
+        try:
+            with con:
+                cur = con.cursor()
+                base = "SELECT * FROM dict WHERE "
+                col = "eng" if lang == "eng" else "hun"
+                if mod == "teljes":
+                    param = ker
+                elif mod == "eleje":
+                    param = f"{ker}%"
+                else:
+                    param = f"%{ker}%"
+                query = f"{base} {col} LIKE ? LIMIT ? OFFSET ?"
+                cur.execute(query, (param, self.pagesize, self.curr_ker_offset))
+                rows = cur.fetchall()
+                for row in rows:
+                    self.tree.insert("", tk.END, values=row)
+                self.statlab.set(f"Találatok: {len(self.tree.get_children())}")
+        except Exception as e:
+            messagebox.showerror(None, "Error: " + str(e))
+
+    def check_scr(self, event):
+        pass
 
 
 class StyleConfig(ttk.Style):
