@@ -78,7 +78,7 @@ class MainFrame(ttk.Frame):
         self.curr_ker_offset = 0
         self.page_size = 25
 
-    def opendict(self):
+    """def opendict(self):
         con = sqlite3.connect(res_path("data/dict.db"))
         try:
             with con:
@@ -86,7 +86,7 @@ class MainFrame(ttk.Frame):
                 for row in cur.execute("SELECT * FROM dict"):
                     self.tree.insert("", tk.END, values=row)
         except Exception as e:
-            messagebox.showerror(None, "Error: " + str(e))
+            messagebox.showerror(None, "Error: " + str(e))"""
 
     def kerdelay(self, event=None):
         if self.ker_session:
@@ -97,7 +97,6 @@ class MainFrame(ttk.Frame):
         self.curr_ker_offset = 0
         self.tree.delete(*self.tree.get_children())
         self.kerinput()
-        self.botf.update_idletasks()
 
     def kerinput(self, event=None):
         lang = self.kerlang.get()
@@ -124,11 +123,14 @@ class MainFrame(ttk.Frame):
                 for row in rows:
                     self.tree.insert("", tk.END, values=row)
                 self.statlab.set(f"Találatok: {len(self.tree.get_children())}")
+            self.botf.update_idletasks()
         except Exception as e:
             messagebox.showerror(None, "Error: " + str(e))
 
     def check_scr(self, event):
-        pass
+        if self.tree.yview()[1] >= 0.8:
+            self.curr_ker_offset += self.page_size
+            self.kerinput()
 
 
 class StyleConfig(ttk.Style):
