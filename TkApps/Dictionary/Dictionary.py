@@ -55,7 +55,7 @@ class MainFrame(ttk.Frame):
         ent.grid(row=5, column=2, sticky="w")
         ent.bind("<KeyRelease>", self.kerdelay)
         ent.focus()
-        ttk.Button(self.topf, text="Keresés", command=self.kerinput).grid(row=5, column=3)
+        ttk.Button(self.topf, text="Keresés", command=self.kerdelay).grid(row=5, column=3)
 
         # MIDF
         self.scrbar = ttk.Scrollbar(self.midf)
@@ -76,9 +76,11 @@ class MainFrame(ttk.Frame):
         # VARS
         self.ker_session = None
         self.curr_ker_offset = 0
-        self.page_size = 25
+        self.page_size = 50
 
-    """def opendict(self):
+        self.opendict()
+
+    def opendict(self):
         con = sqlite3.connect(res_path("data/dict.db"))
         try:
             with con:
@@ -86,7 +88,7 @@ class MainFrame(ttk.Frame):
                 for row in cur.execute("SELECT * FROM dict"):
                     self.tree.insert("", tk.END, values=row)
         except Exception as e:
-            messagebox.showerror(None, "Error: " + str(e))"""
+            messagebox.showerror(None, f"Error: {str(e)}")
 
     def kerdelay(self, event=None):
         if self.ker_session:
@@ -103,7 +105,7 @@ class MainFrame(ttk.Frame):
         ker = self.kerent.get()
         mod = self.kermod.get()
         if not ker:
-            self.statlab.set("")
+            self.opendict()
             return
         con = sqlite3.connect(res_path("data/dict.db"))
         try:
@@ -122,13 +124,12 @@ class MainFrame(ttk.Frame):
                 rows = cur.fetchall()
                 for row in rows:
                     self.tree.insert("", tk.END, values=row)
-                self.statlab.set(f"Találatok: {len(self.tree.get_children())}")
-            self.botf.update_idletasks()
+            # self.botf.update_idletasks()
         except Exception as e:
-            messagebox.showerror(None, "Error: " + str(e))
+            messagebox.showerror(None, f"Error: {str(e)}")
 
     def check_scr(self, event):
-        if self.tree.yview()[1] >= 0.8:
+        if self.tree.yview()[1] >= 0.9:
             self.curr_ker_offset += self.page_size
             self.kerinput()
 
