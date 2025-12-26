@@ -48,8 +48,8 @@ class GameLauncher(ctk.CTk):
         self.todo_frame = ctk.CTkScrollableFrame(self.main_view, label_text="Küldetések")
 
     def load_data(self):
-        if os.path.exists(res_path("data.json")):
-            with open(res_path("data.json"), "r", encoding="utf-8") as f:
+        if os.path.exists(res_path("data/data.json")):
+            with open(res_path("data/data.json"), "r", encoding="utf-8") as f:
                 self.game_list = json.load(f)
         else:
             self.game_list = {}
@@ -58,7 +58,6 @@ class GameLauncher(ctk.CTk):
         self.curr_game = name
         self.title_label.configure(text=name)
         self.launch_btn.pack(pady=10)
-
         self.todo_frame.pack(fill="both", expand=True, padx=20, pady=10)
         self.refresh_todos()
 
@@ -76,7 +75,7 @@ class GameLauncher(ctk.CTk):
             cb.pack(anchor="w", pady=5)
 
     def save_data(self):
-        with open(res_path("data.json"), "w", encoding="utf-8") as f:
+        with open(res_path("data/data.json"), "w", encoding="utf-8") as f:
             json.dump(self.game_list, f, indent=4)
 
 
