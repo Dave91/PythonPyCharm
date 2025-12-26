@@ -1,12 +1,12 @@
 {
-  "Mass Effect": {
-    "path": "C:/Games/MassEffect/bin/MassEffect.exe",
-    "background": "assets/me_bg.jpg",
+  "Witcher 2": {
+    "path": "",
+    "background": "assets/witcher2bg.jpg",
     "todos": ["Collect all resources", "Complete Virmire"]
   },
   "Skyrim": {
     "path": "C:/Games/Skyrim/SkyrimSE.exe",
-    "background": "assets/skyrim_bg.jpg",
+    "background": "assets/skyrimbg.jpg",
     "todos": ["Join the Dark Brotherhood"]
   }
 }

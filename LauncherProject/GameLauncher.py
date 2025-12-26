@@ -1,7 +1,18 @@
-import customtkinter as ctk
 import json
 import os
 import subprocess
+import sys
+
+import customtkinter as ctk
+
+
+def res_path(rel_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, rel_path)
 
 
 class GameLauncher(ctk.CTk):
@@ -11,6 +22,7 @@ class GameLauncher(ctk.CTk):
         self.geometry("800x600")
 
         # init..
+        self.game_list = {}
         self.load_data()
         self.curr_game = None
 
@@ -36,15 +48,11 @@ class GameLauncher(ctk.CTk):
         self.todo_frame = ctk.CTkScrollableFrame(self.main_view, label_text="Küldetések")
 
     def load_data(self):
-        if os.path.exists("data.json"):
-            with open("data.json", "r", encoding="utf-8") as f:
+        if os.path.exists(res_path("data.json")):
+            with open(res_path("data.json"), "r", encoding="utf-8") as f:
                 self.game_list = json.load(f)
         else:
             self.game_list = {}
-
-    def save_data(self):
-        with open("data.json", "w", encoding="utf-8") as f:
-            json.dump(self.game_list, f, indent=4)
 
     def show_game(self, name):
         self.curr_game = name
@@ -66,6 +74,10 @@ class GameLauncher(ctk.CTk):
         for task in self.game_list[self.curr_game]["todos"]:
             cb = ctk.CTkCheckBox(self.todo_frame, text=task)
             cb.pack(anchor="w", pady=5)
+
+    def save_data(self):
+        with open(res_path("data.json"), "w", encoding="utf-8") as f:
+            json.dump(self.game_list, f, indent=4)
 
 
 if __name__ == "__main__":
