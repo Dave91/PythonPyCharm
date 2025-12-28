@@ -4,34 +4,42 @@
         "background": "assets/witcher2bg.jpg",
         "todos": [
             "Collect all resources",
-            "Complete Virmire"
-        ]
+            "Complete Virmire",
+            "Cross the Mist (haunted battlefield)",
+            "Find Ooodrinn!"
+        ],
+        "last_played": "2025-12-28"
     },
     "Skyrim": {
         "path": "C:/Games/Skyrim/SkyrimSE.exe",
         "background": "assets/skyrimbg.jpg",
         "todos": [
             "Join the Dark Brotherhood"
-        ]
+        ],
+        "last_played": "2024-06-01"
     },
     "Witcher 3": {
         "path": "C:/Games/The Witcher 3 - Wild Hunt/bin/x64/witcher3.exe",
         "background": "assets/witcher3bg.jpg",
-        "todos": []
+        "todos": [],
+        "last_played": "2024-06-01"
     },
     "Dragon Age: Origins": {
         "path": "D:/GOG Games/Dragon Age Origins/DAOriginsLauncher.exe",
         "background": "assets/daobg.jpg",
-        "todos": []
+        "todos": [],
+        "last_played": "2025-12-28"
     },
     "Grim Dawn": {
         "path": "D:/GOG Games/Grim Dawn/Grim Dawn.exe",
         "background": "assets/gdbg.jpg",
-        "todos": []
+        "todos": [],
+        "last_played": "2025-12-28"
     },
     "Mass Effect LE": {
         "path": "C:/Program Files (x86)/Steam/steamapps/common/Mass Effect Legendary Edition/Game/Launcher/MassEffectLauncher.exe",
         "background": "D:/Documents/PyCharmProjects/LauncherProject/assets/melebg.jpg",
-        "todos": []
+        "todos": [],
+        "last_played": "2024-06-01"
     }
 }

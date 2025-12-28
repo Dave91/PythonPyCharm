@@ -2,10 +2,11 @@ import json
 import os
 # import subprocess
 import sys
+from datetime import datetime
 from tkinter import filedialog, simpledialog
-from PIL import Image, ImageTk
 
 import customtkinter as ctk
+from PIL import Image
 
 
 def res_path(rel_path):
@@ -63,6 +64,9 @@ class GameLauncher(ctk.CTk):
                                         command=self.toggle_todos, fg_color="gray",
                                         hover_color="#3d3d3d")
 
+        self.new_todo_btn = ctk.CTkButton(self.main_view, text="+ Új küldetés",
+                                          fg_color="gray", command=self.new_todo)
+
         self.todo_frame = ctk.CTkScrollableFrame(self.main_view, label_text="Küldetések")
 
     def load_data(self):
@@ -72,19 +76,14 @@ class GameLauncher(ctk.CTk):
         else:
             self.game_list = {}
 
-    """def fade_in_image(self, current_alpha=0):
-        if current_alpha <= 1.0:
-            # Image.blend
-            # (két kép közötti átmenet)
-            self.after(20, lambda: self.fade_in_image(current_alpha + 0.1))"""
-
     def add_game(self):
         name = simpledialog.askstring("Játék neve", "Adja meg a játék nevét:")
         path = filedialog.askopenfilename(title="Válassza ki a játék futtatható fájlját")
         bg_path = filedialog.askopenfilename(title="Válasszon háttérképet",
                                              filetypes=[("Képfájlok", "*.jpg *.png *.jpeg")])
         if name and path:
-            self.game_list[name] = {"path": path, "background": bg_path, "todos": []}
+            self.game_list[name] = {"path": path, "background": bg_path, "todos": [],
+                                    "last_played": ""}
             self.save_data()
             btn = ctk.CTkButton(self.sidebar, text=name,
                                 command=lambda g=name: self.show_game(g))
@@ -97,24 +96,30 @@ class GameLauncher(ctk.CTk):
             if bg_path and os.path.exists(res_path(bg_path)):
                 img = Image.open(res_path(bg_path))
                 ctk_img = ctk.CTkImage(img, size=(800, 600))
-                # img_tk = ImageTk.PhotoImage(img)
                 self.bg_label.configure(image=ctk_img)
-                # self.bg_label.image = img_tk
             else:
                 self.bg_label.configure(image=None)
         except Exception as e:
             print(f"Hiba a háttér betöltésekor: {e}")
-        self.title_label.configure(text=name)
+        last_played = self.game_list[name]["last_played"]
+        self.title_label.configure(text=f"{name}\n(legutóbb játszva: {last_played})")
         self.launch_btn.pack(pady=10)
-        self.toggle_btn.pack(pady=5)
-        self.add_bg_btn.pack(pady=5)
+        self.add_bg_btn.pack(padx=5, pady=5, side="bottom", anchor="se")
+        self.new_todo_btn.pack(padx=5, pady=5, side="bottom", anchor="sw")
+        self.toggle_btn.pack(padx=5, pady=5, side="bottom", anchor="sw")
         if self.todo_visible:
             self.todo_frame.pack(fill="both", expand=True, padx=20, pady=10)
 
     def launch_game(self):
+        last_played = datetime.today().strftime('%Y-%m-%d')
+        self.game_list[self.curr_game]["last_played"] = last_played
+        self.save_data()
+        self.show_game(self.curr_game)
         if self.curr_game:
             path = self.game_list[self.curr_game]["path"]
-            os.startfile(path)
+            os.startfile(res_path(path))
+        self.destroy()
+        # or use subprocess.Popen(res_path(path)) to stay open: tracking playtime, etc..
 
     def add_bg(self):
         if self.curr_game:
@@ -124,6 +129,15 @@ class GameLauncher(ctk.CTk):
                 self.game_list[self.curr_game]["background"] = bg_path
                 self.save_data()
                 self.show_game(self.curr_game)
+
+    def new_todo(self):
+        if self.curr_game:
+            task = simpledialog.askstring("Új küldetés", "Adja meg a küldetés rövid leírását:")
+            if task:
+                self.game_list[self.curr_game]["todos"].append(task)
+                self.save_data()
+                if self.todo_visible:
+                    self.refresh_todos()
 
     def toggle_todos(self):
         if self.todo_visible:
