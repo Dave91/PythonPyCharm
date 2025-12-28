@@ -34,7 +34,7 @@ class GameLauncher(ctk.CTk):
         self.sidebar.pack(side="left", fill="y", padx=10, pady=10)
 
         self.add_game_btn = ctk.CTkButton(self.sidebar, text="+ játék hozzáadása",
-                                          fg_color="lightgreen", command=self.add_game)
+                                          fg_color="gray", command=self.add_game)
         self.add_game_btn.pack(pady=10, padx=10)
 
         for game_name in self.game_list.keys():
@@ -56,13 +56,14 @@ class GameLauncher(ctk.CTk):
         self.launch_btn = ctk.CTkButton(self.main_view, text="INDÍTÁS", fg_color="green",
                                         command=self.launch_game)
 
+        self.add_bg_btn = ctk.CTkButton(self.main_view, text="+ Háttér hozzáadása/cseréje",
+                                        fg_color="gray", command=self.add_bg)
+
         self.toggle_btn = ctk.CTkButton(self.main_view, text="Küldetések mutatása",
                                         command=self.toggle_todos, fg_color="gray",
                                         hover_color="#3d3d3d")
-        self.toggle_btn.pack(pady=5)
 
-        self.todo_frame = ctk.CTkScrollableFrame(self.main_view, width=200,
-                                                 label_text="Küldetések")
+        self.todo_frame = ctk.CTkScrollableFrame(self.main_view, label_text="Küldetések")
 
     def load_data(self):
         if os.path.exists(res_path("data/data.json")):
@@ -105,14 +106,24 @@ class GameLauncher(ctk.CTk):
             print(f"Hiba a háttér betöltésekor: {e}")
         self.title_label.configure(text=name)
         self.launch_btn.pack(pady=10)
+        self.toggle_btn.pack(pady=5)
+        self.add_bg_btn.pack(pady=5)
         if self.todo_visible:
             self.todo_frame.pack(fill="both", expand=True, padx=20, pady=10)
-        self.refresh_todos()
 
     def launch_game(self):
         if self.curr_game:
             path = self.game_list[self.curr_game]["path"]
             os.startfile(path)
+
+    def add_bg(self):
+        if self.curr_game:
+            bg_path = filedialog.askopenfilename(title="Válasszon háttérképet",
+                                                 filetypes=[("Képfájlok", "*.jpg *.png *.jpeg")])
+            if bg_path:
+                self.game_list[self.curr_game]["background"] = bg_path
+                self.save_data()
+                self.show_game(self.curr_game)
 
     def toggle_todos(self):
         if self.todo_visible:
@@ -122,6 +133,7 @@ class GameLauncher(ctk.CTk):
         else:
             self.todo_frame.pack(fill="both", expand=True, padx=20, pady=10)
             self.toggle_btn.configure(text="Küldetések elrejtése")
+            self.refresh_todos()
             self.todo_visible = True
 
     def refresh_todos(self):

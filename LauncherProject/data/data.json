@@ -16,7 +16,7 @@
     },
     "Witcher 3": {
         "path": "C:/Games/The Witcher 3 - Wild Hunt/bin/x64/witcher3.exe",
-        "background": "assets/witcher3.jpg",
+        "background": "assets/witcher3bg.jpg",
         "todos": []
     },
     "Dragon Age: Origins": {
@@ -27,6 +27,11 @@
     "Grim Dawn": {
         "path": "D:/GOG Games/Grim Dawn/Grim Dawn.exe",
         "background": "assets/gdbg.jpg",
+        "todos": []
+    },
+    "Mass Effect LE": {
+        "path": "C:/Program Files (x86)/Steam/steamapps/common/Mass Effect Legendary Edition/Game/Launcher/MassEffectLauncher.exe",
+        "background": "D:/Documents/PyCharmProjects/LauncherProject/assets/melebg.jpg",
         "todos": []
     }
 }
