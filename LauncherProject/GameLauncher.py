@@ -155,8 +155,15 @@ class GameLauncher(ctk.CTk):
             widget.destroy()
 
         for task in self.game_list[self.curr_game]["todos"]:
-            cb = ctk.CTkCheckBox(self.todo_frame, text=task)
+            cb = ctk.CTkCheckBox(self.todo_frame, text=task,
+                                 command=lambda t=task: self.comp_todo(t))
             cb.pack(anchor="w", pady=5)
+
+    def comp_todo(self, task):
+        if self.curr_game:
+            self.game_list[self.curr_game]["todos"].remove(task)
+            self.save_data()
+            self.refresh_todos()
 
     def save_data(self):
         with open(res_path("data/data.json"), "w", encoding="utf-8") as f:
