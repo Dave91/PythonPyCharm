@@ -117,7 +117,7 @@ class GameLauncher(ctk.CTk):
         self.show_game(self.curr_game)
         if self.curr_game:
             path = self.game_list[self.curr_game]["path"]
-            os.startfile(res_path(path))
+            os.startfile(path)
         self.destroy()
         # or use subprocess.Popen(res_path(path)) to stay open: tracking playtime, etc..
 
