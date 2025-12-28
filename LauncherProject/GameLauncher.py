@@ -22,12 +22,15 @@ class GameLauncher(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("GameLauncher")
-        self.geometry("1000x600")
+        self.geometry("800x600")
+        # self.resizable(False, False)
+        self.bind("<Configure>", self.resize_bg)
 
         # init..
         self.game_list = {}
         self.load_data()
         self.curr_game = None
+        self.curr_bg_img = None
         self.todo_visible = False
 
         # Sidebar
@@ -80,6 +83,7 @@ class GameLauncher(ctk.CTk):
         name = simpledialog.askstring("Játék neve", "Adja meg a játék nevét:")
         path = filedialog.askopenfilename(title="Válassza ki a játék futtatható fájlját")
         bg_path = filedialog.askopenfilename(title="Válasszon háttérképet",
+                                             initialdir=res_path("assets/"),
                                              filetypes=[("Képfájlok", "*.jpg *.png *.jpeg")])
         if name and path:
             self.game_list[name] = {"path": path, "background": bg_path, "todos": [],
@@ -95,7 +99,9 @@ class GameLauncher(ctk.CTk):
             bg_path = self.game_list[name]["background"]
             if bg_path and os.path.exists(res_path(bg_path)):
                 img = Image.open(res_path(bg_path))
-                ctk_img = ctk.CTkImage(img, size=(800, 600))
+                self.curr_bg_img = img
+                ctk_img = ctk.CTkImage(img, size=(self.main_view.winfo_width(),
+                                                  self.main_view.winfo_height()))
                 self.bg_label.configure(image=ctk_img)
             else:
                 self.bg_label.configure(image=None)
@@ -109,6 +115,15 @@ class GameLauncher(ctk.CTk):
         self.toggle_btn.pack(padx=5, pady=5, side="bottom", anchor="sw")
         if self.todo_visible:
             self.todo_frame.pack(fill="both", expand=True, padx=20, pady=10)
+
+    def resize_bg(self, event):
+        if self.curr_game and hasattr(self, 'curr_bg_img'):
+            new_width = self.main_view.winfo_width()
+            new_height = self.main_view.winfo_height()
+            if new_width > 10 and new_height > 10:
+                ctk_img = ctk.CTkImage(self.curr_bg_img, size=(new_width, new_height))
+                self.bg_label.configure(image=ctk_img)
+                # self.show_game(self.curr_game)
 
     def launch_game(self):
         last_played = datetime.today().strftime('%Y-%m-%d')
@@ -124,6 +139,7 @@ class GameLauncher(ctk.CTk):
     def add_bg(self):
         if self.curr_game:
             bg_path = filedialog.askopenfilename(title="Válasszon háttérképet",
+                                                 initialdir=res_path("assets/"),
                                                  filetypes=[("Képfájlok", "*.jpg *.png *.jpeg")])
             if bg_path:
                 self.game_list[self.curr_game]["background"] = bg_path
