@@ -7,6 +7,7 @@ from tkinter import filedialog, simpledialog
 
 import customtkinter as ctk
 from PIL import Image
+import pywinstyles
 
 
 def res_path(rel_path):
@@ -22,7 +23,7 @@ class GameLauncher(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("GameLauncher")
-        self.geometry("800x600")
+        self.geometry("1200x600")
         # self.resizable(False, False)
         self.bind("<Configure>", self.resize_bg)
 
@@ -93,8 +94,18 @@ class GameLauncher(ctk.CTk):
                                 command=lambda g=name: self.show_game(g))
             btn.pack(pady=5, padx=10)
 
+    @staticmethod
+    def anim_widget(wid=None):
+        if wid:
+            for i in range(0, 10):
+                pywinstyles.set_opacity(widget=wid, value=i * 0.1, color="#000001")
+                wid.update()
+                wid.after(70)
+
     def show_game(self, name):
         self.curr_game = name
+        self.todo_visible = True
+        self.toggle_todos()
         try:
             bg_path = self.game_list[name]["background"]
             if bg_path and os.path.exists(res_path(bg_path)):
@@ -103,6 +114,8 @@ class GameLauncher(ctk.CTk):
                 ctk_img = ctk.CTkImage(img, size=(self.main_view.winfo_width(),
                                                   self.main_view.winfo_height()))
                 self.bg_label.configure(image=ctk_img)
+                pywinstyles.set_opacity(widget=self.bg_label, value=0.0, color="#000001")
+                self.anim_widget(self.bg_label)
             else:
                 self.bg_label.configure(image=None)
         except Exception as e:
@@ -165,6 +178,8 @@ class GameLauncher(ctk.CTk):
             self.toggle_btn.configure(text="Küldetések elrejtése")
             self.refresh_todos()
             self.todo_visible = True
+            # pywinstyles.set_opacity(widget=self.todo_frame, value=0.0, color="#000001")
+            # self.anim_widget(self.todo_frame)
 
     def refresh_todos(self):
         for widget in self.todo_frame.winfo_children():
