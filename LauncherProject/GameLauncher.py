@@ -6,8 +6,8 @@ from datetime import datetime
 from tkinter import filedialog, simpledialog
 
 import customtkinter as ctk
-from PIL import Image
 import pywinstyles
+from PIL import Image
 
 
 def res_path(rel_path):
@@ -190,27 +190,39 @@ class GameLauncher(ctk.CTk):
                 # self.show_game(self.curr_game)
 
     def launch_game(self):
-        last_played = datetime.today().strftime('%Y-%m-%d')
-        self.game_list[self.curr_game]["last_played"] = last_played
+        if self.curr_game:
+            try:
+                path = self.game_list[self.curr_game]["path"]
+                if path.exists(res_path(path)):
+                    if self.behavior_radio_var == "nothing":
+                        os.startfile(path)
+                    elif self.behavior_radio_var == "close":
+                        os.startfile(path)
+                        self.destroy()
+                    elif self.behavior_radio_var == "minimize":
+                        os.startfile(path)
+                        self.iconify()
+                    elif self.behavior_radio_var == "metrics":
+                        self.do_metrics(path)
+                    last_played = datetime.today().strftime('%Y-%m-%d')
+                    self.game_list[self.curr_game]["last_played"] = last_played
+                    self.save_data()
+                    self.show_game(self.curr_game)
+            except Exception as e:
+                print(f"Hiba a játék indításakor: {e}")
+
+    def do_metrics(self, path):
+        start_time = datetime.now()
+        game_proc = subprocess.Popen(res_path(path))
+        self.iconify()
+        game_proc.wait()
+        end_time = datetime.now()
+        played_time = (end_time - start_time) / 60  # in minutes
+        curr_total_playtime = self.game_list[self.curr_game].get("total_playtime", 0)
+        self.game_list[self.curr_game]["total_playtime"] = curr_total_playtime + played_time
         self.save_data()
         self.show_game(self.curr_game)
-        if self.curr_game:
-            path = self.game_list[self.curr_game]["path"]
-            if self.behavior_radio_var == "nothing":
-                os.startfile(path)
-            elif self.behavior_radio_var == "close":
-                os.startfile(path)
-                self.destroy()
-            elif self.behavior_radio_var == "minimize":
-                os.startfile(path)
-                self.iconify()
-            elif self.behavior_radio_var == "metrics":
-                subprocess.Popen(res_path(path))
-                self.metrics_start()
-                self.iconify()
-
-    def metrics_start(self):
-        pass
+        self.deiconify()
 
     def add_bg(self):
         if self.curr_game:
