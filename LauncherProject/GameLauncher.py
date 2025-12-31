@@ -26,9 +26,11 @@ class GameLauncher(ctk.CTk):
         self.geometry("1200x600")
         # self.resizable(False, False)
         self.bind("<Configure>", self.resize_bg)
+        self.protocol("WM_DELETE_WINDOW", self.save_data)
 
         # init..
         self.game_list = {}
+        self.settings = {}
         self.load_data()
         self.curr_game = None
         self.curr_bg_img = None
@@ -64,7 +66,7 @@ class GameLauncher(ctk.CTk):
         ctk.CTkLabel(self.optionbar, text="Beállítások").pack(pady=5)
 
         ctk.CTkLabel(self.optionbar, text="\nTéma mód:").pack(padx=5, anchor="w")
-        self.theme_radio_var = ctk.StringVar(value="system")
+        self.theme_radio_var = ctk.StringVar(value=self.settings["settings"]["theme"])
         self.theme_dark = ctk.CTkRadioButton(self.optionbar, text="Sötét", value="dark",
                                              variable=self.theme_radio_var,
                                              command=lambda: ctk.set_appearance_mode("dark"))
@@ -79,7 +81,7 @@ class GameLauncher(ctk.CTk):
         self.theme_system.pack(padx=5, pady=5, anchor="w")
 
         ctk.CTkLabel(self.optionbar, text="\nJáték indításakor:").pack(padx=5, anchor="w")
-        self.behavior_radio_var = ctk.StringVar(value="close")
+        self.behavior_radio_var = ctk.StringVar(value=self.settings["settings"]["behavior"])
         self.behavior_nothing = ctk.CTkRadioButton(self.optionbar, text="semmi",
                                                    value="nothing", variable=self.behavior_radio_var)
         self.behavior_nothing.pack(padx=5, pady=5, anchor="w")
@@ -125,11 +127,17 @@ class GameLauncher(ctk.CTk):
         self.todo_frame = ctk.CTkScrollableFrame(self.main_view, label_text="Küldetések")
 
     def load_data(self):
-        if os.path.exists(res_path("data/data.json")):
-            with open(res_path("data/data.json"), "r", encoding="utf-8") as f:
-                self.game_list = json.load(f)
-        else:
+        try:
+            if os.path.exists(res_path("data/games.json")) and \
+                    os.path.exists(res_path("data/settings.json")):
+                with open(res_path("data/games.json"), "r", encoding="utf-8") as f:
+                    self.game_list = json.load(f)
+                with open(res_path("data/settings.json"), "r", encoding="utf-8") as f:
+                    self.settings = json.load(f)
+        except Exception as e:
+            print(f"Hiba az adatok betöltésekor: {e}")
             self.game_list = {}
+            self.settings = {}
 
     def add_game(self):
         name = simpledialog.askstring("Játék neve", "Adja meg a játék nevét:")
@@ -139,7 +147,7 @@ class GameLauncher(ctk.CTk):
                                              filetypes=[("Képfájlok", "*.jpg *.png *.jpeg")])
         if name and path:
             self.game_list[name] = {"path": path, "background": bg_path, "todos": [],
-                                    "last_played": ""}
+                                    "last_played": "", "total_playtime": 0}
             self.save_data()
             btn = ctk.CTkButton(self.sidebar, text=name,
                                 command=lambda g=name: self.show_game(g))
@@ -272,8 +280,16 @@ class GameLauncher(ctk.CTk):
             self.refresh_todos()
 
     def save_data(self):
-        with open(res_path("data/data.json"), "w", encoding="utf-8") as f:
-            json.dump(self.game_list, f, indent=4)
+        try:
+            with open(res_path("data/games.json"), "w", encoding="utf-8") as f:
+                json.dump(self.game_list, f, indent=4)
+            with open(res_path("data/settings.json"), "w", encoding="utf-8") as f:
+                self.settings["settings"] = {"theme": self.theme_radio_var.get(),
+                                             "behavior": self.behavior_radio_var.get()}
+                json.dump(self.settings, f, indent=4)
+            self.destroy()
+        except Exception as e:
+            print(f"Hiba az adatok mentésekor: {e}")
 
 
 if __name__ == "__main__":
