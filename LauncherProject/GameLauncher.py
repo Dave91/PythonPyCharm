@@ -1,6 +1,6 @@
 import json
 import os
-# import subprocess
+import subprocess
 import sys
 from datetime import datetime
 from tkinter import filedialog, simpledialog
@@ -196,9 +196,21 @@ class GameLauncher(ctk.CTk):
         self.show_game(self.curr_game)
         if self.curr_game:
             path = self.game_list[self.curr_game]["path"]
-            os.startfile(path)
-        self.destroy()
-        # or use subprocess.Popen(res_path(path)) to stay open: tracking playtime, etc..
+            if self.behavior_radio_var == "nothing":
+                os.startfile(path)
+            elif self.behavior_radio_var == "close":
+                os.startfile(path)
+                self.destroy()
+            elif self.behavior_radio_var == "minimize":
+                os.startfile(path)
+                self.iconify()
+            elif self.behavior_radio_var == "metrics":
+                subprocess.Popen(res_path(path))
+                self.metrics_start()
+                self.iconify()
+
+    def metrics_start(self):
+        pass
 
     def add_bg(self):
         if self.curr_game:
