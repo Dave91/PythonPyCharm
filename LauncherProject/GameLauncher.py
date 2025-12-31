@@ -40,12 +40,62 @@ class GameLauncher(ctk.CTk):
 
         self.add_game_btn = ctk.CTkButton(self.sidebar, text="+ játék hozzáadása",
                                           fg_color="gray", command=self.add_game)
-        self.add_game_btn.pack(pady=10, padx=10)
+        self.add_game_btn.pack(pady=10, padx=5)
 
         for game_name in self.game_list.keys():
             btn = ctk.CTkButton(self.sidebar, text=game_name,
                                 command=lambda g=game_name: self.show_game(g))
-            btn.pack(pady=5, padx=10)
+            btn.pack(pady=5, padx=5)
+
+        self.stat_info_label = ctk.CTkLabel(self.sidebar, text="info...")
+        self.stat_info_label.pack(pady=5, padx=5, side="bottom")
+
+        self.opt_open_btn = ctk.CTkButton(self.sidebar, text="Beállítások", fg_color="gray",
+                                          command=lambda: self.optionbar.place(anchor="nw",
+                                                                               x=15, y=15))
+        self.opt_open_btn.pack(pady=5, padx=5, side="bottom")
+
+        ctk.CTkLabel(self.sidebar, text="---------------------------------",
+                     height=2).pack(pady=0, padx=0, side="bottom")
+
+        # Options
+        self.optionbar = ctk.CTkFrame(self, width=200, height=600)
+
+        ctk.CTkLabel(self.optionbar, text="Beállítások").pack(pady=5)
+
+        ctk.CTkLabel(self.optionbar, text="\nTéma mód:").pack(padx=5, anchor="w")
+        self.theme_radio_var = ctk.StringVar(value="system")
+        self.theme_dark = ctk.CTkRadioButton(self.optionbar, text="Sötét", value="dark",
+                                             variable=self.theme_radio_var,
+                                             command=lambda: ctk.set_appearance_mode("dark"))
+        self.theme_dark.pack(padx=5, pady=5, anchor="w")
+        self.theme_light = ctk.CTkRadioButton(self.optionbar, text="Világos", value="light",
+                                              variable=self.theme_radio_var,
+                                              command=lambda: ctk.set_appearance_mode("light"))
+        self.theme_light.pack(padx=5, pady=5, anchor="w")
+        self.theme_system = ctk.CTkRadioButton(self.optionbar, text="Rendszer", value="system",
+                                               variable=self.theme_radio_var,
+                                               command=lambda: ctk.set_appearance_mode("system"))
+        self.theme_system.pack(padx=5, pady=5, anchor="w")
+
+        ctk.CTkLabel(self.optionbar, text="\nJáték indításakor:").pack(padx=5, anchor="w")
+        self.behavior_radio_var = ctk.StringVar(value="close")
+        self.behavior_nothing = ctk.CTkRadioButton(self.optionbar, text="semmi",
+                                                   value="nothing", variable=self.behavior_radio_var)
+        self.behavior_nothing.pack(padx=5, pady=5, anchor="w")
+        self.behavior_close = ctk.CTkRadioButton(self.optionbar, text="bezárás",
+                                                 value="close", variable=self.behavior_radio_var)
+        self.behavior_close.pack(padx=5, pady=5, anchor="w")
+        self.behavior_minimize = ctk.CTkRadioButton(self.optionbar, text="minimálás",
+                                                    value="minimize", variable=self.behavior_radio_var)
+        self.behavior_minimize.pack(padx=5, pady=5, anchor="w")
+        self.behavior_metrics = ctk.CTkRadioButton(self.optionbar, text="minimál/időt mér",
+                                                   value="metrics", variable=self.behavior_radio_var)
+        self.behavior_metrics.pack(padx=5, pady=5, anchor="w")
+
+        self.opt_close_btn = ctk.CTkButton(self.optionbar, text="Bezár", fg_color="gray",
+                                           command=lambda: self.optionbar.place_forget())
+        self.opt_close_btn.pack(pady=5, side="bottom")
 
         # Main Area
         self.main_view = ctk.CTkFrame(self)
@@ -55,8 +105,9 @@ class GameLauncher(ctk.CTk):
         self.bg_label.place(relx=0.5, rely=0.5, anchor="center")
 
         self.title_label = ctk.CTkLabel(self.main_view, text="Válassz játékot...",
-                                        font=("Arial", 20))
+                                        font=("Arial", 20, "bold"))
         self.title_label.pack(pady=20)
+        pywinstyles.set_opacity(widget=self.title_label, value=0.6, color="#000001")
 
         self.launch_btn = ctk.CTkButton(self.main_view, text="INDÍTÁS", fg_color="green",
                                         command=self.launch_game)
