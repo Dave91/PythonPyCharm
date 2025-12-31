@@ -195,7 +195,6 @@ class GameLauncher(ctk.CTk):
             if new_width > 10 and new_height > 10:
                 ctk_img = ctk.CTkImage(self.curr_bg_img, size=(new_width, new_height))
                 self.bg_label.configure(image=ctk_img)
-                # self.show_game(self.curr_game)
 
     def launch_game(self):
         if self.curr_game:
@@ -220,10 +219,13 @@ class GameLauncher(ctk.CTk):
                 print(f"Hiba a játék indításakor: {e}")
 
     def do_metrics(self, path):
-        start_time = datetime.now()
-        game_proc = subprocess.Popen(res_path(path))
         self.iconify()
-        game_proc.wait()
+        start_time = datetime.now()
+        try:
+            game_proc = subprocess.Popen(res_path(path))
+            game_proc.wait()
+        except Exception as e:
+            print(f"Hiba a játék indításakor: {e}")
         end_time = datetime.now()
         played_time = (end_time - start_time) / 60  # in minutes
         curr_total_playtime = self.game_list[self.curr_game].get("total_playtime", 0)
@@ -261,8 +263,6 @@ class GameLauncher(ctk.CTk):
             self.toggle_btn.configure(text="Küldetések elrejtése")
             self.refresh_todos()
             self.todo_visible = True
-            # pywinstyles.set_opacity(widget=self.todo_frame, value=0.0, color="#000001")
-            # self.anim_widget(self.todo_frame)
 
     def refresh_todos(self):
         for widget in self.todo_frame.winfo_children():
