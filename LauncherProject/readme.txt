@@ -1,0 +1,1 @@
+Place your game background images in the 'assets' folder.
