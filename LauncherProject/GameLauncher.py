@@ -8,6 +8,7 @@ from tkinter import filedialog, simpledialog
 import customtkinter as ctk
 import pywinstyles
 from PIL import Image
+import psutil
 
 
 def res_path(rel_path):
@@ -28,13 +29,16 @@ class GameLauncher(ctk.CTk):
         self.bind("<Configure>", self.resize_bg)
         self.protocol("WM_DELETE_WINDOW", self.save_data)
 
-        # init..
+        # init, vars
         self.game_list = {}
         self.settings = {}
         self.load_data()
         self.curr_game = None
         self.curr_bg_img = None
         self.todo_visible = False
+        self.cpu_usage = 0
+        self.ram_usage = 0
+        self.disk_usage = 0
 
         # Sidebar
         self.sidebar = ctk.CTkFrame(self, width=200)
@@ -42,16 +46,35 @@ class GameLauncher(ctk.CTk):
 
         self.add_game_btn = ctk.CTkButton(self.sidebar, text="+ játék hozzáadása",
                                           fg_color="gray", command=self.add_game)
-        self.add_game_btn.pack(pady=10, padx=5)
+        self.add_game_btn.pack(pady=5, padx=5)
 
         for game_name in self.game_list.keys():
             btn = ctk.CTkButton(self.sidebar, text=game_name,
                                 command=lambda g=game_name: self.show_game(g))
-            btn.pack(pady=5, padx=5)
+            btn.pack(pady=3, padx=3)
 
-        self.stat_info_label = ctk.CTkLabel(self.sidebar, text="info...")
-        self.stat_info_label.pack(pady=5, padx=5, side="bottom")
+        # Stats
+        self.stats_frame = ctk.CTkFrame(self.sidebar)
+        self.stats_frame.pack(pady=0, padx=5, fill="x", side="bottom")
 
+        ctk.CTkLabel(self.stats_frame, text="CPU:", font=("Arial", 10)).pack(anchor="w")
+        self.cpu_bar = ctk.CTkProgressBar(self.stats_frame, width=150)
+        self.cpu_bar.pack(pady=2)
+
+        ctk.CTkLabel(self.stats_frame, text="RAM:", font=("Arial", 10)).pack(anchor="w")
+        self.ram_bar = ctk.CTkProgressBar(self.stats_frame, width=150)
+        self.ram_bar.pack(pady=2)
+
+        ctk.CTkLabel(self.stats_frame, text="DISK (C:):", font=("Arial", 10)).pack(anchor="w")
+        self.disk_bar = ctk.CTkProgressBar(self.stats_frame, width=150)
+        self.disk_bar.pack(pady=2)
+
+        # self.stat_info_label = ctk.CTkLabel(self.sidebar, text="info...")
+        # self.stat_info_label.pack(pady=5, padx=5, side="bottom")
+
+        self.upd_stats()
+
+        # Options
         self.opt_open_btn = ctk.CTkButton(self.sidebar, text="Beállítások", fg_color="gray",
                                           command=lambda: self.optionbar.place(anchor="nw",
                                                                                x=15, y=15))
@@ -60,7 +83,6 @@ class GameLauncher(ctk.CTk):
         ctk.CTkLabel(self.sidebar, text="---------------------------------",
                      height=2).pack(pady=0, padx=0, side="bottom")
 
-        # Options
         self.optionbar = ctk.CTkFrame(self, width=200, height=600)
 
         ctk.CTkLabel(self.optionbar, text="Beállítások").pack(pady=5)
@@ -139,6 +161,21 @@ class GameLauncher(ctk.CTk):
             self.game_list = {}
             self.settings = {}
 
+    def upd_stats(self):
+        self.cpu_usage = psutil.cpu_percent(interval=1)
+        self.ram_usage = psutil.virtual_memory().percent
+        self.disk_usage = psutil.disk_usage('C:').percent
+        self.cpu_bar.set(self.cpu_usage / 100)
+        self.ram_bar.set(self.ram_usage / 100)
+        self.disk_bar.set(self.disk_usage / 100)
+        self.cpu_bar.configure(progress_color="salmon" if self.cpu_usage > 75
+                               else "medium sea green")
+        self.ram_bar.configure(progress_color="salmon" if self.ram_usage > 75
+                               else "medium sea green")
+        self.disk_bar.configure(progress_color="salmon" if self.disk_usage > 75
+                                else "medium sea green")
+        self.after(3000, self.upd_stats)
+
     def add_game(self):
         name = simpledialog.askstring("Játék neve", "Adja meg a játék nevét:")
         path = filedialog.askopenfilename(title="Válassza ki a játék futtatható fájlját")
@@ -201,6 +238,7 @@ class GameLauncher(ctk.CTk):
             try:
                 path = self.game_list[self.curr_game]["path"]
                 if path.exists(res_path(path)):
+                    # need to pause upd_stats
                     if self.behavior_radio_var == "nothing":
                         os.startfile(path)
                     elif self.behavior_radio_var == "close":
