@@ -119,6 +119,19 @@ class GameLauncher(ctk.CTk):
                                                    value="metrics", variable=self.behavior_radio_var)
         self.behavior_metrics.pack(padx=5, pady=5, anchor="w")
 
+        ctk.CTkLabel(self.optionbar, text="\nSorrend alapja:").pack(padx=5, anchor="w")
+        self.orderby_radio_var = ctk.StringVar(value=self.settings["settings"]["orderby"])
+        self.orderby_name = ctk.CTkRadioButton(self.optionbar, text="Név (A-Z)",
+                                               value="name", variable=self.orderby_radio_var)
+        self.orderby_name.pack(padx=5, pady=5, anchor="w")
+        self.orderby_lastplayed = ctk.CTkRadioButton(self.optionbar, text="Utoljára játszva",
+                                                     value="lastplayed", variable=self.orderby_radio_var)
+        self.orderby_lastplayed.pack(padx=5, pady=5, anchor="w")
+
+        self.orderby_playtime = ctk.CTkRadioButton(self.optionbar, text="Összes játékidő",
+                                                   value="playtime", variable=self.orderby_radio_var)
+        self.orderby_playtime.pack(padx=5, pady=5, anchor="w")
+
         self.opt_close_btn = ctk.CTkButton(self.optionbar, text="Bezár", fg_color="gray",
                                            command=lambda: self.optionbar.place_forget())
         self.opt_close_btn.pack(pady=5, side="bottom")
