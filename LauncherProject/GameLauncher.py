@@ -79,7 +79,7 @@ class GameLauncher(ctk.CTk):
         # Options
         self.opt_open_btn = ctk.CTkButton(self.sidebar, text="Beállítások", fg_color="gray",
                                           command=lambda: self.optionbar.place(anchor="nw",
-                                                                               x=15, y=15))
+                                                                               x=20, y=15))
         self.opt_open_btn.pack(pady=5, padx=5, side="bottom")
 
         ctk.CTkLabel(self.sidebar, text="---------------------------------",
@@ -176,7 +176,7 @@ class GameLauncher(ctk.CTk):
                                else "medium sea green")
         self.disk_bar.configure(progress_color="salmon" if self.disk_usage > 75
                                 else "medium sea green")
-        self.after(3000, self.upd_stats)
+        self.after(4000, self.upd_stats)
 
     def add_game(self):
         name = simpledialog.askstring("Játék neve", "Adja meg a játék nevét:")
