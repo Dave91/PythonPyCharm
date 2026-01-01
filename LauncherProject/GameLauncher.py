@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import sys
+import threading
 from datetime import datetime
 from tkinter import filedialog, simpledialog
 
@@ -36,6 +37,7 @@ class GameLauncher(ctk.CTk):
         self.curr_game = None
         self.curr_bg_img = None
         self.todo_visible = False
+        self.game_running = False
         self.cpu_usage = 0
         self.ram_usage = 0
         self.disk_usage = 0
@@ -238,39 +240,46 @@ class GameLauncher(ctk.CTk):
             try:
                 path = self.game_list[self.curr_game]["path"]
                 if path.exists(res_path(path)):
-                    # need to pause upd_stats
+                    self.game_running = True
                     if self.behavior_radio_var == "nothing":
-                        os.startfile(path)
+                        threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
                     elif self.behavior_radio_var == "close":
                         os.startfile(path)
                         self.destroy()
                     elif self.behavior_radio_var == "minimize":
-                        os.startfile(path)
                         self.iconify()
+                        threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
+                        self.deiconify()
                     elif self.behavior_radio_var == "metrics":
-                        self.do_metrics(path)
+                        start_time = datetime.now()
+                        self.iconify()
+                        threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
+                        self.deiconify()
+                        self.get_playtime(start_time)
                     last_played = datetime.today().strftime('%Y-%m-%d')
                     self.game_list[self.curr_game]["last_played"] = last_played
                     self.save_data()
                     self.show_game(self.curr_game)
             except Exception as e:
                 print(f"Hiba a játék indításakor: {e}")
+            finally:
+                self.game_running = False
 
-    def do_metrics(self, path):
-        self.iconify()
-        start_time = datetime.now()
+    @staticmethod
+    def wait_game_end(path):
         try:
             game_proc = subprocess.Popen(res_path(path))
             game_proc.wait()
         except Exception as e:
-            print(f"Hiba a játék indításakor: {e}")
+            print(f"Hiba a játék futtatásakor: {e}")
+
+    def get_playtime(self, start_time):
         end_time = datetime.now()
         played_time = (end_time - start_time) / 60  # in minutes
         curr_total_playtime = self.game_list[self.curr_game].get("total_playtime", 0)
         self.game_list[self.curr_game]["total_playtime"] = curr_total_playtime + played_time
         self.save_data()
         self.show_game(self.curr_game)
-        self.deiconify()
 
     def add_bg(self):
         if self.curr_game:
