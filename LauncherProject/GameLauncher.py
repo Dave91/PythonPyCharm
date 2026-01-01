@@ -50,10 +50,7 @@ class GameLauncher(ctk.CTk):
                                           fg_color="gray", command=self.add_game)
         self.add_game_btn.pack(pady=5, padx=5)
 
-        for game_name in self.game_list.keys():
-            btn = ctk.CTkButton(self.sidebar, text=game_name,
-                                command=lambda g=game_name: self.show_game(g))
-            btn.pack(pady=3, padx=3)
+        self.draw_game_btns()
 
         # Stats
         self.stats_frame = ctk.CTkFrame(self.sidebar)
@@ -89,6 +86,7 @@ class GameLauncher(ctk.CTk):
 
         ctk.CTkLabel(self.optionbar, text="Beállítások").pack(pady=5)
 
+        # # Opt Theme
         ctk.CTkLabel(self.optionbar, text="\nTéma mód:").pack(padx=5, anchor="w")
         self.theme_radio_var = ctk.StringVar(value=self.settings["settings"]["theme"])
         self.theme_dark = ctk.CTkRadioButton(self.optionbar, text="Sötét", value="dark",
@@ -104,6 +102,7 @@ class GameLauncher(ctk.CTk):
                                                command=lambda: ctk.set_appearance_mode("system"))
         self.theme_system.pack(padx=5, pady=5, anchor="w")
 
+        # # Opt Behav
         ctk.CTkLabel(self.optionbar, text="\nJáték indításakor:").pack(padx=5, anchor="w")
         self.behavior_radio_var = ctk.StringVar(value=self.settings["settings"]["behavior"])
         self.behavior_nothing = ctk.CTkRadioButton(self.optionbar, text="semmi",
@@ -119,17 +118,21 @@ class GameLauncher(ctk.CTk):
                                                    value="metrics", variable=self.behavior_radio_var)
         self.behavior_metrics.pack(padx=5, pady=5, anchor="w")
 
+        # # Opt Orderby
         ctk.CTkLabel(self.optionbar, text="\nSorrend alapja:").pack(padx=5, anchor="w")
         self.orderby_radio_var = ctk.StringVar(value=self.settings["settings"]["orderby"])
         self.orderby_name = ctk.CTkRadioButton(self.optionbar, text="Név (A-Z)",
-                                               value="name", variable=self.orderby_radio_var)
+                                               value="name", variable=self.orderby_radio_var,
+                                               command=self.draw_game_btns)
         self.orderby_name.pack(padx=5, pady=5, anchor="w")
         self.orderby_lastplayed = ctk.CTkRadioButton(self.optionbar, text="Utoljára játszva",
-                                                     value="lastplayed", variable=self.orderby_radio_var)
+                                                     value="lastplayed", variable=self.orderby_radio_var,
+                                                     command=self.draw_game_btns)
         self.orderby_lastplayed.pack(padx=5, pady=5, anchor="w")
 
         self.orderby_playtime = ctk.CTkRadioButton(self.optionbar, text="Összes játékidő",
-                                                   value="playtime", variable=self.orderby_radio_var)
+                                                   value="playtime", variable=self.orderby_radio_var,
+                                                   command=self.draw_game_btns)
         self.orderby_playtime.pack(padx=5, pady=5, anchor="w")
 
         self.opt_close_btn = ctk.CTkButton(self.optionbar, text="Bezár", fg_color="gray",
@@ -176,6 +179,31 @@ class GameLauncher(ctk.CTk):
             self.game_list = {}
             self.settings = {}
 
+    def order_game_list(self):
+        orderby = self.settings["settings"]["orderby"]
+        if orderby == "name":
+            self.game_list = dict(sorted(self.game_list.items(),
+                                         key=lambda item: item[0].lower()))
+        elif orderby == "lastplayed":
+            self.game_list = dict(sorted(self.game_list.items(),
+                                         key=lambda item: item[1]["last_played"],
+                                         reverse=True))
+        elif orderby == "playtime":
+            self.game_list = dict(sorted(self.game_list.items(),
+                                         key=lambda item: item[1]["total_playtime"],
+                                         reverse=True))
+
+    def draw_game_btns(self):
+        for widget in self.sidebar.winfo_children():
+            if widget._text != "+ játék hozzáadása" and widget._text != "Beállítások":
+                widget.destroy()
+
+        self.order_game_list()
+        for game_name in self.game_list.keys():
+            btn = ctk.CTkButton(self.sidebar, text=game_name,
+                                command=lambda g=game_name: self.show_game(g))
+            btn.pack(pady=3, padx=3)
+
     def upd_stats(self):
         self.cpu_usage = psutil.cpu_percent(interval=1)
         self.ram_usage = psutil.virtual_memory().percent
@@ -189,7 +217,7 @@ class GameLauncher(ctk.CTk):
                                else "medium sea green")
         self.disk_bar.configure(progress_color="salmon" if self.disk_usage > 75
                                 else "medium sea green")
-        self.after(4000, self.upd_stats)
+        self.after(3000, self.upd_stats)
 
     def add_game(self):
         name = simpledialog.askstring("Játék neve", "Adja meg a játék nevét:")

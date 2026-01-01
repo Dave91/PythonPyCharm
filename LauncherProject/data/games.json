@@ -1,36 +1,9 @@
 {
-    "Witcher 2": {
-        "path": "",
-        "background": "assets/witcher2bg.jpg",
-        "todos": [
-            "Collect all resources",
-            "Complete Virmire",
-            "Cross the Mist (haunted battlefield)"
-        ],
-        "last_played": "2025-12-28",
-        "total_playtime": 0
-    },
-    "Skyrim": {
-        "path": "C:/Games/Skyrim/SkyrimSE.exe",
-        "background": "assets/skyrimbg.jpg",
-        "todos": [
-            "Join the Dark Brotherhood"
-        ],
-        "last_played": "2024-06-01",
-        "total_playtime": 0
-    },
-    "Witcher 3": {
-        "path": "C:/Games/The Witcher 3 - Wild Hunt/bin/x64/witcher3.exe",
-        "background": "assets/witcher3bg.jpg",
-        "todos": [],
-        "last_played": "2024-06-01",
-        "total_playtime": 0
-    },
     "Dragon Age: Origins": {
         "path": "D:/GOG Games/Dragon Age Origins/DAOriginsLauncher.exe",
         "background": "assets/daobg.jpg",
         "todos": [],
-        "last_played": "2025-12-28",
+        "last_played": "2026-01-01",
         "total_playtime": 0
     },
     "Grim Dawn": {
@@ -43,6 +16,33 @@
     "Mass Effect LE": {
         "path": "C:/Program Files (x86)/Steam/steamapps/common/Mass Effect Legendary Edition/Game/Launcher/MassEffectLauncher.exe",
         "background": "D:/Documents/PyCharmProjects/LauncherProject/assets/melebg.jpg",
+        "todos": [],
+        "last_played": "2024-06-01",
+        "total_playtime": 0
+    },
+    "Skyrim": {
+        "path": "C:/Games/Skyrim/SkyrimSE.exe",
+        "background": "assets/skyrimbg.jpg",
+        "todos": [
+            "Join the Dark Brotherhood"
+        ],
+        "last_played": "2024-06-01",
+        "total_playtime": 0
+    },
+    "Witcher 2": {
+        "path": "",
+        "background": "assets/witcher2bg.jpg",
+        "todos": [
+            "Collect all resources",
+            "Complete Virmire",
+            "Cross the Mist (haunted battlefield)"
+        ],
+        "last_played": "2025-12-28",
+        "total_playtime": 0
+    },
+    "Witcher 3": {
+        "path": "C:/Games/The Witcher 3 - Wild Hunt/bin/x64/witcher3.exe",
+        "background": "assets/witcher3bg.jpg",
         "todos": [],
         "last_played": "2024-06-01",
         "total_playtime": 0
