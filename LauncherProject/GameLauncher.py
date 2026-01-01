@@ -345,7 +345,8 @@ class GameLauncher(ctk.CTk):
                 json.dump(self.game_list, f, indent=4)
             with open(res_path("data/settings.json"), "w", encoding="utf-8") as f:
                 self.settings["settings"] = {"theme": self.theme_radio_var.get(),
-                                             "behavior": self.behavior_radio_var.get()}
+                                             "behavior": self.behavior_radio_var.get(),
+                                             "orderby": self.orderby_radio_var.get()}
                 json.dump(self.settings, f, indent=4)
             self.destroy()
         except Exception as e:

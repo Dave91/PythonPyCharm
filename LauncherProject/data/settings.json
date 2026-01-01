@@ -1,6 +1,7 @@
 {
     "settings": {
         "theme": "system",
-        "behavior": "close"
+        "behavior": "close",
+        "orderby": "name"
     }
 }
