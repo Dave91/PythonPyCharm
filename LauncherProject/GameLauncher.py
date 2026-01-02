@@ -50,6 +50,7 @@ class GameLauncher(ctk.CTk):
                                           fg_color="gray", command=self.add_game)
         self.add_game_btn.pack(pady=5, padx=5)
 
+        self.orderby_radio_var = ctk.StringVar(value=self.settings["settings"]["orderby"])
         self.draw_game_btns()
 
         # Stats
@@ -120,7 +121,7 @@ class GameLauncher(ctk.CTk):
 
         # # Opt Orderby
         ctk.CTkLabel(self.optionbar, text="\nSorrend alapja:").pack(padx=5, anchor="w")
-        self.orderby_radio_var = ctk.StringVar(value=self.settings["settings"]["orderby"])
+        # self.orderby_radio_var = ctk.StringVar(value=self.settings["settings"]["orderby"])
         self.orderby_name = ctk.CTkRadioButton(self.optionbar, text="Név (A-Z)",
                                                value="name", variable=self.orderby_radio_var,
                                                command=self.draw_game_btns)
@@ -180,7 +181,7 @@ class GameLauncher(ctk.CTk):
             self.settings = {}
 
     def order_game_list(self):
-        orderby = self.settings["settings"]["orderby"]
+        orderby = self.orderby_radio_var.get()
         if orderby == "name":
             self.game_list = dict(sorted(self.game_list.items(),
                                          key=lambda item: item[0].lower()))
@@ -195,7 +196,7 @@ class GameLauncher(ctk.CTk):
 
     def draw_game_btns(self):
         for widget in self.sidebar.winfo_children():
-            if widget._text != "+ játék hozzáadása" and widget._text != "Beállítások":
+            if hasattr(widget, "wid") and widget.wid == "gbtn":
                 widget.destroy()
 
         self.order_game_list()
@@ -203,6 +204,7 @@ class GameLauncher(ctk.CTk):
             btn = ctk.CTkButton(self.sidebar, text=game_name,
                                 command=lambda g=game_name: self.show_game(g))
             btn.pack(pady=3, padx=3)
+            btn.wid = "gbtn"
 
     def upd_stats(self):
         self.cpu_usage = psutil.cpu_percent(interval=1)
