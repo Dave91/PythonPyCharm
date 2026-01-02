@@ -282,26 +282,26 @@ class GameLauncher(ctk.CTk):
         if self.curr_game:
             try:
                 path = self.game_list[self.curr_game]["path"]
-                if path.exists(res_path(path)):
+                if res_path(path):
                     behavior = self.behavior_radio_var.get()
                     self.game_running = True
                     if behavior == "close":
                         os.startfile(path)
+                        self.upd_last_played()
                         self.destroy()
                     elif behavior == "minimize":
                         self.iconify()
                         threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
                         self.deiconify()
+                        self.upd_last_played()
+                        self.show_game(self.curr_game)
                     elif behavior == "metrics":
                         start_time = datetime.now()
                         self.iconify()
                         threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
                         self.deiconify()
+                        self.upd_last_played()
                         self.get_playtime(start_time)
-                    last_played = datetime.today().strftime('%Y-%m-%d')
-                    self.game_list[self.curr_game]["last_played"] = last_played
-                    self.save_data()
-                    self.show_game(self.curr_game)
             except Exception as e:
                 print(f"Hiba a játék indításakor: {e}")
 
@@ -313,6 +313,11 @@ class GameLauncher(ctk.CTk):
             print(f"Hiba a játék futtatásakor: {e}")
         finally:
             self.game_running = False
+
+    def upd_last_played(self):
+        last_played = datetime.today().strftime('%Y-%m-%d')
+        self.game_list[self.curr_game]["last_played"] = last_played
+        self.save_data()
 
     def get_playtime(self, start_time):
         end_time = datetime.now()
