@@ -38,6 +38,7 @@ class GameLauncher(ctk.CTk):
         self.curr_bg_img = None
         self.todo_visible = False
         self.game_running = False
+        self.net_sent, self.net_recv = psutil.net_io_counters()[:2]
 
         # Sidebar
         self.sidebar = ctk.CTkFrame(self, width=200)
@@ -54,20 +55,20 @@ class GameLauncher(ctk.CTk):
         self.stats_frame = ctk.CTkFrame(self.sidebar)
         self.stats_frame.pack(pady=0, padx=5, fill="x", side="bottom")
 
-        ctk.CTkLabel(self.stats_frame, text="CPU:", font=("Arial", 10)).pack(anchor="w")
+        ctk.CTkLabel(self.stats_frame, text="CPU:", height=20, font=("Arial", 10)).pack(anchor="w")
         self.cpu_bar = ctk.CTkProgressBar(self.stats_frame, width=150)
         self.cpu_bar.pack(pady=2)
 
-        ctk.CTkLabel(self.stats_frame, text="RAM:", font=("Arial", 10)).pack(anchor="w")
+        ctk.CTkLabel(self.stats_frame, text="RAM:", height=20, font=("Arial", 10)).pack(anchor="w")
         self.ram_bar = ctk.CTkProgressBar(self.stats_frame, width=150)
         self.ram_bar.pack(pady=2)
 
-        ctk.CTkLabel(self.stats_frame, text="DISK (C:):", font=("Arial", 10)).pack(anchor="w")
+        ctk.CTkLabel(self.stats_frame, text="DISK (C:):", height=20, font=("Arial", 10)).pack(anchor="w")
         self.disk_bar = ctk.CTkProgressBar(self.stats_frame, width=150)
         self.disk_bar.pack(pady=2)
 
-        # self.stat_info_label = ctk.CTkLabel(self.sidebar, text="info...")
-        # self.stat_info_label.pack(pady=5, padx=5, side="bottom")
+        self.net_traffic = ctk.CTkLabel(self.stats_frame, text="Net:", font=("Arial", 10))
+        self.net_traffic.pack(anchor="w")
 
         self.upd_stats()
 
@@ -205,9 +206,13 @@ class GameLauncher(ctk.CTk):
             cpu_usage = psutil.cpu_percent(interval=None)
             ram_usage = psutil.virtual_memory().percent
             disk_usage = psutil.disk_usage('C:').percent
+            net_sent, net_recv = psutil.net_io_counters()[:2]
+            net_sent, net_recv = net_sent - self.net_sent, net_recv - self.net_recv
             self.cpu_bar.set(cpu_usage / 100)
             self.ram_bar.set(ram_usage / 100)
             self.disk_bar.set(disk_usage / 100)
+            self.net_traffic.configure(
+                text=f"Fel: {net_sent // 1024}KB | Le: {net_recv // 1024}KB")
             self.cpu_bar.configure(progress_color="salmon" if cpu_usage > 75
                                    else "medium sea green")
             self.ram_bar.configure(progress_color="salmon" if ram_usage > 75
@@ -299,16 +304,15 @@ class GameLauncher(ctk.CTk):
                     self.show_game(self.curr_game)
             except Exception as e:
                 print(f"Hiba a játék indításakor: {e}")
-            finally:
-                self.game_running = False
 
-    @staticmethod
-    def wait_game_end(path):
+    def wait_game_end(self, path):
         try:
             game_proc = subprocess.Popen(res_path(path))
             game_proc.wait()
         except Exception as e:
             print(f"Hiba a játék futtatásakor: {e}")
+        finally:
+            self.game_running = False
 
     def get_playtime(self, start_time):
         end_time = datetime.now()
