@@ -278,15 +278,16 @@ class GameLauncher(ctk.CTk):
             try:
                 path = self.game_list[self.curr_game]["path"]
                 if path.exists(res_path(path)):
+                    behavior = self.behavior_radio_var.get()
                     self.game_running = True
-                    if self.behavior_radio_var == "close":
+                    if behavior == "close":
                         os.startfile(path)
                         self.destroy()
-                    elif self.behavior_radio_var == "minimize":
+                    elif behavior == "minimize":
                         self.iconify()
                         threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
                         self.deiconify()
-                    elif self.behavior_radio_var == "metrics":
+                    elif behavior == "metrics":
                         start_time = datetime.now()
                         self.iconify()
                         threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
@@ -312,7 +313,7 @@ class GameLauncher(ctk.CTk):
     def get_playtime(self, start_time):
         end_time = datetime.now()
         played_time = (end_time - start_time) / 60  # in minutes
-        curr_total_playtime = self.game_list[self.curr_game].get("total_playtime", 0)
+        curr_total_playtime = self.game_list[self.curr_game]["total_playtime"]
         self.game_list[self.curr_game]["total_playtime"] = curr_total_playtime + played_time
         self.save_data()
         self.show_game(self.curr_game)
