@@ -7,9 +7,9 @@ from datetime import datetime
 from tkinter import filedialog, simpledialog
 
 import customtkinter as ctk
+import psutil
 import pywinstyles
 from PIL import Image
-import psutil
 
 
 def res_path(rel_path):
@@ -38,9 +38,6 @@ class GameLauncher(ctk.CTk):
         self.curr_bg_img = None
         self.todo_visible = False
         self.game_running = False
-        self.cpu_usage = 0
-        self.ram_usage = 0
-        self.disk_usage = 0
 
         # Sidebar
         self.sidebar = ctk.CTkFrame(self, width=200)
@@ -106,9 +103,6 @@ class GameLauncher(ctk.CTk):
         # # Opt Behav
         ctk.CTkLabel(self.optionbar, text="\nJáték indításakor:").pack(padx=5, anchor="w")
         self.behavior_radio_var = ctk.StringVar(value=self.settings["settings"]["behavior"])
-        self.behavior_nothing = ctk.CTkRadioButton(self.optionbar, text="semmi",
-                                                   value="nothing", variable=self.behavior_radio_var)
-        self.behavior_nothing.pack(padx=5, pady=5, anchor="w")
         self.behavior_close = ctk.CTkRadioButton(self.optionbar, text="bezárás",
                                                  value="close", variable=self.behavior_radio_var)
         self.behavior_close.pack(padx=5, pady=5, anchor="w")
@@ -207,19 +201,20 @@ class GameLauncher(ctk.CTk):
             btn.wid = "gbtn"
 
     def upd_stats(self):
-        self.cpu_usage = psutil.cpu_percent(interval=1)
-        self.ram_usage = psutil.virtual_memory().percent
-        self.disk_usage = psutil.disk_usage('C:').percent
-        self.cpu_bar.set(self.cpu_usage / 100)
-        self.ram_bar.set(self.ram_usage / 100)
-        self.disk_bar.set(self.disk_usage / 100)
-        self.cpu_bar.configure(progress_color="salmon" if self.cpu_usage > 75
-                               else "medium sea green")
-        self.ram_bar.configure(progress_color="salmon" if self.ram_usage > 75
-                               else "medium sea green")
-        self.disk_bar.configure(progress_color="salmon" if self.disk_usage > 75
-                                else "medium sea green")
-        self.after(3000, self.upd_stats)
+        if not self.game_running:
+            cpu_usage = psutil.cpu_percent(interval=None)
+            ram_usage = psutil.virtual_memory().percent
+            disk_usage = psutil.disk_usage('C:').percent
+            self.cpu_bar.set(cpu_usage / 100)
+            self.ram_bar.set(ram_usage / 100)
+            self.disk_bar.set(disk_usage / 100)
+            self.cpu_bar.configure(progress_color="salmon" if cpu_usage > 75
+                                   else "medium sea green")
+            self.ram_bar.configure(progress_color="salmon" if ram_usage > 75
+                                   else "medium sea green")
+            self.disk_bar.configure(progress_color="salmon" if disk_usage > 75
+                                    else "medium sea green")
+            self.after(1500, self.upd_stats)
 
     def add_game(self):
         name = simpledialog.askstring("Játék neve", "Adja meg a játék nevét:")
@@ -284,9 +279,7 @@ class GameLauncher(ctk.CTk):
                 path = self.game_list[self.curr_game]["path"]
                 if path.exists(res_path(path)):
                     self.game_running = True
-                    if self.behavior_radio_var == "nothing":
-                        threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
-                    elif self.behavior_radio_var == "close":
+                    if self.behavior_radio_var == "close":
                         os.startfile(path)
                         self.destroy()
                     elif self.behavior_radio_var == "minimize":
