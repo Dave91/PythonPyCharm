@@ -312,7 +312,7 @@ class GameLauncher(ctk.CTk):
 
     def wait_game_end(self, path):
         try:
-            game_proc = subprocess.Popen(res_path(path))
+            game_proc = subprocess.Popen(path)
             game_proc.wait()
         except Exception as e:
             print(f"Hiba a játék futtatásakor: {e}")
