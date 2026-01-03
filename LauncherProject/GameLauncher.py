@@ -262,7 +262,10 @@ class GameLauncher(ctk.CTk):
         except Exception as e:
             print(f"Hiba a háttér betöltésekor: {e}")
         last_played = self.game_list[name]["last_played"]
-        self.title_label.configure(text=f"{name}\n(legutóbb játszva: {last_played})")
+        total_playtime = self.game_list[name]["total_playtime"] // 3600
+        self.title_label.configure(text=f"{name}\n"
+                                        f"(legutóbb játszva: {last_played})\n"
+                                        f"(játékidő: {total_playtime}ó)")
         self.launch_btn.pack(pady=10)
         self.add_bg_btn.pack(padx=5, pady=5, side="bottom", anchor="se")
         self.new_todo_btn.pack(padx=5, pady=5, side="bottom", anchor="sw")
@@ -296,12 +299,13 @@ class GameLauncher(ctk.CTk):
                         self.upd_last_played()
                         self.show_game(self.curr_game)
                     elif behavior == "metrics":
-                        start_time = datetime.now()
+                        start_time = datetime.now().timestamp()
                         self.iconify()
                         threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
                         self.deiconify()
                         self.upd_last_played()
-                        self.get_playtime(start_time)
+                        self.upd_playtime(start_time)
+                        self.show_game(self.curr_game)
             except Exception as e:
                 print(f"Hiba a játék indításakor: {e}")
 
@@ -319,13 +323,12 @@ class GameLauncher(ctk.CTk):
         self.game_list[self.curr_game]["last_played"] = last_played
         self.save_data()
 
-    def get_playtime(self, start_time):
-        end_time = datetime.now()
-        played_time = (end_time - start_time) / 60  # in minutes
+    def upd_playtime(self, start_time):
+        end_time = datetime.now().timestamp()
+        played_time = round(end_time - start_time)
         curr_total_playtime = self.game_list[self.curr_game]["total_playtime"]
         self.game_list[self.curr_game]["total_playtime"] = curr_total_playtime + played_time
         self.save_data()
-        self.show_game(self.curr_game)
 
     def add_bg(self):
         if self.curr_game:
