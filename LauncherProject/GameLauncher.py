@@ -285,27 +285,26 @@ class GameLauncher(ctk.CTk):
         if self.curr_game:
             try:
                 path = self.game_list[self.curr_game]["path"]
-                if res_path(path):
-                    behavior = self.behavior_radio_var.get()
-                    self.game_running = True
-                    if behavior == "close":
-                        os.startfile(path)
-                        self.upd_last_played()
-                        self.destroy()
-                    elif behavior == "minimize":
-                        self.iconify()
-                        threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
-                        self.deiconify()
-                        self.upd_last_played()
-                        self.show_game(self.curr_game)
-                    elif behavior == "metrics":
-                        start_time = datetime.now().timestamp()
-                        self.iconify()
-                        threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
-                        self.deiconify()
-                        self.upd_last_played()
-                        self.upd_playtime(start_time)
-                        self.show_game(self.curr_game)
+                behavior = self.behavior_radio_var.get()
+                self.game_running = True
+                if behavior == "close":
+                    os.startfile(path)
+                    self.upd_last_played()
+                    self.destroy()
+                if behavior == "minimize":
+                    self.iconify()
+                    threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
+                    self.deiconify()
+                    self.upd_last_played()
+                    self.show_game(self.curr_game)
+                if behavior == "metrics":
+                    start_time = datetime.now().timestamp()
+                    self.iconify()
+                    threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
+                    self.deiconify()
+                    self.upd_last_played()
+                    self.upd_playtime(start_time)
+                    self.show_game(self.curr_game)
             except Exception as e:
                 print(f"Hiba a játék indításakor: {e}")
 
