@@ -28,7 +28,7 @@ class GameLauncher(ctk.CTk):
         self.geometry("1200x600")
         # self.resizable(False, False)
         self.bind("<Configure>", self.resize_bg)
-        self.protocol("WM_DELETE_WINDOW", self.save_data)
+        self.protocol("WM_DELETE_WINDOW", self.close_app)
 
         # init, vars
         self.game_list = {}
@@ -143,7 +143,7 @@ class GameLauncher(ctk.CTk):
         self.bg_label.place(relx=0.5, rely=0.5, anchor="center")
 
         self.title_label = ctk.CTkLabel(self.main_view, text="Válassz játékot...",
-                                        font=("Arial", 20, "bold"))
+                                        font=("Arial", 16, "bold"))
         self.title_label.pack(pady=20)
         pywinstyles.set_opacity(widget=self.title_label, value=0.6, color="#000001")
 
@@ -290,17 +290,19 @@ class GameLauncher(ctk.CTk):
                 if behavior == "close":
                     os.startfile(path)
                     self.upd_last_played()
-                    self.destroy()
-                if behavior == "minimize":
+                    self.close_app()
+                elif behavior == "minimize":
                     self.iconify()
-                    threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
+                    # threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
+                    self.wait_game_end(path)
                     self.deiconify()
                     self.upd_last_played()
                     self.show_game(self.curr_game)
-                if behavior == "metrics":
+                elif behavior == "metrics":
                     start_time = datetime.now().timestamp()
                     self.iconify()
-                    threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
+                    # threading.Thread(target=self.wait_game_end, args=(path,), daemon=True).start()
+                    self.wait_game_end(path)
                     self.deiconify()
                     self.upd_last_played()
                     self.upd_playtime(start_time)
@@ -383,9 +385,12 @@ class GameLauncher(ctk.CTk):
                                              "behavior": self.behavior_radio_var.get(),
                                              "orderby": self.orderby_radio_var.get()}
                 json.dump(self.settings, f, indent=4)
-            self.destroy()
         except Exception as e:
             print(f"Hiba az adatok mentésekor: {e}")
+
+    def close_app(self):
+        self.save_data()
+        self.destroy()
 
 
 if __name__ == "__main__":
