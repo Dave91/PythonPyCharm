@@ -2,7 +2,7 @@ import json
 import os
 import subprocess
 import sys
-import threading
+# import threading
 from datetime import datetime
 from tkinter import filedialog, simpledialog
 
@@ -10,6 +10,7 @@ import customtkinter as ctk
 import psutil
 import pywinstyles
 from PIL import Image
+# from tkinterweb import HtmlFrame
 
 
 def res_path(rel_path):
@@ -36,7 +37,8 @@ class GameLauncher(ctk.CTk):
         self.load_data()
         self.curr_game = None
         self.curr_bg_img = None
-        self.todo_visible = False
+        self.todos_visible = False
+        # self.mods_visible = False
         self.game_running = False
         self.net_sent, self.net_recv = psutil.net_io_counters()[:2]
 
@@ -49,7 +51,7 @@ class GameLauncher(ctk.CTk):
         self.add_game_btn.pack(pady=5, padx=5)
 
         self.orderby_radio_var = ctk.StringVar(value=self.settings["settings"]["orderby"])
-        self.draw_game_btns()
+        self.draw_game_btns()  # orderby var needed here for draw game btns func
 
         # Stats
         self.stats_frame = ctk.CTkFrame(self.sidebar)
@@ -150,6 +152,10 @@ class GameLauncher(ctk.CTk):
         self.launch_btn = ctk.CTkButton(self.main_view, text="INDÍTÁS", fg_color="green",
                                         command=self.launch_game)
 
+        """self.toggle_mods_btn = ctk.CTkButton(self.main_view, text="Modok mutatása",
+                                             command=self.toggle_mods, fg_color="gray",
+                                             hover_color="#3d3d3d")"""
+
         self.add_bg_btn = ctk.CTkButton(self.main_view, text="+ Háttér hozzáadása/cseréje",
                                         fg_color="gray", command=self.add_bg)
 
@@ -161,6 +167,8 @@ class GameLauncher(ctk.CTk):
                                           fg_color="gray", command=self.new_todo)
 
         self.todo_frame = ctk.CTkScrollableFrame(self.main_view, label_text="Küldetések")
+
+        # self.mods_frame = HtmlFrame(self.main_view)
 
     def load_data(self):
         try:
@@ -245,8 +253,10 @@ class GameLauncher(ctk.CTk):
 
     def show_game(self, name):
         self.curr_game = name
-        self.todo_visible = True
+        self.todos_visible = True
+        # self.mods_visible = True
         self.toggle_todos()
+        # self.toggle_mods()
         try:
             bg_path = self.game_list[name]["background"]
             if bg_path and os.path.exists(res_path(bg_path)):
@@ -268,10 +278,13 @@ class GameLauncher(ctk.CTk):
                                         f"(játékidő: {total_playtime}ó)")
         self.launch_btn.pack(pady=10)
         self.add_bg_btn.pack(padx=5, pady=5, side="bottom", anchor="se")
-        self.new_todo_btn.pack(padx=5, pady=5, side="bottom", anchor="sw")
-        self.toggle_btn.pack(padx=5, pady=5, side="bottom", anchor="sw")
-        if self.todo_visible:
+        self.new_todo_btn.pack(padx=5, pady=2, side="bottom", anchor="sw")
+        # self.toggle_mods_btn.pack(padx=5, pady=2, side="bottom", anchor="se")
+        self.toggle_btn.pack(padx=5, pady=2, side="bottom", anchor="sw")
+        if self.todos_visible:
             self.todo_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        """if self.mods_visible:
+            self.mods_frame.pack(fill="both", expand=True, padx=20, pady=10)"""
 
     def resize_bg(self, event):
         if self.curr_game and hasattr(self, 'curr_bg_img'):
@@ -347,21 +360,21 @@ class GameLauncher(ctk.CTk):
             if task:
                 self.game_list[self.curr_game]["todos"].append(task)
                 self.save_data()
-                if self.todo_visible:
-                    self.refresh_todos()
+                if self.todos_visible:
+                    self.upd_todos()
 
     def toggle_todos(self):
-        if self.todo_visible:
+        if self.todos_visible:
             self.todo_frame.pack_forget()
             self.toggle_btn.configure(text="Küldetések mutatása")
-            self.todo_visible = False
+            self.todos_visible = False
         else:
             self.todo_frame.pack(fill="both", expand=True, padx=20, pady=10)
             self.toggle_btn.configure(text="Küldetések elrejtése")
-            self.refresh_todos()
-            self.todo_visible = True
+            self.upd_todos()
+            self.todos_visible = True
 
-    def refresh_todos(self):
+    def upd_todos(self):
         for widget in self.todo_frame.winfo_children():
             widget.destroy()
 
@@ -374,7 +387,23 @@ class GameLauncher(ctk.CTk):
         if self.curr_game:
             self.game_list[self.curr_game]["todos"].remove(task)
             self.save_data()
-            self.refresh_todos()
+            self.upd_todos()
+
+    """def toggle_mods(self):
+        if self.mods_visible:
+            self.mods_frame.pack_forget()
+            self.toggle_mods_btn.configure(text="Modok mutatása")
+            self.mods_visible = False
+        else:
+            self.mods_frame.pack(fill="both", expand=True, padx=20, pady=10)
+            self.toggle_mods_btn.configure(text="Modok elrejtése")
+            self.upd_mods()
+            self.mods_visible = True
+
+    def upd_mods(self):
+        game_name_str = self.curr_game.lower().replace(" ", "+")
+        self.mods_frame.load_website(
+            f"https://www.nexusmods.com/mods?keyword={game_name_str}&sort=downloads")"""
 
     def save_data(self):
         try:

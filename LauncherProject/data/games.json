@@ -3,6 +3,7 @@
         "path": "D:/GOG Games/Dragon Age Origins/DAOriginsLauncher.exe",
         "background": "assets/daobg.jpg",
         "todos": [],
+        "mods_url": "",
         "last_played": "2026-01-03",
         "total_playtime": 66
     },
@@ -10,6 +11,7 @@
         "path": "D:/GOG Games/Grim Dawn/Grim Dawn.exe",
         "background": "assets/gdbg.jpg",
         "todos": [],
+        "mods_url": "",
         "last_played": "2025-12-28",
         "total_playtime": 0
     },
@@ -17,6 +19,7 @@
         "path": "C:/Program Files (x86)/Steam/steamapps/common/Mass Effect Legendary Edition/Game/Launcher/MassEffectLauncher.exe",
         "background": "D:/Documents/PyCharmProjects/LauncherProject/assets/melebg.jpg",
         "todos": [],
+        "mods_url": "",
         "last_played": "2024-06-01",
         "total_playtime": 0
     },
@@ -26,6 +29,7 @@
         "todos": [
             "Join the Dark Brotherhood"
         ],
+        "mods_url": "",
         "last_played": "2024-06-01",
         "total_playtime": 0
     },
@@ -33,10 +37,9 @@
         "path": "D:/GOG Games/The Witcher 2/Launcher.exe",
         "background": "assets/witcher2bg.jpg",
         "todos": [
-            "Collect all resources",
-            "Complete Virmire",
             "Cross the Mist (haunted battlefield)"
         ],
+        "mods_url": "",
         "last_played": "2026-01-02",
         "total_playtime": 0
     },
@@ -44,6 +47,7 @@
         "path": "C:/Games/The Witcher 3 - Wild Hunt/bin/x64/witcher3.exe",
         "background": "assets/witcher3bg.jpg",
         "todos": [],
+        "mods_url": "",
         "last_played": "2024-06-01",
         "total_playtime": 0
     }
