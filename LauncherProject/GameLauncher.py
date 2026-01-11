@@ -9,8 +9,10 @@ from tkinter import filedialog, simpledialog
 import customtkinter as ctk
 import psutil
 import pywinstyles
+import requests
 from PIL import Image
-# from tkinterweb import HtmlFrame
+from tkinterweb import HtmlFrame
+# from dotenv import load_dotenv, set_key
 
 
 def res_path(rel_path):
@@ -34,11 +36,13 @@ class GameLauncher(ctk.CTk):
         # init, vars
         self.game_list = {}
         self.settings = {}
+        # self.api_key = ""  # planned: nexusmods api key save/load with dotenv
+        # self.mods_list = []
         self.load_data()
         self.curr_game = None
         self.curr_bg_img = None
         self.todos_visible = False
-        # self.mods_visible = False
+        self.mods_visible = False
         self.game_running = False
         self.net_sent, self.net_recv = psutil.net_io_counters()[:2]
 
@@ -166,9 +170,17 @@ class GameLauncher(ctk.CTk):
         self.new_todo_btn = ctk.CTkButton(self.main_view, text="+ Új küldetés",
                                           fg_color="gray", command=self.new_todo)
 
-        self.todo_frame = ctk.CTkScrollableFrame(self.main_view, label_text="Küldetések")
+        self.todo_mods_frame = ctk.CTkScrollableFrame(self.main_view, label_text="Küldetések")
 
-        # self.mods_frame = HtmlFrame(self.main_view)
+        self.html_frame = HtmlFrame(self.main_view)
+        self.html_frame.load_website("https://www.moddb.com/mods/latest")
+        self.html_frame.pack(fill="both", expand=True)
+
+    """def get_api_key(self):
+        if not self.api_key:
+            key = simpledialog.askstring("API kulcs", "Adja meg a NexusMods API kulcsát:")
+            if key:
+                self.api_key = key"""
 
     def load_data(self):
         try:
@@ -178,10 +190,9 @@ class GameLauncher(ctk.CTk):
                     self.game_list = json.load(f)
                 with open(res_path("data/settings.json"), "r", encoding="utf-8") as f:
                     self.settings = json.load(f)
+                # self.get_api_key()
         except Exception as e:
             print(f"Hiba az adatok betöltésekor: {e}")
-            self.game_list = {}
-            self.settings = {}
 
     def order_game_list(self):
         orderby = self.orderby_radio_var.get()
@@ -257,6 +268,7 @@ class GameLauncher(ctk.CTk):
         # self.mods_visible = True
         self.toggle_todos()
         # self.toggle_mods()
+        self.html_frame.destroy()
         try:
             bg_path = self.game_list[name]["background"]
             if bg_path and os.path.exists(res_path(bg_path)):
@@ -281,10 +293,8 @@ class GameLauncher(ctk.CTk):
         self.new_todo_btn.pack(padx=5, pady=2, side="bottom", anchor="sw")
         # self.toggle_mods_btn.pack(padx=5, pady=2, side="bottom", anchor="se")
         self.toggle_btn.pack(padx=5, pady=2, side="bottom", anchor="sw")
-        if self.todos_visible:
-            self.todo_frame.pack(fill="both", expand=True, padx=20, pady=10)
-        """if self.mods_visible:
-            self.mods_frame.pack(fill="both", expand=True, padx=20, pady=10)"""
+        if self.todos_visible or self.mods_visible:
+            self.todo_mods_frame.pack(fill="both", expand=True, padx=20, pady=10)
 
     def resize_bg(self, event):
         if self.curr_game and hasattr(self, 'curr_bg_img'):
@@ -365,21 +375,20 @@ class GameLauncher(ctk.CTk):
 
     def toggle_todos(self):
         if self.todos_visible:
-            self.todo_frame.pack_forget()
+            self.todo_mods_frame.pack_forget()
             self.toggle_btn.configure(text="Küldetések mutatása")
             self.todos_visible = False
         else:
-            self.todo_frame.pack(fill="both", expand=True, padx=20, pady=10)
+            self.todo_mods_frame.pack(fill="both", expand=True, padx=20, pady=10)
             self.toggle_btn.configure(text="Küldetések elrejtése")
             self.upd_todos()
             self.todos_visible = True
 
     def upd_todos(self):
-        for widget in self.todo_frame.winfo_children():
+        for widget in self.todo_mods_frame.winfo_children():
             widget.destroy()
-
         for task in self.game_list[self.curr_game]["todos"]:
-            cb = ctk.CTkCheckBox(self.todo_frame, text=task,
+            cb = ctk.CTkCheckBox(self.todo_mods_frame, text=task,
                                  command=lambda t=task: self.comp_todo(t))
             cb.pack(anchor="w", pady=5)
 
@@ -391,19 +400,37 @@ class GameLauncher(ctk.CTk):
 
     """def toggle_mods(self):
         if self.mods_visible:
-            self.mods_frame.pack_forget()
+            self.todo_mods_frame.pack_forget()
             self.toggle_mods_btn.configure(text="Modok mutatása")
             self.mods_visible = False
         else:
-            self.mods_frame.pack(fill="both", expand=True, padx=20, pady=10)
+            self.todo_mods_frame.pack(fill="both", expand=True, padx=20, pady=10)
             self.toggle_mods_btn.configure(text="Modok elrejtése")
             self.upd_mods()
-            self.mods_visible = True
+            self.mods_visible = True"""
 
-    def upd_mods(self):
-        game_name_str = self.curr_game.lower().replace(" ", "+")
-        self.mods_frame.load_website(
-            f"https://www.nexusmods.com/mods?keyword={game_name_str}&sort=downloads")"""
+    """def get_mod_data(self, game):
+        if self.api_key:
+            game_name = game.lower().replace(" ", "")
+            try:
+                url = f"https://api.nexusmods.com/v1/games/{game_name}/mods/latest_added.json"
+                headers = {"apikey": self.api_key}
+                response = requests.get(url, headers=headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.mods_list = data[:10]
+                else:
+                    print(f"Hiba a modok lekérésekor: {response.status_code}")
+            except Exception as e:
+                print(f"Hiba a modok lekérésekor: {e}")"""
+
+    """def upd_mods(self):
+        for widget in self.todo_mods_frame.winfo_children():
+            widget.destroy()
+        self.get_mod_data(self.curr_game)
+        for mod in self.mods_list:
+            mlab = ctk.CTkLabel(self.todo_mods_frame, text=mod["name"])
+            mlab.pack(anchor="w", pady=5)"""
 
     def save_data(self):
         try:
