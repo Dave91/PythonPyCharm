@@ -2,6 +2,7 @@
     "settings": {
         "theme": "system",
         "behavior": "close",
-        "orderby": "name"
+        "orderby": "name",
+        "api_key": ""
     }
 }

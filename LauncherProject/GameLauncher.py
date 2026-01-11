@@ -4,15 +4,14 @@ import subprocess
 import sys
 # import threading
 from datetime import datetime
-from tkinter import filedialog, simpledialog
+from tkinter import filedialog, simpledialog, messagebox
 
 import customtkinter as ctk
 import psutil
 import pywinstyles
 import requests
 from PIL import Image
-from tkinterweb import HtmlFrame
-# from dotenv import load_dotenv, set_key
+# from tkinterweb import HtmlFrame
 
 
 def res_path(rel_path):
@@ -36,8 +35,8 @@ class GameLauncher(ctk.CTk):
         # init, vars
         self.game_list = {}
         self.settings = {}
-        # self.api_key = ""  # planned: nexusmods api key save/load with dotenv
-        # self.mods_list = []
+        self.nexus_games = []
+        self.mods_list = []
         self.load_data()
         self.curr_game = None
         self.curr_bg_img = None
@@ -51,11 +50,17 @@ class GameLauncher(ctk.CTk):
         self.sidebar.pack(side="left", fill="y", padx=10, pady=10)
 
         self.add_game_btn = ctk.CTkButton(self.sidebar, text="+ játék hozzáadása",
-                                          fg_color="gray", command=self.add_game)
+                                          fg_color="gray",
+                                          command=lambda: self.games_optbtn.place(anchor="nw", x=10, y=5))
         self.add_game_btn.pack(pady=5, padx=5)
 
         self.orderby_radio_var = ctk.StringVar(value=self.settings["settings"]["orderby"])
         self.draw_game_btns()  # orderby var needed here for draw game btns func
+
+        self.games_optbtn_var = ctk.StringVar(value="Válassz...")
+        self.games_optbtn = ctk.CTkOptionMenu(self.sidebar, variable=self.games_optbtn_var,
+                                              values=self.nexus_games,
+                                              command=lambda v: self.add_game())
 
         # Stats
         self.stats_frame = ctk.CTkFrame(self.sidebar)
@@ -156,9 +161,9 @@ class GameLauncher(ctk.CTk):
         self.launch_btn = ctk.CTkButton(self.main_view, text="INDÍTÁS", fg_color="green",
                                         command=self.launch_game)
 
-        """self.toggle_mods_btn = ctk.CTkButton(self.main_view, text="Modok mutatása",
+        self.toggle_mods_btn = ctk.CTkButton(self.main_view, text="Modok mutatása",
                                              command=self.toggle_mods, fg_color="gray",
-                                             hover_color="#3d3d3d")"""
+                                             hover_color="#3d3d3d")
 
         self.add_bg_btn = ctk.CTkButton(self.main_view, text="+ Háttér hozzáadása/cseréje",
                                         fg_color="gray", command=self.add_bg)
@@ -172,15 +177,38 @@ class GameLauncher(ctk.CTk):
 
         self.todo_mods_frame = ctk.CTkScrollableFrame(self.main_view, label_text="Küldetések")
 
-        self.html_frame = HtmlFrame(self.main_view)
+        """self.html_frame = HtmlFrame(self.main_view)
         self.html_frame.load_website("https://www.moddb.com/mods/latest")
-        self.html_frame.pack(fill="both", expand=True)
+        self.html_frame.pack(fill="both", expand=True)"""
 
-    """def get_api_key(self):
-        if not self.api_key:
-            key = simpledialog.askstring("API kulcs", "Adja meg a NexusMods API kulcsát:")
-            if key:
-                self.api_key = key"""
+    def get_api_key(self):
+        api_key = self.settings["settings"]["api_key"]
+        if not api_key:
+            api_key = simpledialog.askstring("Nexus Mods API kulcs",
+                                             "Adja meg a Nexus Mods API kulcsát:\n"
+                                             "(Regisztráció szükséges a https://www.nexusmods.com/ oldalon)")
+            if api_key:
+                self.settings["settings"]["api_key"] = api_key
+                self.save_data()
+            else:
+                messagebox.showwarning("Figyelem",
+                                       "Nexus Mods API kulcs nélkül a modlista funkció nem lesz elérhető!")
+                return
+
+    def get_nexus_games(self):
+        api_key = self.settings["settings"]["api_key"]
+        if api_key:
+            try:
+                url = "https://api.nexusmods.com/v1/games.json"
+                headers = {"apikey": api_key}
+                response = requests.get(url, headers=headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.nexus_games = [game["name"] for game in data]
+                else:
+                    print(f"Hiba a játéklista lekérésekor: {response.status_code}")
+            except Exception as e:
+                print(f"Hiba a játéklista lekérésekor: {e}")
 
     def load_data(self):
         try:
@@ -190,7 +218,8 @@ class GameLauncher(ctk.CTk):
                     self.game_list = json.load(f)
                 with open(res_path("data/settings.json"), "r", encoding="utf-8") as f:
                     self.settings = json.load(f)
-                # self.get_api_key()
+                self.get_api_key()
+                self.get_nexus_games()
         except Exception as e:
             print(f"Hiba az adatok betöltésekor: {e}")
 
@@ -241,11 +270,14 @@ class GameLauncher(ctk.CTk):
             self.after(1500, self.upd_stats)
 
     def add_game(self):
-        name = simpledialog.askstring("Játék neve", "Adja meg a játék nevét:")
+        self.games_optbtn.place(anchor="nw", x=10, y=5)
+        # name = simpledialog.askstring("Játék neve", "Adja meg a játék nevét:")
+        name = self.games_optbtn_var.get()
         path = filedialog.askopenfilename(title="Válassza ki a játék futtatható fájlját")
         bg_path = filedialog.askopenfilename(title="Válasszon háttérképet",
                                              initialdir=res_path("assets/"),
                                              filetypes=[("Képfájlok", "*.jpg *.png *.jpeg")])
+        self.games_optbtn.place_forget()
         if name and path:
             self.game_list[name] = {"path": path, "background": bg_path, "todos": [],
                                     "last_played": "", "total_playtime": 0}
@@ -265,10 +297,10 @@ class GameLauncher(ctk.CTk):
     def show_game(self, name):
         self.curr_game = name
         self.todos_visible = True
-        # self.mods_visible = True
+        self.mods_visible = True
         self.toggle_todos()
-        # self.toggle_mods()
-        self.html_frame.destroy()
+        self.toggle_mods()
+        # self.html_frame.destroy()
         try:
             bg_path = self.game_list[name]["background"]
             if bg_path and os.path.exists(res_path(bg_path)):
@@ -291,7 +323,7 @@ class GameLauncher(ctk.CTk):
         self.launch_btn.pack(pady=10)
         self.add_bg_btn.pack(padx=5, pady=5, side="bottom", anchor="se")
         self.new_todo_btn.pack(padx=5, pady=2, side="bottom", anchor="sw")
-        # self.toggle_mods_btn.pack(padx=5, pady=2, side="bottom", anchor="se")
+        self.toggle_mods_btn.pack(padx=5, pady=2, side="bottom", anchor="se")
         self.toggle_btn.pack(padx=5, pady=2, side="bottom", anchor="sw")
         if self.todos_visible or self.mods_visible:
             self.todo_mods_frame.pack(fill="both", expand=True, padx=20, pady=10)
@@ -398,7 +430,7 @@ class GameLauncher(ctk.CTk):
             self.save_data()
             self.upd_todos()
 
-    """def toggle_mods(self):
+    def toggle_mods(self):
         if self.mods_visible:
             self.todo_mods_frame.pack_forget()
             self.toggle_mods_btn.configure(text="Modok mutatása")
@@ -407,14 +439,15 @@ class GameLauncher(ctk.CTk):
             self.todo_mods_frame.pack(fill="both", expand=True, padx=20, pady=10)
             self.toggle_mods_btn.configure(text="Modok elrejtése")
             self.upd_mods()
-            self.mods_visible = True"""
+            self.mods_visible = True
 
-    """def get_mod_data(self, game):
-        if self.api_key:
+    def get_mod_data(self, game):
+        api_key = self.settings["settings"]["api_key"]
+        if api_key:
             game_name = game.lower().replace(" ", "")
             try:
                 url = f"https://api.nexusmods.com/v1/games/{game_name}/mods/latest_added.json"
-                headers = {"apikey": self.api_key}
+                headers = {"apikey": api_key}
                 response = requests.get(url, headers=headers)
                 if response.status_code == 200:
                     data = response.json()
@@ -422,15 +455,15 @@ class GameLauncher(ctk.CTk):
                 else:
                     print(f"Hiba a modok lekérésekor: {response.status_code}")
             except Exception as e:
-                print(f"Hiba a modok lekérésekor: {e}")"""
+                print(f"Hiba a modok lekérésekor: {e}")
 
-    """def upd_mods(self):
+    def upd_mods(self):
         for widget in self.todo_mods_frame.winfo_children():
             widget.destroy()
         self.get_mod_data(self.curr_game)
         for mod in self.mods_list:
             mlab = ctk.CTkLabel(self.todo_mods_frame, text=mod["name"])
-            mlab.pack(anchor="w", pady=5)"""
+            mlab.pack(anchor="w", pady=5)
 
     def save_data(self):
         try:
@@ -439,7 +472,8 @@ class GameLauncher(ctk.CTk):
             with open(res_path("data/settings.json"), "w", encoding="utf-8") as f:
                 self.settings["settings"] = {"theme": self.theme_radio_var.get(),
                                              "behavior": self.behavior_radio_var.get(),
-                                             "orderby": self.orderby_radio_var.get()}
+                                             "orderby": self.orderby_radio_var.get(),
+                                             "api_key": ""}
                 json.dump(self.settings, f, indent=4)
         except Exception as e:
             print(f"Hiba az adatok mentésekor: {e}")
