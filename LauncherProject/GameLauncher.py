@@ -196,7 +196,7 @@ class GameLauncher(ctk.CTk):
                 return
 
     def get_nexus_games(self):
-        api_key = self.settings["settings"]["api_key"]
+        api_key = self.settings["settings"]["api_key"] 
         if api_key:
             try:
                 url = "https://api.nexusmods.com/v1/games.json"
