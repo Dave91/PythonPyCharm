@@ -1,6 +1,7 @@
 import bisect
 import os
 import tkinter as tk
+from logging import exception
 from tkinter import ttk, filedialog, messagebox
 
 from pypdf import PdfReader, PdfWriter
@@ -82,7 +83,11 @@ class PdfToolsApp:
         self.split_lbl.pack(pady=5)
 
         ttk.Button(self.tab_split, text="Fájl kiválasztása", command=self.select_split_file).pack(pady=5)
-        ttk.Button(self.tab_split, text="Oldalak szétválasztása (1 oldal/fájl)", command=self.split_pdf).pack(pady=20)
+        ttk.Label(self.tab_split, text="Hány oldalanként történjen darabolás?").pack(pady=5)
+        self.split_count = tk.IntVar()
+        self.split_count.set(1)
+        ttk.Entry(self.tab_split, textvariable=self.split_count, width=5).pack(pady=5)
+        ttk.Button(self.tab_split, text=f"PDF darabolása", command=self.split_pdf).pack(pady=20)
 
     def select_split_file(self):
         self.split_file = filedialog.askopenfilename(filetypes=[("PDF fájlok", "*.pdf")])
@@ -98,15 +103,31 @@ class PdfToolsApp:
         if not mappa: return
 
         try:
+            pages_per_file = self.split_count.get()
+            if pages_per_file <= 0:
+                messagebox.showwarning("Hiba", "Az oldalak száma legalább 1 kell legyen!")
+                return
+
             reader = PdfReader(self.split_file)
             alapnev = os.path.splitext(os.path.basename(self.split_file))[0]
+            total_pages = len(reader.pages)
+            if total_pages <= pages_per_file:
+                messagebox.showwarning("Hiba", "A PDF oldalainak száma kisebb, mint a darabolási egység!")
+                return
+            file_index = 1
 
-            for i, page in enumerate(reader.pages):
+            for start_page in range(0, total_pages, pages_per_file):
                 writer = PdfWriter()
-                writer.add_page(page)
-                kimenet = os.path.join(mappa, f"{alapnev}_oldal_{i + 1}.pdf")
+                end_page = min(start_page + pages_per_file, total_pages)
+
+                for page_num in range(start_page, end_page):
+                    writer.add_page(reader.pages[page_num])
+
+                kimenet = os.path.join(mappa, f"{alapnev}_rész_{file_index}.pdf")
                 with open(kimenet, "wb") as f:
                     writer.write(f)
+
+                file_index += 1
 
             messagebox.showinfo("","A fájl sikeresen szétválasztva!")
         except Exception as e:
