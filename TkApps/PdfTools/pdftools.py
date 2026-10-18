@@ -1,32 +1,51 @@
 import bisect
+import hashlib
 import os
 import tkinter as tk
-from logging import exception
 from tkinter import ttk, filedialog, messagebox
 
-from pypdf import PdfReader, PdfWriter
+import pymupdf
 
 
 class PdfToolsApp:
     def __init__(self, window):
+        self.images_file_lbl = None
+        self.min_image_side = None
+        self.min_image_pixels = None
+        self.images_file = None
+        self.selected_listbox = None
+        self.available_listbox = None
+        self.edit_lbl = None
+        self.available_pages = None
+        self.edit_pages = None
+        self.edit_file = None
+        self.split_count = None
+        self.split_lbl = None
+        self.split_file = None
+        self.merge_files = None
+        self.merge_listbox = None
+
         self.root = window
         self.root.title("PdfTools - Merging, Splitting & Editing PDFs")
         self.root.geometry("640x420")
 
-        self.notebook = ttk.Notebook(root)
+        self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(padx=10, pady=10, expand=True, fill="both")
 
         self.tab_merge = ttk.Frame(self.notebook)
         self.tab_split = ttk.Frame(self.notebook)
         self.tab_edit = ttk.Frame(self.notebook)
+        self.tab_images = ttk.Frame(self.notebook)
 
         self.notebook.add(self.tab_merge, text="Merge")
         self.notebook.add(self.tab_split, text="Split")
         self.notebook.add(self.tab_edit, text="Edit")
+        self.notebook.add(self.tab_images, text="Images")
 
         self.setup_merge_tab()
         self.setup_split_tab()
         self.setup_edit_tab()
+        self.setup_images_tab()
 
     # --- ÖSSZEFŰZÉS (MERGE) ---
     def setup_merge_tab(self):
@@ -44,8 +63,8 @@ class PdfToolsApp:
         ttk.Button(self.tab_merge, text="PDF-ek Összefűzése", command=self.merge_pdfs).pack(pady=10)
 
     def add_merge_files(self):
-        fájlok = filedialog.askopenfilenames(filetypes=[("PDF fájlok", "*.pdf")])
-        for f in fájlok:
+        files = filedialog.askopenfilenames(filetypes=[("PDF fájlok", "*.pdf")])
+        for f in files:
             self.merge_files.append(f)
             self.merge_listbox.insert(tk.END, os.path.basename(f))
 
@@ -62,14 +81,11 @@ class PdfToolsApp:
         if not kimenet: return
 
         try:
-            writer = PdfWriter()
-            for pdf in self.merge_files:
-                reader = PdfReader(pdf)
-                for page in reader.pages:
-                    writer.add_page(page)
-
-            with open(kimenet, "wb") as f:
-                writer.write(f)
+            with pymupdf.open() as merged:
+                for pdf in self.merge_files:
+                    with pymupdf.open(pdf) as source:
+                        merged.insert_pdf(source)
+                merged.save(kimenet)
             messagebox.showinfo("","A PDF-ek sikeresen összefűzve!")
         except Exception as e:
             messagebox.showerror("",f"Hiba történt: {e}")
@@ -108,26 +124,21 @@ class PdfToolsApp:
                 messagebox.showwarning("Hiba", "Az oldalak száma legalább 1 kell legyen!")
                 return
 
-            reader = PdfReader(self.split_file)
-            alapnev = os.path.splitext(os.path.basename(self.split_file))[0]
-            total_pages = len(reader.pages)
-            if total_pages <= pages_per_file:
-                messagebox.showwarning("Hiba", "A PDF oldalainak száma kisebb, mint a darabolási egység!")
-                return
-            file_index = 1
+            with pymupdf.open(self.split_file) as source:
+                alapnev = os.path.splitext(os.path.basename(self.split_file))[0]
+                total_pages = source.page_count
+                if total_pages <= pages_per_file:
+                    messagebox.showwarning("Hiba", "A PDF oldalainak száma kisebb, mint a darabolási egység!")
+                    return
+                file_index = 1
 
-            for start_page in range(0, total_pages, pages_per_file):
-                writer = PdfWriter()
-                end_page = min(start_page + pages_per_file, total_pages)
-
-                for page_num in range(start_page, end_page):
-                    writer.add_page(reader.pages[page_num])
-
-                kimenet = os.path.join(mappa, f"{alapnev}_rész_{file_index}.pdf")
-                with open(kimenet, "wb") as f:
-                    writer.write(f)
-
-                file_index += 1
+                for start_page in range(0, total_pages, pages_per_file):
+                    end_page = min(start_page + pages_per_file, total_pages)
+                    kimenet = os.path.join(mappa, f"{alapnev}_rész_{file_index}.pdf")
+                    with pymupdf.open() as output:
+                        output.insert_pdf(source, from_page=start_page, to_page=end_page - 1)
+                        output.save(kimenet)
+                    file_index += 1
 
             messagebox.showinfo("","A fájl sikeresen szétválasztva!")
         except Exception as e:
@@ -193,11 +204,10 @@ class PdfToolsApp:
 
     def load_pdf_pages(self):
         try:
-            reader = PdfReader(self.edit_file)
+            with pymupdf.open(self.edit_file) as document:
+                page_count = document.page_count
             self.available_listbox.delete(0, tk.END)
             self.selected_listbox.delete(0, tk.END)
-
-            page_count = len(reader.pages)
             self.edit_pages = list(range(1, page_count + 1))
             self.available_pages = []
             self.refresh_page_lists()
@@ -266,8 +276,8 @@ class PdfToolsApp:
             messagebox.showwarning("", "Kérlek válassz ki egy PDF-et!")
             return
 
-        reader = PdfReader(self.edit_file)
-        page_count = len(reader.pages)
+        with pymupdf.open(self.edit_file) as document:
+            page_count = document.page_count
 
         self.edit_pages = list(range(1, page_count + 1))
         self.available_pages = []
@@ -279,8 +289,8 @@ class PdfToolsApp:
             self.edit_pages = []
             return
 
-        reader = PdfReader(self.edit_file)
-        page_count = len(reader.pages)
+        with pymupdf.open(self.edit_file) as document:
+            page_count = document.page_count
 
         self.available_pages = list(range(1, page_count + 1))
         self.edit_pages = []
@@ -300,18 +310,99 @@ class PdfToolsApp:
             return
 
         try:
-            reader = PdfReader(self.edit_file)
-            writer = PdfWriter()
-
-            for page_num in self.edit_pages:
-                writer.add_page(reader.pages[page_num - 1])
-
-            with open(kimenet, "wb") as f:
-                writer.write(f)
+            with pymupdf.open(self.edit_file) as source:
+                with pymupdf.open() as output:
+                    for page_num in self.edit_pages:
+                        page_index = page_num - 1
+                        output.insert_pdf(source, from_page=page_index, to_page=page_index)
+                    output.save(kimenet)
 
             messagebox.showinfo("", "A PDF sikeresen mentve!")
         except Exception as e:
             messagebox.showerror("", f"Hiba történt: {e}")
+
+    # --- KÉPEK KIMENTÉSE (EXTRACT IMG) ---
+    def setup_images_tab(self):
+        self.images_file = None
+        self.min_image_side = 100
+        self.min_image_pixels = 20_000
+        ttk.Label(self.tab_images, text="Select a PDF to extract images from:").pack(pady=10)
+
+        self.images_file_lbl = ttk.Label(self.tab_images, text="No file selected")
+        self.images_file_lbl.pack(pady=5)
+        ttk.Button(self.tab_images, text="Select PDF", command=self.select_images_file).pack(pady=5)
+
+        ttk.Label(
+            self.tab_images,
+            text=f"Images must be at least {self.min_image_side} px on each side "
+                 f"and {self.min_image_pixels:,} pixels total.",
+        ).pack(pady=5)
+        ttk.Button(self.tab_images, text="Extract Images", command=self.extract_images).pack(pady=10)
+
+    def select_images_file(self):
+        self.images_file = filedialog.askopenfilename(filetypes=[("PDF files", "*.pdf")])
+        if self.images_file:
+            self.images_file_lbl.config(text=os.path.basename(self.images_file))
+
+    def extract_images(self):
+        if not self.images_file:
+            messagebox.showwarning("No PDF selected", "Please select a PDF file first.")
+            return
+
+        output_dir = filedialog.askdirectory(title="Select an output folder")
+        if not output_dir:
+            return
+
+        try:
+            image_count = self.extract_pdf_images(self.images_file, output_dir)
+            if not image_count:
+                messagebox.showinfo("No images found", "No qualifying images were found in this PDF.")
+                return
+
+            messagebox.showinfo(
+                "Images extracted",
+                f"Saved {image_count} unique image(s) to:\n{output_dir}",
+            )
+        except Exception as e:
+            messagebox.showerror("Image extraction failed", f"Could not extract images: {e}")
+
+    def extract_pdf_images(self, pdf_path, output_dir):
+        extracted = []
+        seen_xrefs = set()
+        seen_digests = set()
+        with pymupdf.open(pdf_path) as document:
+            for page in document:
+                for image_info in page.get_images(full=True):
+                    xref, _, width, height = image_info[:4]
+                    if (
+                            xref <= 0
+                            or xref in seen_xrefs
+                            or width < self.min_image_side
+                            or height < self.min_image_side
+                            or width * height < self.min_image_pixels
+                    ):
+                        continue
+                    seen_xrefs.add(xref)
+                    image = document.extract_image(xref)
+                    data = image["image"]
+                    digest = hashlib.sha256(data).digest()
+                    if digest in seen_digests:
+                        continue
+                    seen_digests.add(digest)
+                    extracted.append((data, image["ext"]))
+
+        base_name = os.path.splitext(os.path.basename(pdf_path))[0]
+        for index, (data, extension) in enumerate(extracted, start=1):
+            output_name = f"{base_name}_image_{index}.{extension}"
+            output_path = os.path.join(output_dir, output_name)
+            duplicate_index = 2
+            while os.path.exists(output_path):
+                output_name = f"{base_name}_image_{index}_{duplicate_index}.{extension}"
+                output_path = os.path.join(output_dir, output_name)
+                duplicate_index += 1
+            with open(output_path, "wb") as image_file:
+                image_file.write(data)
+        return len(extracted)
 
 
 if __name__ == "__main__":

@@ -1,11 +1,15 @@
+import hashlib
 import os
 import sys
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter.filedialog import askopenfile, asksaveasfile
 
-import PyPDF2
+import pymupdf
 from PIL import Image, ImageTk
+
+MIN_IMAGE_SIDE = 100
+MIN_IMAGE_PIXELS = 20_000
 
 
 def res_path(rel_path):
@@ -94,13 +98,11 @@ class ExtractText(tk.Frame):
             self.stat_txt.set("Loading file...")
             self.update_idletasks()
             try:
-                read_pdf = PyPDF2.PdfReader(file)
                 self.txt_box.delete(1.0, "end")
-                p_num = len(read_pdf.pages)
-                for p in range(p_num):
-                    get_p = read_pdf.pages[p]
-                    p_cont = get_p.extract_text()
-                    self.txt_box.insert(1.0, p_cont)
+                with pymupdf.open(file.name) as document:
+                    p_num = document.page_count
+                    for page in document:
+                        self.txt_box.insert("end", page.get_text())
                 self.txt_box.tag_configure("center", justify="center")
                 self.txt_box.tag_add("center", 1.0, "end")
                 fn = file.name
@@ -108,9 +110,13 @@ class ExtractText(tk.Frame):
                 if len(self.txt_box.get(1.0, "end")) > 1:
                     self.copyall_btn.configure(state="normal")
                     self.save_btn.configure(state="normal")
+                else:
+                    self.copyall_btn.configure(state="disabled")
+                    self.save_btn.configure(state="disabled")
+            except Exception as e:
+                self.stat_txt.set(f"File Error: selected file cannot be opened: {e}")
+            finally:
                 file.close()
-            except IOError:
-                self.stat_txt.set("File Error: selected file cannot be opened!")
 
     def save_file(self):
         file = asksaveasfile(parent=root, mode="wb", title="Save file as...",
@@ -145,6 +151,13 @@ class ExtractImage(tk.Frame):
         self.stat_txt.set("Select a PDF file to extract from")
         instr = tk.Label(self, textvariable=self.stat_txt, font="Corbel", bg="lightblue3")
         instr.pack(fill="x")
+        tk.Label(
+            self,
+            text=f"Only images at least {MIN_IMAGE_SIDE} px on each side "
+                 f"and {MIN_IMAGE_PIXELS:,} pixels total are included.",
+            font="Corbel",
+            bg="lightblue3",
+        ).pack(fill="x")
 
         btn_row = tk.Frame(self, bg="lightblue3")
         btn_row.pack(fill="x")
@@ -207,32 +220,35 @@ class ExtractImage(tk.Frame):
         return img
 
     @staticmethod
-    def ext_img(page):
-        if r"/Resources" in page and r"/XObject" in page[r"/Resources"]:
-            xobj = page[r"/Resources"][r"/XObject"].get_object()
-            for obj in xobj:
-                # print(xobj)
-                # print(obj)
-                if xobj[obj][r"/Subtype"] == r"/Image":
-                    image_object = xobj[obj]
-                    from io import BytesIO
-                    try:
-                        data = image_object.get_data()
-                        size = (image_object[r"/Width"], image_object[r"/Height"])
-                        if r"/Filter" in image_object:
-                            if image_object[r"/Filter"] == r"/DCTDecode":
-                                img = Image.open(BytesIO(data))
-                            else:
-                                if xobj[obj][r"/ColorSpace"] == r"/DeviceRGB":
-                                    img = Image.frombytes("RGB", size, data)
-                                else:
-                                    img = Image.frombytes("CMYK", size, data)
-                        # img = self.res_img(img)  # optional resizing?? here or during show_img
-                        return img
-                    except Exception as e:
-                        print(f"Hiba a kép feldolgozásakor: {e}")
+    def ext_img(document):
+        from io import BytesIO
+
+        images = []
+        seen_xrefs = set()
+        seen_digests = set()
+        for page in document:
+            for image_info in page.get_images(full=True):
+                xref, _, width, height = image_info[:4]
+                if (
+                    xref <= 0
+                    or xref in seen_xrefs
+                    or width < MIN_IMAGE_SIDE
+                    or height < MIN_IMAGE_SIDE
+                    or width * height < MIN_IMAGE_PIXELS
+                ):
+                    continue
+                seen_xrefs.add(xref)
+                try:
+                    image_data = document.extract_image(xref)["image"]
+                    digest = hashlib.sha256(image_data).digest()
+                    if digest in seen_digests:
                         continue
-        return None
+                    with Image.open(BytesIO(image_data)) as image:
+                        images.append(image.copy())
+                    seen_digests.add(digest)
+                except Exception as e:
+                    print(f"Could not process PDF image {xref}: {e}")
+        return images
 
     def open_file(self):
         file = askopenfile(parent=root, mode="rb", title="Choose a file...",
@@ -240,18 +256,13 @@ class ExtractImage(tk.Frame):
         if file:
             self.stat_txt.set("Loading file...")
             try:
-                read_pdf = PyPDF2.PdfReader(file)
-                p_num = len(read_pdf.pages)
                 self.img_list = []
                 self.save_btn.configure(state="disabled")
                 self.prev_btn.configure(state="disabled")
                 self.next_btn.configure(state="disabled")
                 self.img_lab.configure(image="")
-                for p in range(p_num):
-                    page = read_pdf.pages[p]
-                    img = self.ext_img(page)
-                    if img:
-                        self.img_list.append(img)
+                with pymupdf.open(file.name) as document:
+                    self.img_list = self.ext_img(document)
                 fn = file.name
                 self.stat_txt.set("Found " + str(len(self.img_list)) + " image(s) in: " + fn)
                 if self.img_list:
@@ -262,10 +273,10 @@ class ExtractImage(tk.Frame):
                     self.next_btn.configure(state="normal")
                 else:
                     self.stat_txt.set("No images found or could be extracted!")
+            except Exception as e:
+                self.stat_txt.set(f"File Error: selected file cannot be opened: {e}")
+            finally:
                 file.close()
-                # print(self.img_list)
-            except IOError:
-                self.stat_txt.set("File Error: selected file cannot be opened!")
 
     def show_img(self, ind):
         if 0 <= ind < len(self.img_list):
@@ -298,8 +309,8 @@ class ExtractImage(tk.Frame):
                 curr_img.save(fn)
                 self.stat_txt.set("File saved: " + fn)
                 file.close()
-            except IOError or Exception as e:
-                self.stat_txt.set("File Error: file cannot be saved!")
+            except Exception as e:
+                self.stat_txt.set(f"File Error: file cannot be saved: {e}")
                 print(e)
 
 
