@@ -32,13 +32,14 @@ class Pathfinder:
                 ny = node.y * 50
                 nodes.append((nx, ny))
             return nodes
+        return None
 
     def update(self):
         self.draw_path()
 
 
 class Ants(pygame.sprite.Sprite):
-    def __init__(self, dx, dy, nodes=None):
+    def __init__(self, dx, dy, nodes=None, food=None):
         super().__init__()
 
         walk_1 = pygame.image.load('assets/ant1.png').convert_alpha()
@@ -58,7 +59,7 @@ class Ants(pygame.sprite.Sprite):
         self.node_index = 0
         self.nodes_to_go = nodes
         self.has_end = False
-        self.coll_food = None
+        self.food = food
 
     def animation_state(self):
         self.frame_index += 0.5
@@ -89,11 +90,9 @@ class Ants(pygame.sprite.Sprite):
                         self.has_end = False
                         self.node_index = 0
                         self.kill()
-                        try:
-                            self.coll_food[self][0].kill()
-                            self.coll_food = None
-                        except KeyError:
-                            pass
+                        if self.food is not None:
+                            self.food.kill()
+                            self.food = None
                     else:
                         nind = self.node_index // 10
                         node = self.nodes_to_go[nind]
@@ -125,14 +124,9 @@ class Ants(pygame.sprite.Sprite):
     def update(self):
         self.animation_state()
         self.within_bounds()
-        if collision_sprite():
-            self.coll_food = pygame.sprite.groupcollide(ants_group, food_group, False, False)
-        if self.coll_food:
-            try:
-                self.coll_food[self][0].rect.x = self.rect.x
-                self.coll_food[self][0].rect.y = self.rect.y
-            except KeyError:
-                pass
+        if self.has_end and self.food is not None:
+            self.food.rect.x = self.rect.x
+            self.food.rect.y = self.rect.y
 
     def within_bounds(self):
         if self.rect.x < 0:
@@ -191,10 +185,11 @@ def get_input(pathfinder):
                 m_pos = pygame.mouse.get_pos()
                 dx = m_pos[0]
                 dy = m_pos[1]
-                food_group.add(Food(dx, dy))
+                food = Food(dx, dy)
+                food_group.add(food)
                 pathfinder.create_path(dx, dy)
                 nodes = pathfinder.draw_path()
-                ants_group.add(Ants(400, 350, nodes))
+                ants_group.add(Ants(400, 350, nodes, food))
 
 
 def display_intro(surface):
