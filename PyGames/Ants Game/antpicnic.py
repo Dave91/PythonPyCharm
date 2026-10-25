@@ -1,7 +1,9 @@
+import math
 import random
 from sys import exit
 
 import pygame
+from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 
@@ -18,7 +20,7 @@ class Pathfinder:
             start = self.grid.node(400 // 50, 350 // 50)
             end = self.grid.node(dx // 50, dy // 50)
 
-            finder = AStarFinder(diagonal_movement=False)
+            finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
             self.path = finder.find_path(start, end, self.grid)
             self.grid.cleanup()
 
@@ -56,7 +58,10 @@ class Ants(pygame.sprite.Sprite):
         self.rect.x = dx
         self.rect.y = dy
 
-        self.node_index = 0
+        self.pos = pygame.math.Vector2(dx, dy)
+        self.speed = 8
+        self.angle = 0
+        self.target_index = 1
         self.nodes_to_go = nodes
         self.has_end = False
         self.food = food
@@ -67,59 +72,42 @@ class Ants(pygame.sprite.Sprite):
             self.frame_index = 0
         self.image = self.ant_walk_anim[int(self.frame_index)]
 
-        if self.nodes_to_go:
-            if not self.has_end:
-                try:
-                    self.node_index += 2
-                    if (self.node_index // 10) == len(self.nodes_to_go) + 1:
-                        self.has_end = True
-                        self.node_index = 0
-                        self.nodes_to_go.reverse()
-                    else:
-                        nind = self.node_index // 10
-                        node = self.nodes_to_go[nind]
-                        self.rotate_ant(nind + 1)
-                        self.rect.x = node[0]
-                        self.rect.y = node[1]
-                except IndexError:
-                    return
-            else:
-                try:
-                    self.node_index += 2
-                    if (self.node_index // 10) == len(self.nodes_to_go) + 1:
-                        self.has_end = False
-                        self.node_index = 0
-                        self.kill()
-                        if self.food is not None:
-                            self.food.kill()
-                            self.food = None
-                    else:
-                        nind = self.node_index // 10
-                        node = self.nodes_to_go[nind]
-                        self.rotate_ant(nind + 1)
-                        self.rect.x = node[0]
-                        self.rect.y = node[1]
-                except IndexError:
-                    return
-        else:
+        if not self.nodes_to_go:
             return
 
-    def rotate_ant(self, ni):
-        mdirs = {(0, 0): "N", (-1, 0): "L", (1, 0): "R", (0, -1): "U", (0, 1): "D"}
-        try:
-            node = self.nodes_to_go[ni]
-            mdir = mdirs[((node[0] - self.rect.x) // 50, (node[1] - self.rect.y) // 50)]
-            if mdir != "N":
-                if mdir == "L":
-                    pass
-                elif mdir == "R":
-                    self.image = pygame.transform.rotate(self.image, 180)
-                elif mdir == "U":
-                    self.image = pygame.transform.rotate(self.image, 90)
-                else:
-                    self.image = pygame.transform.rotate(self.image, -90)
-        except KeyError:
-            return
+        remaining = self.speed
+        heading = None
+        while remaining > 0 and self.target_index < len(self.nodes_to_go):
+            target = pygame.math.Vector2(self.nodes_to_go[self.target_index])
+            delta = target - self.pos
+            dist = delta.length()
+            if dist <= remaining:
+                self.pos = target
+                remaining -= dist
+                self.target_index += 1
+            else:
+                heading = delta
+                self.pos += delta.normalize() * remaining
+                remaining = 0
+            if dist > 0:
+                heading = delta
+
+        if heading is not None:
+            self.angle = math.degrees(math.atan2(heading.y, -heading.x))
+        self.image = pygame.transform.rotate(self.image, self.angle)
+        self.rect.x = round(self.pos.x)
+        self.rect.y = round(self.pos.y)
+
+        if self.target_index >= len(self.nodes_to_go):
+            if not self.has_end:
+                self.has_end = True
+                self.nodes_to_go.reverse()
+                self.target_index = 1
+            else:
+                self.kill()
+                if self.food is not None:
+                    self.food.kill()
+                    self.food = None
 
     def update(self):
         self.animation_state()
