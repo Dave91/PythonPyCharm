@@ -152,7 +152,7 @@ def main():
     appicon = tk.PhotoImage(file=res_path("icons/dicticon.png"))
     root.iconphoto(False, appicon)
     root.geometry("560x480")
-    root.resizable(0, 0)
+    root.resizable(False, False)
     root.config(background="beige")
     StyleConfig()
     MainFrame(root)
