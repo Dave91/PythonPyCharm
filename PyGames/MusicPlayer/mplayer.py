@@ -101,11 +101,17 @@ class AppGui(tk.Tk):
         self.selected_file = ""
         self.currdur = 0
         self.currtime = 0
+        self.timer_id = None
+        self.seek_offset = 0
+        self.updating_seekbar = False
 
         self.mainloop()
 
     def dur_elap_calc(self):
-        currtime = pygame.mixer.music.get_pos() / 1000
+        if self.timer_id is not None:
+            self.after_cancel(self.timer_id)
+            self.timer_id = None
+        currtime = pygame.mixer.music.get_pos() / 1000 + self.seek_offset
         convcurrtime = time.strftime("%M:%S", time.gmtime(currtime))
 
         songind = self.playlistbox.curselection()[0]
@@ -117,31 +123,40 @@ class AppGui(tk.Tk):
             pass
         elif self.paused:
             pass
-        elif int(self.seekbar.get()) == int(currtime):
-            # if seekbar hasn't moved yet
-            self.seekbar["to"] = int(self.currdur)
-            self.seekbar["value"] = int(currtime)
         else:
-            self.seekbar["to"] = int(self.currdur)
-            self.seekbar["value"] = int(currtime)
+            self.updating_seekbar = True
+            try:
+                self.seekbar["to"] = int(self.currdur)
+                self.seekbar["value"] = int(currtime)
+            finally:
+                self.updating_seekbar = False
             convcurrdur = time.strftime("%M:%S", time.gmtime(self.currdur))
             self.durelap["text"] = f'{convcurrtime} / {convcurrdur}'
 
-        self.durelap.after(1000, self.dur_elap_calc)
+        self.timer_id = self.after(1000, self.dur_elap_calc)
 
     def seek_slide(self, x):
+        # ignore programmatic slider updates and seeks with nothing loaded
+        if self.updating_seekbar or not self.selected_file:
+            return
         pygame.mixer.music.stop()
-        songind = self.playlistbox.curselection()[0]
-        currfile = self.playlist[songind]
-        pygame.mixer.music.load(currfile)
-        pygame.mixer.music.play(loops=0, start=int(self.seekbar.get()))
+        pygame.mixer.music.load(self.selected_file)
+        self.seek_offset = int(self.seekbar.get())
+        pygame.mixer.music.play(loops=0, start=self.seek_offset)
+        if self.paused:
+            pygame.mixer.music.pause()
 
     def seek_nums(self, event=None):
         if self.selected_song != "":
             num = int(event.char)
             seekpos = self.currdur * (int(num) / 10)
             pygame.mixer.music.set_pos(seekpos)
-            self.seekbar["value"] = seekpos
+            self.seek_offset = seekpos - pygame.mixer.music.get_pos() / 1000
+            self.updating_seekbar = True
+            try:
+                self.seekbar["value"] = seekpos
+            finally:
+                self.updating_seekbar = False
 
     def upvol(self, event=None):
         self.mutevolbtn["image"] = self.volumeimg
@@ -205,6 +220,18 @@ class AppGui(tk.Tk):
             self.selected_file = filename
             self.statbartxt.set('Playing: ' + song)
             self.can_play = False
+            self.paused = False
+            self.paused_song = ""
+            self.seek_offset = 0
+            if self.timer_id is not None:
+                self.after_cancel(self.timer_id)
+                self.timer_id = None
+            self.updating_seekbar = True
+            try:
+                self.seekbar["value"] = 0
+            finally:
+                self.updating_seekbar = False
+            pygame.mixer.music.stop()
             pygame.mixer.music.load(filename)
             pygame.mixer.music.play(loops=0)
             self.playpausebtn["image"] = self.pauseimg
